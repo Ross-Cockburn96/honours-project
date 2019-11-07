@@ -4,4 +4,4 @@ class Node:
         self.yCoord = yCoord
 
     def str(self):
-        return (self.xCoord, self.yCoord)     
+        return (self.xCoord, self.yCoord)    
