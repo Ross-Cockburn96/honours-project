@@ -34,11 +34,15 @@ class Generator:
     -------
     generateNodes()
         randomly generates the number of nodes specified by noOfNodes attribute
+
+    
     """
 
     nodes = []
     maxRange = 10
     rangeMultiplyer = 100
+    clusterToRangeRatio = .25
+    clusterDeviationFromPoint = 5
     def __init__(self, noOfNodes=10, noOfPackages=5 , nodemaxRangeRatio=.5, distribution="uniform" ):
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
@@ -51,10 +55,9 @@ class Generator:
         self.nodemaxRangeRatio = nodemaxRangeRatio
 
     def uniformGeneration(self):
-        for val in range(self.noOfNodes): 
-            xCoord = random.randint(0, self.maxRange)
-            yCoord = random.randint(0, self.maxRange)
-            node = Node(xCoord, yCoord)
+        for _ in range(self.noOfNodes): 
+            node = Node()
+            node.random(0, self.maxRange)
             self.nodes.append(node)
         
         fig, ax1 = plt.subplots(1,1)
@@ -67,8 +70,38 @@ class Generator:
         
         plt.show()
 
+
+
+    def createClusterCenters(self):
+        numberOfClusters = math.floor(self.maxRange * self.clusterToRangeRatio)
+        clusterCenters = []
+        for _ in range(numberOfClusters):
+            cluster = Node() 
+            cluster.random(0, self.maxRange)
+            clusterCenters.append(cluster)
+            self.nodes.append(cluster)
+        return clusterCenters
+
+
     def clusteredGeneration(self):
-        return None
+        clusterCenters = self.createClusterCenters()
+        for _ in range(self.noOfNodes): 
+            node = Node()
+            clusterIndex = random.randint(0, len(clusterCenters) - 1 )
+            Node.deepCopy(clusterCenters[clusterIndex], node)
+            node.xCoord += (random.random() * self.clusterDeviationFromPoint)
+            node.yCoord += (random.random() * self.clusterDeviationFromPoint)
+            self.nodes.append(node)
+
+        fig, ax1 = plt.subplots(1,1)
+        for node in self.nodes:
+            x,y = node.str()
+            ax1.set_xlim([0,150])
+            ax1.set_ylim([0,150])
+            ax1.scatter(x,y, alpha=0.8)
+        
+        plt.show()
+
 
     def generateNodes(self):
         upperLimit = 10

@@ -5,5 +5,5 @@ import numpy as np
 
 if __name__ == "__main__":
     
-    generator = Generator.Generator(noOfNodes= 50, nodemaxRangeRatio=1)
+    generator = Generator.Generator(noOfNodes= 150, nodemaxRangeRatio=1, distribution="clustered")
     generator.generateNodes()
