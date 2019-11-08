@@ -4,27 +4,54 @@ from problemGenerator.Node import Node
 import matplotlib.pyplot as plt
 
 class Generator:
+    """ 
+    This class is used to generate random problems to the 
+    Multiple Knapsack Problem for Package Delivery Drones 
+    
+    ...
+
+    Attributes
+    ----------
+    nodes : List<Node> 
+        a list of Node objects randomly generated
+    
+    maxRange: this is the highest value a node's coordinates 
+    
+    rangeMultiplyer : highest value added to maxRange
+
+    noOfNodes : number of nodes to be randomly generated
+
+    noOfPackages : number of packages to be randomly generated 
+
+    nodemaxRangeRatio: value between 0 and 1 which is multiplied with rangeMultiplyer 
+    to give a value which determines the spread distance of nodes. 
+
+    Methods 
+    -------
+    generateNodes()
+        randomly generates the number of nodes specified by noOfNodes attribute
+    """
+
     nodes = []
-    nodeCoordLimit = 10
-    maxRange = 50
-    def __init__(self, noOfNodes =10, noOfPackages=5, nodeRange=.5):
+    maxRange = 10
+    rangeMultiplyer = 50
+    def __init__(self, noOfNodes=10, noOfPackages=5 , nodemaxRangeRatio=.5 ):
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
-        if nodeRange <= 0: 
-            nodeRange = 0.01
-        self.nodeRange = nodeRange
+        if nodemaxRangeRatio <= 0: 
+            nodemaxRangeRatio = 0.01
+        self.nodemaxRangeRatio = nodemaxRangeRatio
 
 
+    
     def generateNodes(self):
         upperLimit = 10
-        self.nodeCoordLimit = self.nodeCoordLimit * self.maxRange * self.nodeRange
-        print (self.nodeCoordLimit)
+        self.maxRange = self.maxRange + (self.rangeMultiplyer * self.nodemaxRangeRatio)
+        print (self.maxRange)
 
-        for val in range(self.noOfNodes): 
-            #density = math.floor(self.maxRange * self.nodeRange) + 1
-            xCoord = random.randint(0, self.nodeCoordLimit)
-            yCoord = random.randint(0, self.nodeCoordLimit)
-
+        for val in maxRange(self.noOfNodes): 
+            xCoord = random.randint(0, self.maxRange)
+            yCoord = random.randint(0, self.maxRange)
             node = Node(xCoord, yCoord)
             self.nodes.append(node)
         
