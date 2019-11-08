@@ -6,43 +6,35 @@ import matplotlib.pyplot as plt
 class Generator:
     nodes = []
     nodeCoordLimit = 10
-    maxDensity = 5
-    def __init__(self, noOfNodes =10, noOfPackages=5, nodeDensity=1):
+    maxRange = 50
+    def __init__(self, noOfNodes =10, noOfPackages=5, nodeRange=.5):
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
-        self.nodeDensity = nodeDensity
+        if nodeRange <= 0: 
+            nodeRange = 0.01
+        self.nodeRange = nodeRange
 
 
     def generateNodes(self):
         upperLimit = 10
-        origNodes = []
-        for val in range(self.noOfNodes):
-            density = math.floor(self.maxDensity * self.nodeDensity) + 1
-            print(f"density is {density}")
+        self.nodeCoordLimit = self.nodeCoordLimit * self.maxRange * self.nodeRange
+        print (self.nodeCoordLimit)
+
+        for val in range(self.noOfNodes): 
+            #density = math.floor(self.maxRange * self.nodeRange) + 1
             xCoord = random.randint(0, self.nodeCoordLimit)
-            xCoordOrig = xCoord
-            xCoord = xCoord * density
-
             yCoord = random.randint(0, self.nodeCoordLimit)
-            yCoordOrig = yCoord
-            yCoord = yCoord * density
 
-            origNodes.append(Node(xCoordOrig, yCoordOrig))
             node = Node(xCoord, yCoord)
             self.nodes.append(node)
         
-        fig, (ax1, ax2) = plt.subplots(1,2)
+        fig, ax1 = plt.subplots(1,1)
 
         for node in self.nodes:
             x, y = node.str()
-            ax1.set_xlim([0,25])
-            ax1.set_ylim([0,25])
+            ax1.set_xlim([0,500])
+            ax1.set_ylim([0,500])
             ax1.scatter(x,y, alpha=0.8)
         
-        for node in origNodes:
-            x,y = node.str()
-            ax2.set_xlim([0,25])
-            ax2.set_ylim([0,25])
-            ax2.scatter(x,y, alpha=0.8)
         plt.show()
         
