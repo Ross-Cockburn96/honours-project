@@ -39,7 +39,14 @@ class Solution:
 
         for idx, drone in enumerate(self.drones): 
             print(f"Drone No. {idx}: {drone}")
+
+    def getAllDeliveries(self): 
+        deliveries = [delivery for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]        
+        return deliveries
     
+    def getAllTrips(self):
+        trips = [trip for drone in self.drones for trip in drone.trips]
+        return trips
     def __repr__(self):
         outputElements = []
         for drone in self.drones: 
@@ -52,3 +59,4 @@ class Solution:
             outputElements.append("\n")
         return ("".join([(str(x) + ", " if x != "\n" else "\n") for x in outputElements])) 
 
+    

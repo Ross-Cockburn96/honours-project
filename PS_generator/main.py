@@ -6,6 +6,7 @@ from drone import Drone
 from trip import Trip
 from delivery import Delivery
 from solution import Solution
+from problem import Problem 
 
 
     
@@ -28,6 +29,8 @@ if __name__ == "__main__":
     solution1 = Solution(customers)
     solution1.generate()
     print(solution1)
+    problem = Problem(customers, solution1)
+    problem.generate()
 
 
     
