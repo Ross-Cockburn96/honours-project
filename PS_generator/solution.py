@@ -34,11 +34,10 @@ class Solution:
             minimumDeliveryTime = 100 
             for trip in drone.trips:
                 for delivery in trip.deliveries:
-                    minimumDeliveryTime = math.floor(abs(random.random() - random.random()) *  (1 + 10000 - minimumDeliveryTime) + minimumDeliveryTime )
+                    minimumDeliveryTime = math.floor(abs(random.random() - random.random()) *  (1 + parameters.dayLength - minimumDeliveryTime) + minimumDeliveryTime )
                     delivery.time = minimumDeliveryTime
 
-        for idx, drone in enumerate(self.drones): 
-            print(f"Drone No. {idx}: {drone}")
+  
 
     def getAllDeliveries(self): 
         deliveries = [delivery for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]        

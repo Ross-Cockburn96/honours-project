@@ -28,9 +28,8 @@ if __name__ == "__main__":
     print("Generating Solution...")
     solution1 = Solution(customers)
     solution1.generate()
-    print(solution1)
     problem = Problem(customers, solution1)
     problem.generate()
-
+    print(solution1)
 
     
