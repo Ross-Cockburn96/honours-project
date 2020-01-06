@@ -17,12 +17,12 @@ class Solution:
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers)
         numOfDrones = random.randint(1, numOfTrips)
-        trips = [Trip(self.customers.pop(random.randrange(len(self.customers)))) for _ in range(numOfTrips)] #ensure that each trip has at least one delviery 
+        trips = [Trip(Delivery(self.customers.pop(random.randrange(len(self.customers))))) for _ in range(numOfTrips)] #ensure that each trip has at least one delviery 
         
 
         for customer in self.customers: 
             trip = trips[random.randrange(numOfTrips)]
-            trip.addDelivery(customer)
+            trip.addDelivery(Delivery(customer))
 
         self.drones = [Drone(trips.pop(random.randrange(len(trips)))) for _ in range(numOfDrones)] #ensure that each drone has at least one trip
         
@@ -53,7 +53,7 @@ class Solution:
             for trip in drone.trips:
                 outputElements.append(len(trip.deliveries))
                 for delivery in trip.deliveries: 
-                    outputElements.append(delivery.node)
+                    outputElements.append(delivery.node.id)
                     outputElements.append(delivery.time)
             outputElements.append("\n")
         return ("".join([(str(x) + ", " if x != "\n" else "\n") for x in outputElements])) 

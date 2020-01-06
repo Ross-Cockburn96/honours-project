@@ -7,5 +7,6 @@ class Trip:
     def addDelivery(self, delivery):
         self.deliveries.append(delivery)
 
-    def __repr__(self):
+    def __str__(self):
         return(str(self.deliveries))
+    
