@@ -21,6 +21,7 @@ class Node:
         node2.yCoord = node1.yCoord
     
     def randomValidCoord(self, prevNode, maxDistance):
+        print(maxDistance)
         r = maxDistance * math.sqrt(random.random())
         theta = random.random() * 2 * math.pi
         x = math.floor(prevNode.xCoord + r * math.cos(theta))

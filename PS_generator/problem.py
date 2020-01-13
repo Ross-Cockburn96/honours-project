@@ -24,12 +24,13 @@ class Problem:
         prevNode.random(0, parameters.citySizeMax)
         restOfTrip = trip.deliveries[1:]
 
-        print(prevDelivery)
+        print(f"first: {prevDelivery}")
         for delivery in restOfTrip:
             timeSlotDifference = delivery.time - prevDelivery.time
-            maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)/1000
+            print(timeSlotDifference)
+            maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)//1000
             delivery.node.randomValidCoord(prevNode, maxTravelDistance)
-            prevNode = delivery.node
+            prevDelivery = delivery
             print(delivery)
         
         print("")
