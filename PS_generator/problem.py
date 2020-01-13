@@ -24,17 +24,13 @@ class Problem:
         prevNode.random(0, parameters.citySizeMax)
         restOfTrip = trip.deliveries[1:]
 
-        print(f"first: {prevDelivery}")
         for delivery in restOfTrip:
             timeSlotDifference = delivery.time - prevDelivery.time
-            print(timeSlotDifference)
             maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)//1000
             delivery.node.randomValidCoord(prevNode, maxTravelDistance)
             prevDelivery = delivery
-            print(delivery)
+            prevNode = prevDelivery.node
         
-        print("")
-
     def generate(self):
         allTrips = self.solution.getAllTrips() #get list of all trips that are in the solution 
         for trip in allTrips: 

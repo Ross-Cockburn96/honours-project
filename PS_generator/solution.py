@@ -32,20 +32,21 @@ class Solution:
 
         for drone in self.drones: 
             minimumDeliveryTime = 0
-            deliveriesRemaining = len(drone.getAllDeliveries())
+            deliveriesRemaining = len(drone.getAllDeliveries()) -1
             for trip in drone.trips:
                 for delivery in trip.deliveries:
                     minimumDeliveryTime += 100
-                    
+
                     #there should be at least 100 ms between drones so ensure there is enough time available for all delvieries to have the spread
                     maximumDeliveryTime = parameters.dayLength - (100 * deliveriesRemaining) 
 
                     #generates a random delivery time that is likely to be a smaller increment 
+                    #print(f"solution.py: min = {minimumDeliveryTime} max = {maximumDeliveryTime}")
                     minimumDeliveryTime = math.floor(abs(random.random() - random.random()) *  (1 + maximumDeliveryTime - minimumDeliveryTime) + minimumDeliveryTime )
                     
                     deliveriesRemaining -= 1
                     delivery.time = minimumDeliveryTime
-
+            #print("")
     def getAllDeliveries(self): 
         deliveries = [delivery for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]        
         return deliveries

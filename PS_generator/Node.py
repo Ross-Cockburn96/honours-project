@@ -21,14 +21,16 @@ class Node:
         node2.yCoord = node1.yCoord
     
     def randomValidCoord(self, prevNode, maxDistance):
-        print(maxDistance)
+        #print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
         r = maxDistance * math.sqrt(random.random())
         theta = random.random() * 2 * math.pi
+        #print(prevNode.xCoord + r * math.cos(theta))
         x = math.floor(prevNode.xCoord + r * math.cos(theta))
         if x > parameters.citySizeMax: 
             x = parameters.citySizeMax
         if x < 0: 
             x = 0
+        #print(prevNode.yCoord + r * math.sin(theta))
         y = math.floor(prevNode.yCoord + r * math.sin(theta))
         if y > parameters.citySizeMax:
             y = parameters.citySizeMax
