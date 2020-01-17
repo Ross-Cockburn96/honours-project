@@ -1,7 +1,8 @@
 class Drone:
 
-    def __init__(self, trip):
-        self.trips = [trip]
+    #takes either an individual trip or a list of trips as argument 
+    def __init__(self, *args):
+        self.trips = list(args)
     def addTrip(self, trip):
         self.trips.append(trip)
 

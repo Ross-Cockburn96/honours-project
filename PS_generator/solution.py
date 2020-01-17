@@ -8,45 +8,52 @@ from delivery import Delivery
 
 
 class Solution:
-    customers = []
-    drones = []
-
+    customers = [] #customers are represented by nodes 
+    deliveries = [] #to be randomly allocated a delivery time and then distributed to trips
+    drones = [] #trips are allocated to drones, a drone will have at least one trip 
+    droneDeliveryAllocation = {} #dictionary containing temporary delivery assignment to drones (before trip construction)
     def __init__(self, customers): 
         self.customers = customers 
 
     def generate(self):
-        numOfTrips = random.randint(1,parameters.customers)
+        numOfTrips = random.randint(1,parameters.customers) 
         numOfDrones = random.randint(1, numOfTrips)
-        trips = [Trip(Delivery(self.customers.pop(random.randrange(len(self.customers))))) for _ in range(numOfTrips)] #ensure that each trip has at least one delviery 
+
+        #not needed
+        #trips = [Trip(Delivery(self.customers.pop(random.randrange(len(self.customers))))) for _ in range(numOfTrips)] #ensure that each trip has at least one delviery 
+    
+        #create deliveries for each customer (node) 
+        self.deliveries = [Delivery(x) for x in self.customers]
+
+        #assign random delivery time to each delivery
+        for delivery in self.deliveries: 
+            delivery.time = random.randint(parameters.minimumDeliveryTime, parameters.dayLength)
         
-
-        for customer in self.customers: 
-            trip = trips[random.randrange(numOfTrips)]
-            trip.addDelivery(Delivery(customer))
-
-        self.drones = [Drone(trips.pop(random.randrange(len(trips)))) for _ in range(numOfDrones)] #ensure that each drone has at least one trip
+        #ensure each drone has at least one delivery
+        for idx in range (numOfDrones):
+            self.droneDeliveryAllocation[idx] = [self.deliveries[idx]]
         
-        for trip in trips: 
-            drone = self.drones[random.randrange(numOfDrones)]
-            drone.addTrip(trip)
+        #populate rest of delivery assignment dictionary 
+        for idx in range(numOfDrones, len(self.deliveries)):
+            droneAllocation = random.randrange(numOfDrones)
+            self.droneDeliveryAllocation[droneAllocation].append(self.deliveries[idx])
 
-        for drone in self.drones: 
-            minimumDeliveryTime = 0
-            deliveriesRemaining = len(drone.getAllDeliveries()) -1
-            for trip in drone.trips:
-                for delivery in trip.deliveries:
-                    minimumDeliveryTime += 100
-
-                    #there should be at least 100 ms between drones so ensure there is enough time available for all delvieries to have the spread
-                    maximumDeliveryTime = parameters.dayLength - (100 * deliveriesRemaining) 
-
-                    #generates a random delivery time that is likely to be a smaller increment 
-                    #print(f"solution.py: min = {minimumDeliveryTime} max = {maximumDeliveryTime}")
-                    minimumDeliveryTime = math.floor(abs(random.random() - random.random()) *  (1 + maximumDeliveryTime - minimumDeliveryTime) + minimumDeliveryTime )
-                    
-                    deliveriesRemaining -= 1
-                    delivery.time = minimumDeliveryTime
-            #print("")
+        
+        for droneNo, assignedDeliveries in self.droneDeliveryAllocation.items():
+            assignedDeliveries.sort(key=lambda x: x.time) #sort each drones deliveries so trips are in order
+            
+            #create trips within drone 
+            trips = [] 
+            while len(assignedDeliveries) > 0 :
+                if parameters.droneCargoSlots > len(assignedDeliveries):
+                    maxNumber = len(assignedDeliveries)
+                else:
+                    maxNumber = parameters.droneCargoSlots
+                numberInTrip = random.randint(1,maxNumber) #randomly choose a number of packages to be in the trip, min = 1, max = cargoSize 
+                trips.append(Trip(*assignedDeliveries[:numberInTrip]))
+                del assignedDeliveries[:numberInTrip]
+            self.drones.insert(droneNo, Drone(*trips))
+    
     def getAllDeliveries(self): 
         deliveries = [delivery for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]        
         return deliveries
