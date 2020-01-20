@@ -62,9 +62,29 @@ class Solution:
         trips = [trip for drone in self.drones for trip in drone.trips]
         return trips
 
-    def evaluate(self):
-        return
+    def getAllNodes(self):
+        nodes = [delivery.node for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]
+        return nodes
+
+    def evaluate(self, problem):
+        values = repr(self).split(",")
+        problems = str(problem).split("\n")
+        problems = "".join(problems)
+        
+
     def __repr__(self):
+        outputElements = []
+        for drone in self.drones: 
+            outputElements.append(len(drone.trips))
+            for trip in drone.trips:
+                outputElements.append(len(trip.deliveries))
+                for delivery in trip.deliveries:
+                    outputElements.append(delivery.node.id)
+                    outputElements.append(delivery.time)
+        return ",".join([str(x) for x in outputElements])
+
+
+    def __str__(self):
         outputElements = []
         for drone in self.drones: 
             outputElements.append(len(drone.trips))
@@ -75,5 +95,3 @@ class Solution:
                     outputElements.append(delivery.time)
             outputElements.append("\n")
         return ("".join([(str(x) + ", " if x != "\n" else "\n") for x in outputElements])) 
-
-    

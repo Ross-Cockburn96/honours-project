@@ -43,17 +43,19 @@ class Problem:
                 maxWeight -= packageWeight
                 delivery.weight = packageWeight
                 maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
-
-    
+        
+        
     def __str__(self):
         outputElements = [] 
         deliveries = self.solution.getAllDeliveries()
         outputElements.append(len(deliveries)) #number of nodes
         outputElements.append(len(deliveries)) #number of packages
        
-        for delivery in deliveries: 
-            outputElements.append(str(delivery.node))
-
+        nodes = self.solution.getAllNodes()
+        nodes.sort(key=lambda x: x.id)
+        outputElements.extend(nodes)
+        
+            
         for delivery in deliveries: 
             outputElements.append(delivery.node.id)
             outputElements.append(delivery.weight)

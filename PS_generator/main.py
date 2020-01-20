@@ -22,9 +22,11 @@ if __name__ == "__main__":
     solution1 = Solution(customers)
     solution1.generate()
     print(solution1)
+    
     print("Generating Problem...")
     problem = Problem(solution1)
     problem.generate()
+    solution1.evaluate(problem)
     print(problem)
 
     
