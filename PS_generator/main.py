@@ -27,6 +27,7 @@ if __name__ == "__main__":
     problem = Problem(solution1)
     problem.generate()
     solution1.evaluate(problem)
+    print(solution1.fitness)
     print(problem)
 
     

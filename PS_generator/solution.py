@@ -4,7 +4,7 @@ import math
 from drone import Drone 
 from trip import Trip
 from delivery import Delivery
-
+from Node import Node
 
 
 class Solution:
@@ -12,6 +12,7 @@ class Solution:
     deliveries = [] #to be randomly allocated a delivery time and then distributed to trips
     drones = [] #trips are allocated to drones, a drone will have at least one trip 
     droneDeliveryAllocation = {} #dictionary containing temporary delivery assignment to drones (before trip construction)
+    fitness = None
     def __init__(self, customers): 
         self.customers = customers 
 
@@ -66,12 +67,52 @@ class Solution:
         nodes = [delivery.node for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]
         return nodes
 
-    def evaluate(self, problem):
-        values = repr(self).split(",")
-        problems = str(problem).split("\n")
-        problems = "".join(problems)
-        
+    def evaluate(self, problem): #takes in a string which represents a problem vector as argument
+        solutionVals = repr(self).split(",")
+        problemVals = str(problem).split(", ") #str conversion not needed if argument is string
+        solutionScore = 0 #the fitness score for the solution
+        tripCountIdx = 0
+        finished = False
+        while not finished:
+            if tripCountIdx < len(solutionVals):
+                deliveriesForDrone = 0
+                tripsForDrone = 0
+                droneTrips = int(solutionVals[tripCountIdx]) #how many trips the first drone has
+                tripCountIdx += 1
+         
 
+                while droneTrips > 0:
+                    tripsForDrone += 1
+                    print(f"count index is {tripCountIdx}, droneTrips is {droneTrips}")
+                    deliveryCount = int(solutionVals[tripCountIdx]) #how many deliveries are in the first trip
+                    print(deliveryCount)
+                    nodes = []
+                    #iterates through each delivery in a trip
+                    for idx in range(tripCountIdx + 2, tripCountIdx + (deliveryCount * 2) + 1, 2):
+                        #determine if the delivery is late, only check if delivery is late as if it is early then the drone is allowed to wait 
+                        timeDelivered = solutionVals[idx] 
+                        nodeID = int(solutionVals[idx -1])
+                        problemNodeIdx = (nodeID * 4) + 2 #indexes the start of the node in the problem vector 
+                        
+                        if timeDelivered > problemVals[problemNodeIdx + 3]:
+                            solutionScore += 1000
+                        xCoord = problemVals[problemNodeIdx]
+                        yCoord = problemVals[problemNodeIdx + 1]
+                        print(f"x = {xCoord}, y = {yCoord}")
+                        nodes.append(Node(xCoord = int(xCoord), yCoord = int(yCoord)))
+                        print(nodes)
+
+                        print(f"time delivered is {solutionVals[idx]} to node {solutionVals[idx -1]}")
+                    solutionScore += Node.distanceCalc(*nodes)
+                    tripCountIdx += (deliveryCount * 2) + 1
+                    
+                    droneTrips -= 1
+                
+            else:
+                finished = True
+                continue
+        self.fitness = solutionScore
+    
     def __repr__(self):
         outputElements = []
         for drone in self.drones: 

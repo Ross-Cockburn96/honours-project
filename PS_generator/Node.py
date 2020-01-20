@@ -8,8 +8,10 @@ class Node:
     openTime = 0 
     closeTime = 0
 
-    def __init__(self, id):
+    def __init__(self, id=0, xCoord = None, yCoord = None):
         self.id = id
+        self.xCoord = xCoord
+        self.yCoord = yCoord
 
     def random(self, minVal, maxVal): 
         self.xCoord = random.randint(minVal, maxVal)
@@ -20,6 +22,27 @@ class Node:
         node2.xCoord = node1.xCoord
         node2.yCoord = node1.yCoord
     
+
+    """
+    Takes any number of nodes as argument and returns the distance of the route.
+    Assumes that the order the nodes are in is the order of the path.
+    """
+    @classmethod
+    def distanceCalc(cls, *args):
+        nodes = list(args)
+        numOfNodes = len(nodes)
+        print(numOfNodes)
+        distance = 0
+        for idx, node in enumerate(nodes):
+            if idx == (numOfNodes-1):
+                break
+            print(f"idx is {idx} num of nodes is {numOfNodes}")
+            nextNode = nodes[idx + 1]
+            distance += math.sqrt(((node.xCoord - nextNode.xCoord)**2) + ((node.yCoord - nextNode.yCoord)**2))
+        print(f"distance is {distance}")
+        return math.floor(distance * 1000)
+
+
     def randomValidCoord(self, prevNode, maxDistance):
         #print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
         r = maxDistance * math.sqrt(random.random())
@@ -39,6 +62,10 @@ class Node:
         self.xCoord = x
         self.yCoord = y
     
+
+    def __repr__(self):
+        return str(self)
+
     def __str__(self):
         return (f"{self.xCoord}, {self.yCoord}, {self.openTime}, {self.closeTime}")
 
