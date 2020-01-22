@@ -16,10 +16,12 @@ def populateCustomers():
     return customers
 
 if __name__ == "__main__":
+    
     print("Populating Customers...")
     customers = populateCustomers()
     print("Generating Solution...")
     solution1 = Solution(customers)
+    print("finished init")
     solution1.generate()
     print(solution1)
     
@@ -27,7 +29,7 @@ if __name__ == "__main__":
     problem = Problem(solution1)
     problem.generate()
     solution1.evaluate(problem)
-    print(solution1.fitness)
+    print(f"solution1 fitness is {solution1.fitness}")
     print(problem)
 
     

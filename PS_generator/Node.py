@@ -3,15 +3,14 @@ import math
 import parameters
 
 class Node:
-    xCoord = 0 #km
-    yCoord = 0  #km
-    openTime = 0 
-    closeTime = 0
+  
 
     def __init__(self, id=0, xCoord = None, yCoord = None):
+        self.openTime = 0 
+        self.closeTime = 0
         self.id = id
-        self.xCoord = xCoord
-        self.yCoord = yCoord
+        self.xCoord = xCoord #km
+        self.yCoord = yCoord #km
 
     def random(self, minVal, maxVal): 
         self.xCoord = random.randint(minVal, maxVal)
@@ -31,15 +30,14 @@ class Node:
     def distanceCalc(cls, *args):
         nodes = list(args)
         numOfNodes = len(nodes)
-        print(numOfNodes)
         distance = 0
         for idx, node in enumerate(nodes):
             if idx == (numOfNodes-1):
                 break
-            print(f"idx is {idx} num of nodes is {numOfNodes}")
+            #print(f"idx is {idx} num of nodes is {numOfNodes}")
             nextNode = nodes[idx + 1]
             distance += math.sqrt(((node.xCoord - nextNode.xCoord)**2) + ((node.yCoord - nextNode.yCoord)**2))
-        print(f"distance is {distance}")
+        #print(f"distance is {distance}")
         return math.floor(distance * 1000)
 
 

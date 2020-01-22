@@ -8,14 +8,14 @@ from Node import Node
 
 
 class Solution:
-    customers = [] #customers are represented by nodes 
-    deliveries = [] #to be randomly allocated a delivery time and then distributed to trips
-    drones = [] #trips are allocated to drones, a drone will have at least one trip 
-    droneDeliveryAllocation = {} #dictionary containing temporary delivery assignment to drones (before trip construction)
-    fitness = None
-    def __init__(self, customers): 
-        self.customers = customers 
+   
 
+    def __init__(self, customers): 
+        self.customers = customers #customers are represented by nodes 
+        self.deliveries = [] #to be randomly allocated a delivery time and then distributed to trips
+        self.drones = [] #trips are allocated to drones, a drone will have at least one trip 
+        self.droneDeliveryAllocation = {} #dictionary containing temporary delivery assignment to drones (before trip construction)
+        self.fitness = None
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
         numOfDrones = random.randint(1, numOfTrips)
@@ -25,7 +25,6 @@ class Solution:
     
         #create deliveries for each customer (node) 
         self.deliveries = [Delivery(x) for x in self.customers]
-
         #assign random delivery time to each delivery
         for delivery in self.deliveries: 
             delivery.time = random.randint(parameters.minimumDeliveryTime, parameters.dayLength)
@@ -83,9 +82,9 @@ class Solution:
 
                 while droneTrips > 0:
                     tripsForDrone += 1
-                    print(f"count index is {tripCountIdx}, droneTrips is {droneTrips}")
+                    #print(f"count index is {tripCountIdx}, droneTrips is {droneTrips}")
                     deliveryCount = int(solutionVals[tripCountIdx]) #how many deliveries are in the first trip
-                    print(deliveryCount)
+                    #print(deliveryCount)
                     nodes = []
                     #iterates through each delivery in a trip
                     for idx in range(tripCountIdx + 2, tripCountIdx + (deliveryCount * 2) + 1, 2):
@@ -98,11 +97,11 @@ class Solution:
                             solutionScore += 1000
                         xCoord = problemVals[problemNodeIdx]
                         yCoord = problemVals[problemNodeIdx + 1]
-                        print(f"x = {xCoord}, y = {yCoord}")
+                        #print(f"x = {xCoord}, y = {yCoord}")
                         nodes.append(Node(xCoord = int(xCoord), yCoord = int(yCoord)))
-                        print(nodes)
+                        #print(nodes)
 
-                        print(f"time delivered is {solutionVals[idx]} to node {solutionVals[idx -1]}")
+                       # print(f"time delivered is {solutionVals[idx]} to node {solutionVals[idx -1]}")
                     solutionScore += Node.distanceCalc(*nodes)
                     tripCountIdx += (deliveryCount * 2) + 1
                     
