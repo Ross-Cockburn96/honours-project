@@ -2,6 +2,7 @@ import random
 import math
 import parameters
 
+#Nodes either represent customers or the depot 
 class Node:
   
 
@@ -29,6 +30,7 @@ class Node:
     @classmethod
     def distanceCalc(cls, *args):
         nodes = list(args)
+        print(f"considering nodes {str(nodes)}")
         numOfNodes = len(nodes)
         distance = 0
         for idx, node in enumerate(nodes):
@@ -38,7 +40,7 @@ class Node:
             nextNode = nodes[idx + 1]
             distance += math.sqrt(((node.xCoord - nextNode.xCoord)**2) + ((node.yCoord - nextNode.yCoord)**2))
         #print(f"distance is {distance}")
-        return math.floor(distance * 1000)
+        return math.floor(distance * parameters.unit)
 
 
     def randomValidCoord(self, prevNode, maxDistance):

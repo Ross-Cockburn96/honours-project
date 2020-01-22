@@ -70,7 +70,8 @@ class Solution:
         solutionVals = repr(self).split(",")
         problemVals = str(problem).split(", ") #str conversion not needed if argument is string
         solutionScore = 0 #the fitness score for the solution
-        tripCountIdx = 0
+        offset = 2 #nodes start at position 2 in the string 
+        tripCountIdx = 0 #index for referencing the solution string
         finished = False
         while not finished:
             if tripCountIdx < len(solutionVals):
@@ -85,15 +86,17 @@ class Solution:
                     #print(f"count index is {tripCountIdx}, droneTrips is {droneTrips}")
                     deliveryCount = int(solutionVals[tripCountIdx]) #how many deliveries are in the first trip
                     #print(deliveryCount)
+
                     nodes = []
+                    nodes.append(Node(xCoord = 0, yCoord = 0)) #insert depot node into list as every trip will start and end here
+
                     #iterates through each delivery in a trip
                     for idx in range(tripCountIdx + 2, tripCountIdx + (deliveryCount * 2) + 1, 2):
                         #determine if the delivery is late, only check if delivery is late as if it is early then the drone is allowed to wait 
                         timeDelivered = solutionVals[idx] 
                         nodeID = int(solutionVals[idx -1])
                         problemNodeIdx = (nodeID * 4) + 2 #indexes the start of the node in the problem vector 
-                        
-                        if timeDelivered > problemVals[problemNodeIdx + 3]:
+                        if timeDelivered > problemVals[problemNodeIdx + 3]: #late delivery penalty is 1000 
                             solutionScore += 1000
                         xCoord = problemVals[problemNodeIdx]
                         yCoord = problemVals[problemNodeIdx + 1]
@@ -102,6 +105,7 @@ class Solution:
                         #print(nodes)
 
                        # print(f"time delivered is {solutionVals[idx]} to node {solutionVals[idx -1]}")
+                    nodes.append(Node(xCoord = 0, yCoord = 0)) #insert depot node into list marking the return journey back to depot at end of trip
                     solutionScore += Node.distanceCalc(*nodes)
                     tripCountIdx += (deliveryCount * 2) + 1
                     

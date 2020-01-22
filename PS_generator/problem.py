@@ -3,19 +3,20 @@ import parameters
 from Node import Node
 class Problem: 
     def __init__(self, solution): 
+        self.values = [] #only populated after 'generate' function has been called
         self.solution = solution 
     
     #time slots are calculated for each customer based on the time that the solution says the delivery arrived. This ensures time slots are feasible. 
     def nodeTimeSlotCalc(self, trip):
         for delivery in trip.deliveries: 
-            if delivery.time - 100 < 0 : 
+            if delivery.time - parameters.minimumDeliveryTime < 0 : 
                 delivery.node.openTime = 0
             else: 
-                delivery.node.openTime = delivery.time - 100
-            if delivery.time + 100 > parameters.dayLength:
+                delivery.node.openTime = delivery.time - parameters.minimumDeliveryTime
+            if delivery.time + parameters.minimumDeliveryTime > parameters.dayLength:
                 delivery.node.closeTime = parameters.dayLength
             else:
-                delivery.node.closeTime = delivery.time + 100
+                delivery.node.closeTime = delivery.time + parameters.minimumDeliveryTime
     
     #coordinates are constrained by the distance a node can travel in the time until the next delivery occurs. A drone can wait if it is early. 
     def nodeCoordCalc(self, trip):
@@ -26,7 +27,7 @@ class Problem:
 
         for delivery in restOfTrip:
             timeSlotDifference = delivery.time - prevDelivery.time
-            maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)//1000
+            maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)
             delivery.node.randomValidCoord(prevNode, maxTravelDistance)
             prevDelivery = delivery
             prevNode = prevDelivery.node
@@ -43,16 +44,16 @@ class Problem:
                 maxWeight -= packageWeight
                 delivery.weight = packageWeight
                 maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
- 
+        self.values = self.stringBuilder()
     
-    def __repr__(self):
-        return str(self)
-    def __str__(self):
+    #outputs a string representation of the problem 
+    def stringBuilder(self):
         outputElements = [] 
         deliveries = self.solution.getAllDeliveries()
         outputElements.append(len(deliveries)) #number of nodes
         outputElements.append(len(deliveries)) #number of packages
-       
+
+        outputElements.append(Node(0, 0, 0)) #insert depot node at 0,0 coordinates 
         nodes = self.solution.getAllNodes() 
         nodes.sort(key=lambda x: x.id) #sorts nodes in order of id 
         outputElements.extend(nodes)
@@ -62,5 +63,12 @@ class Problem:
             outputElements.append(delivery.node.id)
             outputElements.append(delivery.weight)
         return ", ".join([str(x) for x in outputElements])
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return self.values
+        
             
                 
