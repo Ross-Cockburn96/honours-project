@@ -8,6 +8,7 @@ from delivery import Delivery
 from solution import Solution
 from problem import Problem 
 from Node import Node
+import tools 
 def populateCustomers():
     customers = [] #each customer is a node which has a demand of 1 specific package 
 
@@ -20,7 +21,52 @@ def populateCustomers():
     return customers
 
 if __name__ == "__main__":
+    import numpy as np
+
+    numberOfinstances = 100000
+    mu = 0
+    variance = 1
+    sigma = math.sqrt(variance)
     
+    values = np.empty(numberOfinstances)
+    for i in range(numberOfinstances):
+        values[i] = random.gauss(0, parameters.timeSlotStandardDev)
+    #tools.plotValues(values)
+
+    values2 = np.empty(numberOfinstances)
+    for i in range(numberOfinstances):
+        mean = random.randint(0, parameters.dayLength/2)
+        values2[i] = random.gauss(mean, parameters.timeSlotStandardDev)
+    
+    values3 = np.empty(numberOfinstances)
+    for i in range(numberOfinstances):
+        values3[i] = abs(random.gauss(0, parameters.timeSlotStandardDev))
+    
+    tools.plotManyHists(values, values2, values3) #doesn't work because plots can only be 1 or 2 
+
+
+    # rangeVal = max(values) - min(values)
+    # numIntervals = int(math.sqrt(numberOfinstances))
+    # widthIntervals = rangeVal/numIntervals
+    # bins = [] 
+    # binValue = min(values)
+    # for val in range(0,numberOfinstances, numIntervals):
+    #     bins.append(binValue)
+    #     binValue += widthIntervals 
+    # bins[-1] = bins[-2] + widthIntervals
+    # print(len(bins))
+    # for val in bins: 
+    #     print(val)
+   
+    # plt.hist(values, bins =bins)
+    # plt.show()
+    # plt.style.use('ggplot')
+    # plt.hist(values, bins=bins)
+    # plt.show()
+   
+
+
+
     print("Populating Customers...")
     customers = populateCustomers()
     print("Generating Solution...")

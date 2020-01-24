@@ -30,7 +30,7 @@ class Node:
     @classmethod
     def distanceCalc(cls, *args):
         nodes = list(args)
-        print(f"considering nodes {str(nodes)}")
+        #print(f"considering nodes {str(nodes)}")
         numOfNodes = len(nodes)
         distance = 0
         for idx, node in enumerate(nodes):
@@ -40,7 +40,7 @@ class Node:
             nextNode = nodes[idx + 1]
             distance += math.sqrt(((node.xCoord - nextNode.xCoord)**2) + ((node.yCoord - nextNode.yCoord)**2))
         #print(f"distance is {distance}")
-        return math.floor(distance * parameters.unit)
+        return math.floor(distance * parameters.unit) #adds distance in meters to fitness function
 
 
     def randomValidCoord(self, prevNode, maxDistance):

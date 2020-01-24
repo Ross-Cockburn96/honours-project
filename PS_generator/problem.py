@@ -1,4 +1,5 @@
 import random
+import math
 import parameters
 from Node import Node
 class Problem: 
@@ -9,14 +10,22 @@ class Problem:
     #time slots are calculated for each customer based on the time that the solution says the delivery arrived. This ensures time slots are feasible. 
     def nodeTimeSlotCalc(self, trip):
         for delivery in trip.deliveries: 
-            if delivery.time - parameters.minimumDeliveryTime < 0 : 
+            
+            #drawing a uniform random variable as mean widens the crest of the normal curve to the bounds of the range
+            mean = random.randint(0,parameters.dayLength/4) 
+            print(f"mean is {mean}")
+            #halfRange means the open time will be solution delivery time - halfRange and close time will be solution delivery time + halfRange, giving the full range
+            halfRange = parameters.minimumDeliveryTime + abs(math.floor(random.gauss(mean, parameters.timeSlotStandardDev)))
+            print(f"half range is {halfRange}, minimum delivery time is {parameters.minimumDeliveryTime}")
+            if delivery.time - halfRange < 0 : 
                 delivery.node.openTime = 0
             else: 
-                delivery.node.openTime = delivery.time - parameters.minimumDeliveryTime
-            if delivery.time + parameters.minimumDeliveryTime > parameters.dayLength:
+                delivery.node.openTime = delivery.time - halfRange
+            if delivery.time + halfRange > parameters.dayLength:
                 delivery.node.closeTime = parameters.dayLength
             else:
-                delivery.node.closeTime = delivery.time + parameters.minimumDeliveryTime
+                delivery.node.closeTime = delivery.time + halfRange
+            print(f"open time is {delivery.node.openTime}, solution delivery is {delivery.time}, close time is {delivery.node.closeTime}")
     
     #coordinates are constrained by the distance a node can travel in the time until the next delivery occurs. A drone can wait if it is early. 
     def nodeCoordCalc(self, trip):
