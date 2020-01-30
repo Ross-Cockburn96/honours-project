@@ -26,7 +26,7 @@ def plotManyHists(*args):
     sets = list(args)
     print(len(sets))
     for idx, data in enumerate(sets): 
-        ax = fig.add_subplot(2,1, idx+1)
+        ax = fig.add_subplot(len(sets),1, idx+1)
     # ax1 = fig.add_subplot(2,1,1)
     # ax2 = fig.add_subplot(2,1,2)
         values = np.array(data)

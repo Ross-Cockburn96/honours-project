@@ -2,9 +2,9 @@ import random
 import math
 import parameters
 
+
 #Nodes either represent customers or the depot 
 class Node:
-  
 
     def __init__(self, id=0, xCoord = None, yCoord = None):
         self.openTime = 0 
@@ -43,17 +43,20 @@ class Node:
         return math.floor(distance * parameters.unit) #adds distance in meters to fitness function
 
 
+    """
+    calculates valid coordinates for the current node given the previous node in a trip and maximum distance (radius)
+    """
     def randomValidCoord(self, prevNode, maxDistance):
-        #print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
+        print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
         r = maxDistance * math.sqrt(random.random())
         theta = random.random() * 2 * math.pi
-        #print(prevNode.xCoord + r * math.cos(theta))
+        print(prevNode.xCoord + r * math.cos(theta))
         x = math.floor(prevNode.xCoord + r * math.cos(theta))
         if x > parameters.citySizeMax: 
             x = parameters.citySizeMax
         if x < 0: 
             x = 0
-        #print(prevNode.yCoord + r * math.sin(theta))
+        print(prevNode.yCoord + r * math.sin(theta))
         y = math.floor(prevNode.yCoord + r * math.sin(theta))
         if y > parameters.citySizeMax:
             y = parameters.citySizeMax
@@ -61,12 +64,10 @@ class Node:
             y = 0
         self.xCoord = x
         self.yCoord = y
-    
+        print(f"valid x is {x}, valid y is {y}")
 
     def __repr__(self):
         return str(self)
 
     def __str__(self):
         return (f"{self.xCoord}, {self.yCoord}, {self.openTime}, {self.closeTime}")
-
-        

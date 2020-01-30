@@ -13,10 +13,10 @@ class Problem:
             
             #drawing a uniform random variable as mean widens the crest of the normal curve to the bounds of the range
             mean = random.randint(0,parameters.dayLength/4) 
-            print(f"mean is {mean}")
+            #print(f"mean is {mean}")
             #halfRange means the open time will be solution delivery time - halfRange and close time will be solution delivery time + halfRange, giving the full range
             halfRange = parameters.minimumDeliveryTime + abs(math.floor(random.gauss(mean, parameters.timeSlotStandardDev)))
-            print(f"half range is {halfRange}, minimum delivery time is {parameters.minimumDeliveryTime}")
+            #print(f"half range is {halfRange}, minimum delivery time is {parameters.minimumDeliveryTime}")
             if delivery.time - halfRange < 0 : 
                 delivery.node.openTime = 0
             else: 
@@ -25,18 +25,19 @@ class Problem:
                 delivery.node.closeTime = parameters.dayLength
             else:
                 delivery.node.closeTime = delivery.time + halfRange
-            print(f"open time is {delivery.node.openTime}, solution delivery is {delivery.time}, close time is {delivery.node.closeTime}")
+            #print(f"open time is {delivery.node.openTime}, solution delivery is {delivery.time}, close time is {delivery.node.closeTime}")
     
     #coordinates are constrained by the distance a node can travel in the time until the next delivery occurs. A drone can wait if it is early. 
     def nodeCoordCalc(self, trip):
-        prevDelivery = trip.deliveries[0]
-        prevNode = prevDelivery.node
-        prevNode.random(0, parameters.citySizeMax)
-        restOfTrip = trip.deliveries[1:]
-
-        for delivery in restOfTrip:
-            timeSlotDifference = delivery.time - prevDelivery.time
-            maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)
+        print(f"considering trip {trip}")
+        prevNode = Node(xCoord = 0, yCoord = 0)
+        prevDelivery = None
+        for delivery in trip.deliveries:
+            if prevDelivery != None:
+                timeSlotDifference = delivery.time - prevDelivery.time
+                maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)
+            else:
+                maxTravelDistance = delivery.time * parameters.droneSpeed
             delivery.node.randomValidCoord(prevNode, maxTravelDistance)
             prevDelivery = delivery
             prevNode = prevDelivery.node

@@ -21,28 +21,32 @@ def populateCustomers():
     return customers
 
 if __name__ == "__main__":
-    import numpy as np
+    # import numpy as np
 
-    numberOfinstances = 100000
-    mu = 0
-    variance = 1
-    sigma = math.sqrt(variance)
+    # numberOfinstances = 100000
+    # mu = 0
+    # variance = 1
+    # sigma = math.sqrt(variance)
     
-    values = np.empty(numberOfinstances)
-    for i in range(numberOfinstances):
-        values[i] = random.gauss(0, parameters.timeSlotStandardDev)
-    #tools.plotValues(values)
+    # values = np.empty(numberOfinstances)
+    # for i in range(numberOfinstances):
+    #     values[i] = random.gauss(0, parameters.timeSlotStandardDev)
+    # #tools.plotValues(values)
 
-    values2 = np.empty(numberOfinstances)
-    for i in range(numberOfinstances):
-        mean = random.randint(0, parameters.dayLength/2)
-        values2[i] = random.gauss(mean, parameters.timeSlotStandardDev)
+    # values2 = np.empty(numberOfinstances)
+    # for i in range(numberOfinstances):
+    #     mean = random.randint(-parameters.dayLength/4, parameters.dayLength/4)
+    #     values2[i] = random.gauss(mean, parameters.timeSlotStandardDev)
     
-    values3 = np.empty(numberOfinstances)
-    for i in range(numberOfinstances):
-        values3[i] = abs(random.gauss(0, parameters.timeSlotStandardDev))
+    # values3 = np.empty(numberOfinstances)
+    # for i in range(numberOfinstances):
+    #     values3[i] = abs(random.gauss(0, parameters.timeSlotStandardDev))
     
-    tools.plotManyHists(values, values2, values3) #doesn't work because plots can only be 1 or 2 
+    # values4 = np.empty(numberOfinstances)
+    # for i in range(numberOfinstances):
+    #     mean = random.randint(0, parameters.dayLength/4)
+    #     values4[i] = abs(random.gauss(mean, parameters.timeSlotStandardDev)) + 10
+    # tools.plotManyHists(values, values2, values3, values4) #doesn't work because plots can only be 1 or 2 
 
 
     # rangeVal = max(values) - min(values)
