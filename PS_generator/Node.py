@@ -48,20 +48,23 @@ class Node:
     """
     def randomValidCoord(self, prevNode, maxDistance):
         print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
-        r = maxDistance * math.sqrt(random.random())
-        theta = random.random() * 2 * math.pi
-        print(prevNode.xCoord + r * math.cos(theta))
-        x = math.floor(prevNode.xCoord + r * math.cos(theta))
-        if x > parameters.citySizeMax: 
-            x = parameters.citySizeMax
-        if x < 0: 
-            x = 0
-        print(prevNode.yCoord + r * math.sin(theta))
-        y = math.floor(prevNode.yCoord + r * math.sin(theta))
-        if y > parameters.citySizeMax:
-            y = parameters.citySizeMax
-        if y < 0: 
-            y = 0
+        valid = False 
+        while not valid: 
+            r = maxDistance * math.sqrt(random.random())
+            theta = random.random() * 2 * math.pi
+            #print(prevNode.xCoord + r * math.cos(theta))
+            x = math.floor(prevNode.xCoord + r * math.cos(theta))
+            if x > parameters.citySizeMax: 
+                continue
+            if x < 0: 
+                continue
+            #print(prevNode.yCoord + r * math.sin(theta))
+            y = math.floor(prevNode.yCoord + r * math.sin(theta))
+            if y > parameters.citySizeMax:
+                continue
+            if y < 0: 
+                continue
+            valid = True
         self.xCoord = x
         self.yCoord = y
         print(f"valid x is {x}, valid y is {y}")

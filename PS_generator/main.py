@@ -21,6 +21,17 @@ def populateCustomers():
     return customers
 
 if __name__ == "__main__":
+    # import matplotlib.pyplot as plt
+    # #fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.set_ylim(0,6)
+    # ax.set_xlim(0,6)
+    # #tools.drawCircle(5,2,1, ax)
+    # #tools.drawCircle(3,2,2, ax)
+    # n1 = Node(xCoord = 5, yCoord = 2)
+    # n2 = Node(xCoord = 3, yCoord =2)
+    #tools.drawLine(n1,n2,ax)
+    #plt.show()
     # import numpy as np
 
     # numberOfinstances = 100000

@@ -2,7 +2,10 @@ import random
 import math
 import parameters
 from Node import Node
+import tools
+import matplotlib.pyplot as plt
 class Problem: 
+    depot = Node(xCoord = 0, yCoord = 0)
     def __init__(self, solution): 
         self.values = [] #only populated after 'generate' function has been called
         self.solution = solution 
@@ -28,25 +31,34 @@ class Problem:
             #print(f"open time is {delivery.node.openTime}, solution delivery is {delivery.time}, close time is {delivery.node.closeTime}")
     
     #coordinates are constrained by the distance a node can travel in the time until the next delivery occurs. A drone can wait if it is early. 
-    def nodeCoordCalc(self, trip):
+    def nodeCoordCalc(self, trip, ax):
+        colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
         print(f"considering trip {trip}")
-        prevNode = Node(xCoord = 0, yCoord = 0)
+        prevNode = self.depot
         prevDelivery = None
+        maxTravelDistance = trip.deliveries[0].time * parameters.droneSpeed
+        tools.drawCircle(self.depot, maxTravelDistance,ax, colourForTrip)
         for delivery in trip.deliveries:
             if prevDelivery != None:
                 timeSlotDifference = delivery.time - prevDelivery.time
                 maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)
-            else:
-                maxTravelDistance = delivery.time * parameters.droneSpeed
             delivery.node.randomValidCoord(prevNode, maxTravelDistance)
+            tools.drawCircle(delivery.node, maxTravelDistance, ax, colourForTrip)
+            tools.drawLine(prevNode, delivery.node, ax, colourForTrip)
             prevDelivery = delivery
             prevNode = prevDelivery.node
         
     def generate(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.set_ylim(-50,parameters.citySizeMax)
+        ax.set_xlim(-50,parameters.citySizeMax)
+        
         allTrips = self.solution.getAllTrips() #get list of all trips that are in the solution 
+        
         for trip in allTrips: 
             self.nodeTimeSlotCalc(trip)
-            self.nodeCoordCalc(trip)
+            self.nodeCoordCalc(trip, ax)
             numOfDeliveries = len(trip.deliveries)
             maxWeight = parameters.droneCapacity - (numOfDeliveries -1) #ensure that the max weight is set such that all packages have at least a weight of 1 
             for delivery in trip.deliveries:
@@ -55,7 +67,8 @@ class Problem:
                 delivery.weight = packageWeight
                 maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
         self.values = self.stringBuilder()
-    
+        tools.drawTrip(allTrips[0])
+        #plt.show()
     #outputs a string representation of the problem 
     def stringBuilder(self):
         outputElements = [] 
