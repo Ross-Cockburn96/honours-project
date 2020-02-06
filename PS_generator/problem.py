@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 class Problem: 
     depot = Node(xCoord = 0, yCoord = 0)
     def __init__(self, solution): 
+        random.seed(parameters.seed)
         self.values = [] #only populated after 'generate' function has been called
         self.solution = solution 
     

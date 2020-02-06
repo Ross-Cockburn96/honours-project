@@ -18,3 +18,5 @@ dayLength = 28800 #8 hours
 citySizeMax = 20000 #meters
 
 timeSlotStandardDev = 60 #the standard deviation used in the gaussian distribution to extract timeslot open ranges 
+
+seed = None #seed is None unless set otherwise 

@@ -9,6 +9,9 @@ from solution import Solution
 from problem import Problem 
 from Node import Node
 import tools 
+import sys 
+
+
 def populateCustomers():
     customers = [] #each customer is a node which has a demand of 1 specific package 
 
@@ -21,7 +24,10 @@ def populateCustomers():
     return customers
 
 if __name__ == "__main__":
-  
+    if len(sys.argv) > 1: 
+        parameters.seed = sys.argv[1] #takes the seed argument from command line 
+
+
     # import matplotlib.pyplot as plt
     # #fig = plt.figure()
     # ax = fig.add_subplot(111)

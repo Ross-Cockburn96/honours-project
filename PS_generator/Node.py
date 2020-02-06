@@ -2,7 +2,6 @@ import random
 import math
 import parameters
 
-
 #Nodes either represent customers or the depot 
 class Node:
 
@@ -12,6 +11,7 @@ class Node:
         self.id = id
         self.xCoord = xCoord #km
         self.yCoord = yCoord #km
+        random.seed(parameters.seed)
 
     def random(self, minVal, maxVal): 
         self.xCoord = random.randint(minVal, maxVal)

@@ -16,6 +16,7 @@ class Solution:
         self.drones = [] #trips are allocated to drones, a drone will have at least one trip 
         self.droneDeliveryAllocation = {} #dictionary containing temporary delivery assignment to drones (before trip construction)
         self.fitness = None
+        random.seed(parameters.seed)
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
         numOfDrones = random.randint(1, numOfTrips)
