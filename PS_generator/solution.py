@@ -20,8 +20,7 @@ class Solution:
         numOfTrips = random.randint(1,parameters.customers) 
         numOfDrones = random.randint(1, numOfTrips)
 
-        #not needed
-        #trips = [Trip(Delivery(self.customers.pop(random.randrange(len(self.customers))))) for _ in range(numOfTrips)] #ensure that each trip has at least one delviery 
+        
     
         #create deliveries for each customer (node) 
         self.deliveries = [Delivery(x) for x in self.customers]

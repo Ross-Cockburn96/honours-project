@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 import scipy.stats as stats
 import math
@@ -72,14 +73,55 @@ def drawLine(node1, node2, ax, colour='k'):
     y1 = node1.yCoord
     x2 = node2.xCoord
     y2 = node2.yCoord
-    ax.arrow(x1,y1, x2-x1,y2-y1, head_width = 500, head_length=500, fc=colour,ec=colour, length_includes_head=True)
+    #ax.arrow(x1,y1, x2-x1,y2-y1, head_width = 500, head_length=500, fc=colour,ec=colour, length_includes_head=True)
+    line = ax.plot((x1,x2),(y1, y2), colour)[0]
+    add_arrow(line, ax,color = colour)
+
+def add_arrow(line, ax, position=None, direction='right', size=15, color=None): #taken from https://stackoverflow.com/questions/34017866/arrow-on-a-line-plot-with-matplotlib
+    """
+    add an arrow to a line.
+
+    line:       Line2D object
+    position:   x-position of the arrow. If None, mean of xdata is taken
+    direction:  'left' or 'right'
+    size:       size of the arrow in fontsize points
+    color:      if None, line color is taken.
+    """
+    if color is None:
+        color = line.get_color()
+
+
+    xdata = line.get_xdata()
+    ydata = line.get_ydata()
+
+    
+    if position is None:
+        position = xdata.mean()
+        print(f"xData is {xdata} and position is {position}")
+    # find closest index
+    start_ind = np.argmin(np.absolute(xdata - position))
+    print(f"start index is {start_ind}")
+    if direction == 'right':
+        end_ind = start_ind + 1
+    else:
+        end_ind = start_ind - 1
+
+    ax.annotate('',
+        xytext=(xdata[start_ind], ydata[start_ind]),
+        xy=(xdata[end_ind], ydata[end_ind]),
+        arrowprops=dict(arrowstyle="->", color=color),
+        size=size
+    )
+
+
+
 
 def drawTrip(trip):
     fig = plt.figure()
     ax = plt.axes()
     ax.set_ylim(0,parameters.citySizeMax)
     ax.set_xlim(0,parameters.citySizeMax)
-
+    ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
     depot = Node(xCoord = 0, yCoord = 0)
 
     #iterates through trip deliveries and draws the previous node and potential delivery circle based on the current node 
