@@ -50,7 +50,7 @@ class Node:
     calculates valid coordinates for the current node given the previous node in a trip and maximum distance (radius)
     """
     def randomValidCoord(self, prevNode, maxDistance):
-        print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
+        #print(f"previous node = {prevNode}, maxDistance = {maxDistance}")
         valid = False 
         while not valid: 
             r = maxDistance * math.sqrt(random.random())
@@ -70,7 +70,6 @@ class Node:
             valid = True
         self.xCoord = x
         self.yCoord = y
-        print(f"valid x is {x}, valid y is {y}")
 
     def __repr__(self):
         return str(self)

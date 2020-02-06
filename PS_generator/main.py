@@ -99,6 +99,7 @@ if __name__ == "__main__":
     print("Generating Problem...")
     problem = Problem(solution1)
     problem.generate()
+    problem.writeToFile()
     solution1.evaluate(problem)
     print(f"solution1 fitness is {solution1.fitness}")
 

@@ -34,7 +34,7 @@ class Problem:
     #coordinates are constrained by the distance a node can travel in the time until the next delivery occurs. A drone can wait if it is early. 
     def nodeCoordCalc(self, trip, ax):
         colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
-        print(f"considering trip {trip}")
+        #print(f"considering trip {trip}")
         prevNode = self.depot
         prevDelivery = None
         maxTravelDistance = trip.deliveries[0].time * parameters.droneSpeed
@@ -87,6 +87,10 @@ class Problem:
             outputElements.append(delivery.node.id)
             outputElements.append(delivery.weight)
         return ", ".join([str(x) for x in outputElements])
+
+    def writeToFile(self): 
+        with open("problem.txt", "a+") as file: 
+            file.write(self.values)
 
     def __repr__(self):
         return str(self)
