@@ -21,6 +21,7 @@ def populateCustomers():
     return customers
 
 if __name__ == "__main__":
+  
     # import matplotlib.pyplot as plt
     # #fig = plt.figure()
     # ax = fig.add_subplot(111)

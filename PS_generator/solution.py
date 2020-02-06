@@ -39,10 +39,11 @@ class Solution:
             self.droneDeliveryAllocation[droneAllocation].append(self.deliveries[idx])
 
         
+        #create trips for each drone 
         for droneNo, assignedDeliveries in self.droneDeliveryAllocation.items():
             assignedDeliveries.sort(key=lambda x: x.time) #sort each drones deliveries so trips are in order
             
-            #create trips within drone 
+            #create trips within drone and add deliveries to trips
             trips = [] 
             while len(assignedDeliveries) > 0 :
                 if parameters.droneCargoSlots > len(assignedDeliveries):

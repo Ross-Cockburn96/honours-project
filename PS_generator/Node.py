@@ -17,6 +17,9 @@ class Node:
         self.xCoord = random.randint(minVal, maxVal)
         self.yCoord = random.randint(minVal, maxVal)
 
+    def getCoords(self): #returns a tuple for x and y coords 
+        return self.xCoord, self.yCoord
+
     @classmethod
     def deepCopy(cls,node1, node2):
         node2.xCoord = node1.xCoord

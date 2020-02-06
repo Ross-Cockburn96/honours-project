@@ -37,23 +37,23 @@ class Problem:
         prevNode = self.depot
         prevDelivery = None
         maxTravelDistance = trip.deliveries[0].time * parameters.droneSpeed
-        tools.drawCircle(self.depot, maxTravelDistance,ax, colourForTrip)
+        #tools.drawCircle(self.depot, maxTravelDistance,ax, colourForTrip)
         for delivery in trip.deliveries:
             if prevDelivery != None:
                 timeSlotDifference = delivery.time - prevDelivery.time
                 maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)
             delivery.node.randomValidCoord(prevNode, maxTravelDistance)
-            tools.drawCircle(delivery.node, maxTravelDistance, ax, colourForTrip)
-            tools.drawLine(prevNode, delivery.node, ax, colourForTrip)
+            #tools.drawCircle(delivery.node, maxTravelDistance, ax, colourForTrip)
+            #tools.drawLine(prevNode, delivery.node, ax, colourForTrip)
             prevDelivery = delivery
             prevNode = prevDelivery.node
-        
+
     def generate(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.set_ylim(-50,parameters.citySizeMax)
-        ax.set_xlim(-50,parameters.citySizeMax)
-        
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111)
+        # ax.set_ylim(-50,parameters.citySizeMax)
+        # ax.set_xlim(-50,parameters.citySizeMax)
+        ax= 1
         allTrips = self.solution.getAllTrips() #get list of all trips that are in the solution 
         
         for trip in allTrips: 
@@ -67,7 +67,7 @@ class Problem:
                 delivery.weight = packageWeight
                 maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
         self.values = self.stringBuilder()
-        tools.drawTrip(allTrips[0])
+        tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         #plt.show()
     #outputs a string representation of the problem 
     def stringBuilder(self):

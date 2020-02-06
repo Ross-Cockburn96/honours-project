@@ -55,41 +55,50 @@ def plotManyHists(*args):
 def drawCircle(node,r,ax, colour='k', restricted=True):
     x = node.xCoord
     y = node.yCoord
-    print(f"x is {x}, y is {y}")
+    print(f"x is {x}, y is {y}, r is {r}")
     ax.plot(x,y,'ro')
     #only add the valid radius if it is small enough to be of interest/visible and if restricted circle drawing is on
     if not restricted: 
+        print("drawing circle")
         circle = plt.Circle((x,y),r,color=colour, fill = False, linestyle='--')
         ax.add_artist(circle)
     elif r < parameters.citySizeMax:
         circle = plt.Circle((x,y),r,color=colour, fill = False, linestyle='--')
         ax.add_artist(circle)
-    
+    else:
+        print("not drawing circle")
     
 def drawLine(node1, node2, ax, colour='k'):
     x1 = node1.xCoord
     y1 = node1.yCoord
     x2 = node2.xCoord
     y2 = node2.yCoord
-    ax.arrow(x1,y1, x2-x1,y2-y1, head_width = .2, head_length=.3, fc=colour,ec=colour, length_includes_head=True)
+    ax.arrow(x1,y1, x2-x1,y2-y1, head_width = 500, head_length=500, fc=colour,ec=colour, length_includes_head=True)
 
 def drawTrip(trip):
     fig = plt.figure()
     ax = plt.axes()
     ax.set_ylim(0,parameters.citySizeMax)
     ax.set_xlim(0,parameters.citySizeMax)
-    prevNode = Node(xCoord = 0, yCoord = 0)
-    prevDelivery = None
-    maxTravelDistance = trip.deliveries[0].time * parameters.droneSpeed
-    drawCircle(prevNode, maxTravelDistance, ax ,restricted = False)
-   
-    for delivery in  trip.deliveries:
-        if prevDelivery != None:
-            timeSlotDifference = delivery.time - prevDelivery.time
-            maxTravelDistance = (timeSlotDifference * parameters.droneSpeed)
-        print(f"printing node {delivery.node}")
-        drawCircle(delivery.node, maxTravelDistance, ax, restricted = False)
-        drawLine(prevNode, delivery.node, ax)
-        prevNode = delivery.node
-        prevDelivery = delivery
+
+    depot = Node(xCoord = 0, yCoord = 0)
+
+    #iterates through trip deliveries and draws the previous node and potential delivery circle based on the current node 
+    for delivery in trip.deliveries:
+        if delivery.prevDelivery == None: #if this is the first delivery of trip then use depot as previous node 
+            maxTravelDistance = delivery.time * parameters.droneSpeed
+            drawCircle(depot, maxTravelDistance, ax, restricted = False)
+            drawLine(depot, delivery.node, ax) #draw line from depot
+        else:
+            timeSlotDifference = delivery.time - delivery.prevDelivery.time
+            maxTravelDistance = timeSlotDifference * parameters.droneSpeed
+            drawLine(delivery.prevDelivery.node, delivery.node, ax)
+            drawCircle(delivery.prevDelivery.node, maxTravelDistance, ax, restricted = False) #the max distance of this should be the next node not this one 
+    
+    x,y = trip.deliveries[-1].node.getCoords()
+    ax.plot(x,y,'ro') #plot the last node 
+    drawLine(trip.deliveries[-2].node, trip.deliveries[-1].node, ax) #draw line from 2nd last node to last node 
+
+    drawLine(trip.deliveries[-1].node, depot, ax) #draw line from last node to depot
+
     plt.show()

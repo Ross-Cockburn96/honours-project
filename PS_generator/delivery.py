@@ -1,9 +1,11 @@
 class Delivery:
 
-    def __init__(self, node, time=None, weight=None):
+    def __init__(self, node, prevDelivery = None, nextDelivery = None, time=None, weight=None):
         self.node = node
         self.time = time #seconds
         self.weight = weight 
+        self.prevDelivery = prevDelivery
+        self.nextDelivery = nextDelivery
 
     def __repr__(self):
         return (f"Node: {str(self.node)}, Time: {self.time}, Weight: {self.weight}")
