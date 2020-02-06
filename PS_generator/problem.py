@@ -89,7 +89,8 @@ class Problem:
         return ", ".join([str(x) for x in outputElements])
 
     def writeToFile(self): 
-        with open("problem.txt", "a+") as file: 
+        with open("problem.txt", "w") as file: 
+            file.seek(0)
             file.write(self.values)
 
     def __repr__(self):

@@ -94,6 +94,7 @@ if __name__ == "__main__":
     print("Generating Solution...")
     solution1 = Solution(customers)
     solution1.generate()
+    solution1.writeToFile()
     print(solution1)
     
     print("Generating Problem...")

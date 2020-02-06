@@ -8,14 +8,13 @@ from Node import Node
 
 
 class Solution:
-   
-
     def __init__(self, customers): 
         self.customers = customers #customers are represented by nodes 
         self.deliveries = [] #to be randomly allocated a delivery time and then distributed to trips
         self.drones = [] #trips are allocated to drones, a drone will have at least one trip 
         self.droneDeliveryAllocation = {} #dictionary containing temporary delivery assignment to drones (before trip construction)
         self.fitness = None
+        self.values = [] #populated once generate has been called 
         random.seed(parameters.seed)
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
@@ -55,7 +54,24 @@ class Solution:
                 trips.append(Trip(*assignedDeliveries[:numberInTrip]))
                 del assignedDeliveries[:numberInTrip]
             self.drones.insert(droneNo, Drone(*trips))
+        self.values = self.stringBuilder()
     
+    def stringBuilder(self): 
+        outputElements = []
+        for drone in self.drones: 
+            outputElements.append(len(drone.trips))
+            for trip in drone.trips:
+                outputElements.append(len(trip.deliveries))
+                for delivery in trip.deliveries:
+                    outputElements.append(delivery.node.id)
+                    outputElements.append(delivery.time)
+        return ",".join([str(x) for x in outputElements])
+
+    def writeToFile(self):
+        with open("solution.txt", "w") as file:
+            file.seek(0)
+            file.write(self.values)
+
     def getAllDeliveries(self): 
         deliveries = [delivery for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]        
         return deliveries
@@ -119,25 +135,8 @@ class Solution:
         self.fitness = solutionScore
     
     def __repr__(self):
-        outputElements = []
-        for drone in self.drones: 
-            outputElements.append(len(drone.trips))
-            for trip in drone.trips:
-                outputElements.append(len(trip.deliveries))
-                for delivery in trip.deliveries:
-                    outputElements.append(delivery.node.id)
-                    outputElements.append(delivery.time)
-        return ",".join([str(x) for x in outputElements])
+        return str(self.values)
 
 
     def __str__(self):
-        outputElements = []
-        for drone in self.drones: 
-            outputElements.append(len(drone.trips))
-            for trip in drone.trips:
-                outputElements.append(len(trip.deliveries))
-                for delivery in trip.deliveries: 
-                    outputElements.append(delivery.node.id)
-                    outputElements.append(delivery.time)
-            outputElements.append("\n")
-        return ("".join([(str(x) + ", " if x != "\n" else "\n") for x in outputElements])) 
+        return self.values 
