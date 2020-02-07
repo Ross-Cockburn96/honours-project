@@ -86,11 +86,10 @@ def drawLine(node1, node2, ax, colour='k'):
     midx = sum(xdata)/2
     midy = sum(ydata)/2
 
-    #insert into data point arrays
-    xdata = np.insert(xdata, 1, (midx, midx + (unitX*200))) 
-    ydata = np.insert(ydata, 1, (midy, midy + (unitY*200)))
+    #insert midpoint and (midpoint + small value) to plotting arrays so arrow can be annotated at the coords
+    xdata = np.insert(xdata, 1, (midx, midx + (unitX*10))) 
+    ydata = np.insert(ydata, 1, (midy, midy + (unitY*10)))
 
-    print(f"xdata = {xdata}, ydata = {ydata}")
     line = ax.plot(xdata, ydata, colour)[0]
 
     add_arrow(line, ax,color = colour)
@@ -113,21 +112,17 @@ def add_arrow(line, ax, position=None, direction='right', size=15, color=None): 
     xdata = line.get_xdata()
     ydata = line.get_ydata()
 
-    print(f"xdata = {xdata}, ydata = {ydata}")
 
     if position is None:
         position = xdata.mean()
-        print(f"xData is {xdata} and position is {position}")
 
     #find closest index
     start_ind = np.argmin(np.absolute(xdata - position))
-    print(f"start index is {start_ind}")
     
     if direction == 'right':
         end_ind = start_ind + 1
     else:
         end_ind = start_ind - 1
-    print(f"end in {end_ind}")
     ax.annotate('',
         xytext=(xdata[start_ind], ydata[start_ind]),
         xy=(xdata[end_ind], ydata[end_ind]),
