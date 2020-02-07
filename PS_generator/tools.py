@@ -69,12 +69,30 @@ def drawCircle(node,r,ax, colour='k', restricted=True):
         print("not drawing circle")
     
 def drawLine(node1, node2, ax, colour='k'):
-    x1 = node1.xCoord
-    y1 = node1.yCoord
-    x2 = node2.xCoord
-    y2 = node2.yCoord
-    #ax.arrow(x1,y1, x2-x1,y2-y1, head_width = 500, head_length=500, fc=colour,ec=colour, length_includes_head=True)
-    line = ax.plot((x1,x2),(y1, y2), colour)[0]
+    x1, y1 = node1.getCoords()
+    x2, y2 = node2.getCoords()
+
+    xdata = np.array([x1,x2])
+    ydata = np.array([y1,y2])
+
+    #calculate unit vector 
+    x = xdata[1] - xdata[0] 
+    y = ydata[1] - ydata[0] 
+    magVector = math.sqrt(x**2 + y**2)
+    unitX = x/magVector
+    unitY = y/magVector
+
+    #find midpoint 
+    midx = sum(xdata)/2
+    midy = sum(ydata)/2
+
+    #insert into data point arrays
+    xdata = np.insert(xdata, 1, (midx, midx + (unitX*200))) 
+    ydata = np.insert(ydata, 1, (midy, midy + (unitY*200)))
+
+    print(f"xdata = {xdata}, ydata = {ydata}")
+    line = ax.plot(xdata, ydata, colour)[0]
+
     add_arrow(line, ax,color = colour)
 
 def add_arrow(line, ax, position=None, direction='right', size=15, color=None): #taken from https://stackoverflow.com/questions/34017866/arrow-on-a-line-plot-with-matplotlib
@@ -91,21 +109,25 @@ def add_arrow(line, ax, position=None, direction='right', size=15, color=None): 
         color = line.get_color()
 
 
+    #get point data from line
     xdata = line.get_xdata()
     ydata = line.get_ydata()
 
-    
+    print(f"xdata = {xdata}, ydata = {ydata}")
+
     if position is None:
         position = xdata.mean()
         print(f"xData is {xdata} and position is {position}")
-    # find closest index
+
+    #find closest index
     start_ind = np.argmin(np.absolute(xdata - position))
     print(f"start index is {start_ind}")
+    
     if direction == 'right':
         end_ind = start_ind + 1
     else:
         end_ind = start_ind - 1
-
+    print(f"end in {end_ind}")
     ax.annotate('',
         xytext=(xdata[start_ind], ydata[start_ind]),
         xy=(xdata[end_ind], ydata[end_ind]),

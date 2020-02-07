@@ -1,8 +1,12 @@
+import parameters 
+
 class Drone:
 
     #takes either an individual trip or a list of trips as argument 
     def __init__(self, *args):
         self.trips = list(args)
+        self.charge = parameters.batteryCharge
+
     def addTrip(self, trip):
         self.trips.append(trip)
 

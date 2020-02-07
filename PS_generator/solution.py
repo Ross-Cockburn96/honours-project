@@ -18,7 +18,7 @@ class Solution:
         random.seed(parameters.seed)
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
-        numOfDrones = random.randint(1, numOfTrips)
+        numOfDrones = random.randint(1, min(numOfTrips, parameters.maxDrones))
 
         
     

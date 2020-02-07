@@ -69,6 +69,14 @@ class Problem:
                 maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
         self.values = self.stringBuilder()
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
+        
+        #find where drones run out of charge
+
+        # for drone in self.solution.drones: 
+        #     for delivery in drone.getAllDeliveries():
+
+
+        
         #plt.show()
     #outputs a string representation of the problem 
     def stringBuilder(self):
