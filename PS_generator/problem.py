@@ -4,6 +4,7 @@ import parameters
 from Node import Node
 import tools
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 class Problem: 
     depot = Node(xCoord = 0, yCoord = 0)
     def __init__(self, solution): 
@@ -70,14 +71,78 @@ class Problem:
         self.values = self.stringBuilder()
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         
+        ax = plt.axes()
+        ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
         #find where drones run out of charge
+        for drone in self.solution.drones: 
+            for delivery in drone.getAllDeliveries():
+                if delivery.prevDelivery != None:  #if the delivery is not first in a trip
+                    drone.charge -= (delivery.time - delivery.prevDelivery.time)
+                    if drone.charge < 0:
+                        distanceTraveled = ((delivery.time - delivery.prevDelivery.time) + drone.charge) * parameters.droneSpeed #plus because charge is negative 
 
-        # for drone in self.solution.drones: 
-        #     for delivery in drone.getAllDeliveries():
+                        unitX, unitY = self.calculateUnitVector(delivery.prevDelivery.node, delivery.node)
+                        
+                        tools.drawLine(delivery.prevDelivery.node, delivery.node, ax)
 
+                        originX, originY = delivery.prevDelivery.node.getCoords() 
+                        print(f"battery depleted on way from {delivery.prevDelivery.node} to {delivery.node}, made it to {originX + (unitX * distanceTraveled)}, {originY + (unitY * distanceTraveled)}")
+                        print(f"or {min(originX + (unitX * distanceTraveled), delivery.node.xCoord)}, {min(originY + (unitY * distanceTraveled), delivery.node.yCoord)}")
+                        if originX + (unitX * distanceTraveled) in range(originX, delivery.node.xCoord + 1):
+                            plotX = originX + (unitX * distanceTraveled)
+                        else: 
+                            plotX = delivery.node.xCoord
+                        
+                        if originY + (unitY * distanceTraveled) in range(originY, delivery.node.yCoord+1):
+                            plotY = originY + (unitY * distanceTraveled)
+                        else:
+                            plotY = delivery.node.yCoord
 
-        
-        #plt.show()
+                        ax.plot(plotX, plotY, 'ro')
+                        drone.charge = parameters.batteryCharge #reset charge 
+                else: #if the delivery is first in a trip 
+                    drone.charge -= delivery.time
+                    if drone.charge < 0: 
+                        distanceTraveled = (delivery.time + drone.charge) * parameters.droneSpeed
+                        
+                        unitX, unitY = self.calculateUnitVector(self.depot, delivery.node)
+
+                        tools.drawLine(self.depot, delivery.node, ax)
+
+                        originX, originY = self.depot.getCoords()  # 0,0
+                        print(f"battery depleted on way from {self.depot} to {delivery.node}, made it to {originX + (unitX * distanceTraveled)}, {originY + (unitY * distanceTraveled)}")
+                        print(f"or {min(originX + (unitX * distanceTraveled), delivery.node.xCoord)}, {min(originY + (unitY * distanceTraveled), delivery.node.yCoord)}")
+                        if originX + (unitX * distanceTraveled) in range(originX, delivery.node.xCoord + 1):
+                            plotX = originX + (unitX * distanceTraveled)
+                        else: 
+                            plotX = delivery.node.xCoord
+                        
+                        if originY + (unitY * distanceTraveled) in range(originY, delivery.node.yCoord+1):
+                            plotY = originY + (unitY * distanceTraveled)
+                        else:
+                            plotY = delivery.node.yCoord
+
+                        ax.plot(plotX, plotY, 'ro')
+                        drone.charge = parameters.batteryCharge
+                
+
+                
+
+        plt.show()
+    def calculateUnitVector(self,node1, node2):
+        x1, y1 = node1.getCoords() 
+        x2, y2 = node2.getCoords()
+
+        vectorX = x2 - x1 
+        vectorY = y2 - y1
+
+        magVector = math.sqrt(vectorX**2 + vectorY**2)
+
+        unitX = vectorX/magVector
+        unitY = vectorY/magVector
+
+        return (unitX, unitY)
+
     #outputs a string representation of the problem 
     def stringBuilder(self):
         outputElements = [] 

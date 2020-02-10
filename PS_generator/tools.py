@@ -132,10 +132,11 @@ def add_arrow(line, ax, position=None, direction='right', size=15, color=None): 
 
 
 
-
 def drawTrip(trip):
     fig = plt.figure()
     ax = plt.axes()
+    print(ax)
+    plt.sca(ax)
     ax.set_ylim(0,parameters.citySizeMax)
     ax.set_xlim(0,parameters.citySizeMax)
     ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
