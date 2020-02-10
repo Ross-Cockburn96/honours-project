@@ -5,6 +5,9 @@ from Node import Node
 import tools
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import numpy as np
+from sklearn.cluster import KMeans 
+from scipy.spatial.distance import cdist
 class Problem: 
     depot = Node(xCoord = 0, yCoord = 0)
     def __init__(self, solution): 
@@ -73,6 +76,8 @@ class Problem:
         
         ax = plt.axes()
         ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
+
+        depletionPoints = [] #this is a list of coordinates where drones have ran out of charge, list of tuples
         #find where drones run out of charge
         for drone in self.solution.drones: 
             for delivery in drone.getAllDeliveries():
@@ -86,8 +91,7 @@ class Problem:
                         tools.drawLine(delivery.prevDelivery.node, delivery.node, ax)
 
                         originX, originY = delivery.prevDelivery.node.getCoords() 
-                        print(f"battery depleted on way from {delivery.prevDelivery.node} to {delivery.node}, made it to {originX + (unitX * distanceTraveled)}, {originY + (unitY * distanceTraveled)}")
-                        print(f"or {min(originX + (unitX * distanceTraveled), delivery.node.xCoord)}, {min(originY + (unitY * distanceTraveled), delivery.node.yCoord)}")
+                        
                         if originX + (unitX * distanceTraveled) in range(originX, delivery.node.xCoord + 1):
                             plotX = originX + (unitX * distanceTraveled)
                         else: 
@@ -99,6 +103,7 @@ class Problem:
                             plotY = delivery.node.yCoord
 
                         ax.plot(plotX, plotY, 'ro')
+                        depletionPoints.append((plotX, plotY))
                         drone.charge = parameters.batteryCharge #reset charge 
                 else: #if the delivery is first in a trip 
                     drone.charge -= delivery.time
@@ -110,8 +115,7 @@ class Problem:
                         tools.drawLine(self.depot, delivery.node, ax)
 
                         originX, originY = self.depot.getCoords()  # 0,0
-                        print(f"battery depleted on way from {self.depot} to {delivery.node}, made it to {originX + (unitX * distanceTraveled)}, {originY + (unitY * distanceTraveled)}")
-                        print(f"or {min(originX + (unitX * distanceTraveled), delivery.node.xCoord)}, {min(originY + (unitY * distanceTraveled), delivery.node.yCoord)}")
+                        
                         if originX + (unitX * distanceTraveled) in range(originX, delivery.node.xCoord + 1):
                             plotX = originX + (unitX * distanceTraveled)
                         else: 
@@ -123,12 +127,46 @@ class Problem:
                             plotY = delivery.node.yCoord
 
                         ax.plot(plotX, plotY, 'ro')
+                        depletionPoints.append((plotX,plotY))
                         drone.charge = parameters.batteryCharge
-                
-
-                
-
+        
+        #carry out k-means clustering 
+        clusterAmount = self.calculateNumberOfClusters(depletionPoints)
+        depletionPointArray = np.array(depletionPoints).reshape(len(depletionPoints), 2)
+        kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
+        print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
+        for vals in kmeans.cluster_centers_:
+            x,y = vals
+            ax.plot(x,y,'yo')
         plt.show()
+
+    #uses elbow method to calculate the optimal number of clusters
+    def calculateNumberOfClusters(self, points):
+        pointArray = np.array(points).reshape(len(points), 2)
+        
+        distortions = [] 
+        K = range(1,10) #
+
+        for k in K:
+            kmeanModel = KMeans(n_clusters=k).fit(pointArray)
+            kmeanModel.fit(pointArray)
+            distortions.append(sum(np.min(cdist(pointArray, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / pointArray.shape[0])
+        
+        numberOfClusters = 10 #maximum number of clusters possible 
+
+        #iterate through the distortion values and compare the the previous value (accessed through idx)
+        for idx, val in enumerate(distortions[1:]): 
+            if val/distortions[idx] > .85: 
+                numberOfClusters = idx + 1 #select the number of clusters as the previous distortion values index (+1 because python indexes from 0)
+                break #end loop when elbow is found 
+        # plt.clf()
+        # plt.plot(K, distortions, 'bx-')
+        # plt.xlabel('k')
+        # plt.ylabel('Distortion')
+        # plt.title('The Elbow Method showing the optimal k')
+        # plt.show()
+        return numberOfClusters
+
     def calculateUnitVector(self,node1, node2):
         x1, y1 = node1.getCoords() 
         x2, y2 = node2.getCoords()
