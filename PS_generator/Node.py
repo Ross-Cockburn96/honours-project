@@ -76,3 +76,11 @@ class Node:
 
     def __str__(self):
         return (f"{self.xCoord}, {self.yCoord}, {self.openTime}, {self.closeTime}")
+
+"""
+Inherits from node, this object represents recharging stations. 
+"""
+class RechargeNode(Node): 
+    def __init__(self, id= 0, xCoord = None, yCoord = None, capacity):
+        super().__init__(id, xCoord, yCoord)
+        self.capacity = capacity

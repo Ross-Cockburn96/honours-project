@@ -55,6 +55,13 @@ class Solution:
             self.drones.insert(droneNo, Drone(*trips))
         self.values = self.stringBuilder()
     
+    '''
+    takes a list of all existing charging station nodes as well as a list of the deliveries that ran out of charge.
+    changes the solution such that the trips include stops at the charging stations 
+    '''
+    def includeChargingStations(chargingStations, deliveries)
+        pass
+
     def stringBuilder(self): 
         outputElements = []
         for drone in self.drones: 
