@@ -18,10 +18,9 @@ class Solution:
         random.seed(parameters.seed)
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
-        numOfDrones = random.randint(1, numOfTrips)
+        numOfDrones = random.randint(1, min(numOfTrips, parameters.maxDrones))
 
-        #not needed
-        #trips = [Trip(Delivery(self.customers.pop(random.randrange(len(self.customers))))) for _ in range(numOfTrips)] #ensure that each trip has at least one delviery 
+        
     
         #create deliveries for each customer (node) 
         self.deliveries = [Delivery(x) for x in self.customers]

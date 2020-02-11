@@ -11,7 +11,8 @@ from Node import Node
 import tools 
 import sys 
 
-
+from matplotlib import pyplot as plt
+import numpy as np
 def populateCustomers():
     customers = [] #each customer is a node which has a demand of 1 specific package 
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: 
         parameters.seed = sys.argv[1] #takes the seed argument from command line 
 
-
+    
     # import matplotlib.pyplot as plt
     # #fig = plt.figure()
     # ax = fig.add_subplot(111)

@@ -1,7 +1,9 @@
 
 
-drones = 1
+maxDrones = 10
 droneSpeed = 10 #m/s
+batteryCharge = 3600 #seconds - 1 hour of travel  
+
 
 unit = 10 #represents a unit cell in the city which is a NxN grid of cells (meters)
 #Since the city is essentially a grid with each cell being a 1km^2 area and node coordinates are whole numebrs, 
