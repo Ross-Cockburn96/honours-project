@@ -36,7 +36,9 @@ class Problem:
             #print(f"open time is {delivery.node.openTime}, solution delivery is {delivery.time}, close time is {delivery.node.closeTime}")
     
     #coordinates are constrained by the distance a node can travel in the time until the next delivery occurs. A drone can wait if it is early. 
-    def nodeCoordCalc(self, trip, ax):
+    def nodeCoordCalc(self, trip, ax): 
+        #TODO:
+        #FIRST DELIVERY IN TRIP NEEDS TO CONSIDER WHAT TIME THE PREVIOUS TRIP WAS COMPLETED 
         colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
         #print(f"considering trip {trip}")
         prevNode = self.depot

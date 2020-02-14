@@ -28,7 +28,19 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: 
         parameters.seed = sys.argv[1] #takes the seed argument from command line 
 
-    
+    ax = plt.axes()
+
+    radius = 2 
+    centerX = 0
+    centerY = 0 
+
+    for _ in range(1000):
+        randomVal = random.random()
+        angle = 2*math.pi*randomVal
+        x = radius * math.cos(angle)
+        y = radius * math.sin(angle)
+        ax.plot(x,y,'ko')
+    plt.show()
     # import matplotlib.pyplot as plt
     # #fig = plt.figure()
     # ax = fig.add_subplot(111)
