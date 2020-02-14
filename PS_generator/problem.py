@@ -1,7 +1,7 @@
 import random
 import math
 import parameters
-from Node import Node
+from Node import Node, RechargeNode
 import tools
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -74,9 +74,23 @@ class Problem:
         self.values = self.stringBuilder()
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         
+        depletionPoints, ax = self.calculateDepletionPoints()
+        #carry out k-means clustering 
+        clusterAmount = self.calculateNumberOfClusters(depletionPoints)
+        depletionPointArray = np.array(depletionPoints).reshape(len(depletionPoints), 2)
+        kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
+        #print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
+        for vals in kmeans.cluster_centers_:
+            x,y = vals
+            
+            ax.plot(x,y,'yo')
+        plt.show()
+
+    def calculateDepletionPoints(self):
         ax = plt.axes()
         ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
 
+       
         depletionPoints = [] #this is a list of coordinates where drones have ran out of charge, list of tuples
         #find where drones run out of charge
         for drone in self.solution.drones: 
@@ -129,16 +143,7 @@ class Problem:
                         ax.plot(plotX, plotY, 'ro')
                         depletionPoints.append((plotX,plotY))
                         drone.charge = parameters.batteryCharge
-        
-        #carry out k-means clustering 
-        clusterAmount = self.calculateNumberOfClusters(depletionPoints)
-        depletionPointArray = np.array(depletionPoints).reshape(len(depletionPoints), 2)
-        kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
-        print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
-        for vals in kmeans.cluster_centers_:
-            x,y = vals
-            ax.plot(x,y,'yo')
-        plt.show()
+        return depletionPoints, ax
 
     #uses elbow method to calculate the optimal number of clusters
     def calculateNumberOfClusters(self, points):
@@ -155,6 +160,8 @@ class Problem:
         numberOfClusters = 10 #maximum number of clusters possible 
 
         #iterate through the distortion values and compare the the previous value (accessed through idx)
+        #distortion is calculated as the sum of the squared distances from each point to its assigned center
+        #the elbow is where distortion rate plateaus as more cluster centers get added
         for idx, val in enumerate(distortions[1:]): 
             if val/distortions[idx] > .85: 
                 numberOfClusters = idx + 1 #select the number of clusters as the previous distortion values index (+1 because python indexes from 0)
