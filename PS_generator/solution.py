@@ -90,6 +90,8 @@ class Solution:
         nodes = [delivery.node for drone in self.drones for trip in drone.trips for delivery in trip.deliveries]
         return nodes
 
+    #probably needs to be re-written 
+    #take into account the distance from the depot to the first delivery and the distance from the last delivery to the depot
     def evaluate(self, problem): #takes in a string which represents a problem vector as argument
         solutionVals = repr(self).split(",")
         problemVals = str(problem).split(", ") #str conversion not needed if argument is string

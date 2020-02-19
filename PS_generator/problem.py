@@ -84,9 +84,11 @@ class Problem:
         #print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
         for vals in kmeans.cluster_centers_:
             x,y = vals
-            
             ax.plot(x,y,'yo')
         plt.show()
+
+        print("Drawing Drone Trips")
+        tools.drawDroneTrips(self.solution.drones[0])
 
     def calculateDepletionPoints(self):
         ax = plt.axes()

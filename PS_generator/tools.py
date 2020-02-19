@@ -4,6 +4,7 @@ import numpy as np
 import scipy.stats as stats
 import math
 import parameters
+import random
 from Node import Node
 
 def plotValues(values):
@@ -55,18 +56,14 @@ def plotManyHists(*args):
 def drawCircle(node,r,ax, colour='k', restricted=True):
     x = node.xCoord
     y = node.yCoord
-    print(f"x is {x}, y is {y}, r is {r}")
     ax.plot(x,y,'ro')
     #only add the valid radius if it is small enough to be of interest/visible and if restricted circle drawing is on
     if not restricted: 
-        print("drawing circle")
         circle = plt.Circle((x,y),r,color=colour, fill = False, linestyle='--')
         ax.add_artist(circle)
     elif r < parameters.citySizeMax:
         circle = plt.Circle((x,y),r,color=colour, fill = False, linestyle='--')
         ax.add_artist(circle)
-    else:
-        print("not drawing circle")
     
 def drawLine(node1, node2, ax, colour='k'):
     x1, y1 = node1.getCoords()
@@ -87,11 +84,11 @@ def drawLine(node1, node2, ax, colour='k'):
     midy = sum(ydata)/2
 
     #insert midpoint and (midpoint + small value) to plotting arrays so arrow can be annotated at the coords
-    xdata = np.insert(xdata, 1, (midx, midx + (unitX*10))) 
-    ydata = np.insert(ydata, 1, (midy, midy + (unitY*10)))
+    
+    xdata = np.insert(xdata, 1, (midx, midx + (unitX*3))) 
+    ydata = np.insert(ydata, 1, (midy, midy + (unitY*3)))
 
-    line = ax.plot(xdata, ydata, colour)[0]
-
+    line = ax.plot(xdata, ydata, color = colour)[0] #plot function returns a list of lines but there is only ever 1 line 
     add_arrow(line, ax,color = colour)
 
 def add_arrow(line, ax, position=None, direction='right', size=15, color=None): #taken from https://stackoverflow.com/questions/34017866/arrow-on-a-line-plot-with-matplotlib
@@ -106,7 +103,6 @@ def add_arrow(line, ax, position=None, direction='right', size=15, color=None): 
     """
     if color is None:
         color = line.get_color()
-
 
     #get point data from line
     xdata = line.get_xdata()
@@ -131,12 +127,13 @@ def add_arrow(line, ax, position=None, direction='right', size=15, color=None): 
     )
 
 
-
-def drawTrip(trip):
-    fig = plt.figure()
-    ax = plt.axes()
-    print(ax)
-    plt.sca(ax)
+'''
+If axes is none then only one trip is being drawn so show axis at the end 
+If show is set to true then the axis will be shown 
+'''
+def drawTrip(trip, ax=None, show=True, colour = 'k'):
+    if ax == None: 
+        ax = plt.axes()
     ax.set_ylim(0,parameters.citySizeMax)
     ax.set_xlim(0,parameters.citySizeMax)
     ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
@@ -147,17 +144,26 @@ def drawTrip(trip):
         if delivery.prevDelivery == None: #if this is the first delivery of trip then use depot as previous node 
             maxTravelDistance = delivery.time * parameters.droneSpeed
             drawCircle(depot, maxTravelDistance, ax, restricted = False)
-            drawLine(depot, delivery.node, ax) #draw line from depot
+            drawLine(depot, delivery.node, ax, colour) #draw line from depot
         else:
             timeSlotDifference = delivery.time - delivery.prevDelivery.time
             maxTravelDistance = timeSlotDifference * parameters.droneSpeed
-            drawLine(delivery.prevDelivery.node, delivery.node, ax)
+            drawLine(delivery.prevDelivery.node, delivery.node, ax, colour)
             drawCircle(delivery.prevDelivery.node, maxTravelDistance, ax, restricted = False) #the max distance of this should be the next node not this one 
     
     x,y = trip.deliveries[-1].node.getCoords()
     ax.plot(x,y,'ro') #plot the last node 
-    drawLine(trip.deliveries[-2].node, trip.deliveries[-1].node, ax) #draw line from 2nd last node to last node 
+    #drawLine(trip.deliveries[-2].node, trip.deliveries[-1].node, ax) #draw line from 2nd last node to last node 
 
-    drawLine(trip.deliveries[-1].node, depot, ax) #draw line from last node to depot
+    drawLine(trip.deliveries[-1].node, depot, ax, colour) #draw line from last node to depot
 
+    if show: 
+        plt.show()
+
+def drawDroneTrips(drone):
+    ax = plt.axes() 
+    for trip in drone.trips: 
+        colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
+        drawTrip(trip, ax, False, colourForTrip)
+    
     plt.show()
