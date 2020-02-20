@@ -167,3 +167,4 @@ def drawDroneTrips(drone):
         drawTrip(trip, ax, False, colourForTrip)
     
     plt.show()
+

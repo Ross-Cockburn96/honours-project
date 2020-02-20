@@ -28,8 +28,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: 
         parameters.seed = sys.argv[1] #takes the seed argument from command line 
 
-
- 
+  
     # ax = plt.axes()
 
     # radius = 2 

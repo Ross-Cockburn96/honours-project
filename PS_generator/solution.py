@@ -59,9 +59,34 @@ class Solution:
     takes a list of all existing charging station nodes as well as a list of the deliveries that ran out of charge.
     changes the solution such that the trips include stops at the charging stations 
     '''
-    def includeChargingStations(self,chargingStations, depletionPoints):
-        print("test")
+    def includeChargingStations(self, chargingStations, depletionPoints):
+        #for each depletionPoint, find the nearest charging station 
         pass
+
+    '''
+    Takes a sorted array of elements and returns the index of the searchVal.
+    If the searchVal cannot be found, the index of the closes value is returned.
+    '''
+    def binarySearch(sortedArray, l, r, searchVal):
+        if r >= l:
+            mid = l + (r - l) // 2
+            # If element is present at the middle itself 
+            if sortedArray[mid] == searchVal: 
+                return mid 
+            
+            # If element is smaller than mid, then it  
+            # can only be present in left subarray 
+            elif sortedArray[mid] > searchVal: 
+                return binarySearch2(sortedArray, l, mid-1, searchVal, "greater") 
+    
+            # Else the element can only be present  
+            # in right subarray 
+            else: 
+                return binarySearch2(sortedArray, mid + 1, r, searchVal, "lesser") 
+        
+        #this doesn't always find the closest value 
+        else:
+            return r 
 
     def stringBuilder(self): 
         outputElements = []

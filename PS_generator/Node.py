@@ -77,6 +77,30 @@ class Node:
     def __str__(self):
         return (f"{self.xCoord}, {self.yCoord}, {self.openTime}, {self.closeTime}")
 
+    #Overload less-than comparison operator for object (used in binary search) 
+    def __lt__(self, other):
+        if self.xCoord < other.xCoord:
+            return True 
+        elif self.xCoord = other.xCoord and self.yCoord < other.yCoord: 
+            return True 
+        else:
+            return False 
+    
+    #Overload greater-than comparison operator for object (used in binary search) 
+    def __gt__(self, other):
+        if self.xCoord > other.xCoord:
+            return True 
+        elif self.xCoord = other.xCoord and self.yCoord > other.yCoord: 
+            return True 
+        else:
+            return False 
+
+    #Overload equals comparison operator for object (used in binary search)
+    def __eq__(self, other):
+        if self.xCoord == other.xCoord and self.yCoord == other.yCoord:
+            return True 
+        else:
+            return False 
 """
 Inherits from node, this object represents recharging stations. 
 """
