@@ -81,6 +81,6 @@ class Node:
 Inherits from node, this object represents recharging stations. 
 """
 class RechargeNode(Node): 
-    def __init__(self, id= 0, xCoord = None, yCoord = None, capacity=1):
+    def __init__(self, id= 0, xCoord = None, yCoord = None, capacity=None):
         super().__init__(id, xCoord, yCoord)
         self.capacity = capacity

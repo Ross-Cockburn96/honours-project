@@ -77,24 +77,25 @@ class Problem:
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         
         depletionPoints, ax = self.calculateDepletionPoints()
+        depletionCoordinates = [(contents[0], contents[1]) for contents in depletionPoints]
         #carry out k-means clustering 
-        clusterAmount = self.calculateNumberOfClusters(depletionPoints)
-        depletionPointArray = np.array(depletionPoints).reshape(len(depletionPoints), 2)
+        clusterAmount = self.calculateNumberOfClusters(depletionCoordinates)
+        depletionPointArray = np.array(depletionCoordinates).reshape(len(depletionCoordinates), 2)
+        chargingStations = []
         kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
         #print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
-        for vals in kmeans.cluster_centers_:
+        for idx, vals in enumerate(kmeans.cluster_centers_):
             x,y = vals
+            chargingStations.append(RechargeNode(idx+1, x,y))
             ax.plot(x,y,'yo')
         plt.show()
-
+        self.solution.includeChargingStations(chargingStations, depletionPoints)
         print("Drawing Drone Trips")
         tools.drawDroneTrips(self.solution.drones[0])
 
     def calculateDepletionPoints(self):
         ax = plt.axes()
         ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
-
-       
         depletionPoints = [] #this is a list of coordinates where drones have ran out of charge, list of tuples
         #find where drones run out of charge
         for drone in self.solution.drones: 
@@ -121,7 +122,7 @@ class Problem:
                             plotY = delivery.node.yCoord
 
                         ax.plot(plotX, plotY, 'ro')
-                        depletionPoints.append((plotX, plotY))
+                        depletionPoints.append((plotX, plotY, delivery)) #depletion point consists of a coordinate and the delivery the point is part of 
                         drone.charge = parameters.batteryCharge #reset charge 
                 else: #if the delivery is first in a trip 
                     drone.charge -= delivery.time
@@ -145,7 +146,7 @@ class Problem:
                             plotY = delivery.node.yCoord
 
                         ax.plot(plotX, plotY, 'ro')
-                        depletionPoints.append((plotX,plotY))
+                        depletionPoints.append((plotX,plotY, delivery))
                         drone.charge = parameters.batteryCharge
         return depletionPoints, ax
 
