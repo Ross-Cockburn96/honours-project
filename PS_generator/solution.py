@@ -19,8 +19,6 @@ class Solution:
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
         numOfDrones = random.randint(1, min(numOfTrips, parameters.maxDrones))
-
-        
     
         #create deliveries for each customer (node) 
         self.deliveries = [Delivery(x) for x in self.customers]
@@ -61,32 +59,12 @@ class Solution:
     '''
     def includeChargingStations(self, chargingStations, depletionPoints):
         #for each depletionPoint, find the nearest charging station 
-        pass
+        chargingStations.sort(key=lambda x: (x.xCoord, x.yCoord))
+        print(f"charging stations are {chargingStations}")
+        testPoint = depletionPoints[0]
+        print(f"closest charging station to {testPoint} is {Node.binarySearch(chargingStations, 0, len(chargingStations)-1, testPoint)}")
 
-    '''
-    Takes a sorted array of elements and returns the index of the searchVal.
-    If the searchVal cannot be found, the index of the closes value is returned.
-    '''
-    def binarySearch(sortedArray, l, r, searchVal):
-        if r >= l:
-            mid = l + (r - l) // 2
-            # If element is present at the middle itself 
-            if sortedArray[mid] == searchVal: 
-                return mid 
-            
-            # If element is smaller than mid, then it  
-            # can only be present in left subarray 
-            elif sortedArray[mid] > searchVal: 
-                return binarySearch2(sortedArray, l, mid-1, searchVal, "greater") 
     
-            # Else the element can only be present  
-            # in right subarray 
-            else: 
-                return binarySearch2(sortedArray, mid + 1, r, searchVal, "lesser") 
-        
-        #this doesn't always find the closest value 
-        else:
-            return r 
 
     def stringBuilder(self): 
         outputElements = []

@@ -70,6 +70,63 @@ class Node:
             valid = True
         self.xCoord = x
         self.yCoord = y
+    
+
+    
+    '''
+    Takes a sorted array of elements and returns the index of the searchVal.
+    If the searchVal cannot be found, the index of the closes value is returned.
+    '''
+    @classmethod
+    def binarySearch(cls, sortedArray, l, r, searchVal):
+        if r >= l:
+            mid = l + (r - l) // 2
+            # If element is present at the middle itself 
+            if sortedArray[mid] == searchVal: 
+                return mid 
+            
+            # If element is smaller than mid, then it  
+            # can only be present in left subarray 
+            elif sortedArray[mid] > searchVal: 
+                return cls.binarySearch(sortedArray, l, mid-1, searchVal) 
+    
+            # Else the element can only be present  
+            # in right subarray 
+            else: 
+                return cls.binarySearch(sortedArray, mid + 1, r, searchVal) 
+        
+        else:
+            #list of potentially closest charging points
+            candidates = [sortedArray[r]] 
+
+            #these are rough methods of minimising the candidate list size to sensible candidates 
+            if r > 0 and r < len(sortedArray)-1: 
+                candidates.insert(0, sortedArray[r-1])
+                candidates.append(sortedArray[r+1])
+            elif r==0 or r==-1:  
+                candidates.append(sortedArray[r+1])
+            else:
+                candidates.insert(0, sortedArray[r-1])
+
+            #creates a list of magnitutes from the distance vectors from searchVal to each of the candidates 
+            candidateVectorMags = list(map(cls.distanceFinder, candidates, [searchVal]*len(candidates))) 
+
+            #returns the candidate that is closest in distance to the search value 
+            return candidates[candidateVectorMags.index(min(candidateVectorMags))]
+    
+    
+    '''
+    Takes two nodes and returns the magnitude of their vector
+    '''
+    @classmethod
+    def distanceFinder(cls, n1, n2):
+        x1,y1 = n1.getCoords()
+        x2,y2 = n2.getCoords()
+
+        vecX = x2 - x1 
+        vecY = y2 - y1 
+    
+        return math.sqrt(vecX**2 + vecY**2)
 
     def __repr__(self):
         return str(self)
@@ -81,7 +138,7 @@ class Node:
     def __lt__(self, other):
         if self.xCoord < other.xCoord:
             return True 
-        elif self.xCoord = other.xCoord and self.yCoord < other.yCoord: 
+        elif self.xCoord == other.xCoord and self.yCoord < other.yCoord: 
             return True 
         else:
             return False 
@@ -90,7 +147,7 @@ class Node:
     def __gt__(self, other):
         if self.xCoord > other.xCoord:
             return True 
-        elif self.xCoord = other.xCoord and self.yCoord > other.yCoord: 
+        elif self.xCoord == other.xCoord and self.yCoord > other.yCoord: 
             return True 
         else:
             return False 
@@ -101,6 +158,7 @@ class Node:
             return True 
         else:
             return False 
+    
 """
 Inherits from node, this object represents recharging stations. 
 """
@@ -108,3 +166,12 @@ class RechargeNode(Node):
     def __init__(self, id= 0, xCoord = None, yCoord = None, capacity=None):
         super().__init__(id, xCoord, yCoord)
         self.capacity = capacity
+
+'''
+Inherits from node, this object represents depletion points and each object has a corresponding delivery.
+The delivery is the delivery where the depletion point occured.
+'''
+class DepletionPoint(Node):
+    def __init__(self, delivery, id=0, xCoord = None, yCoord = None):
+        super().__init__(id, xCoord, yCoord)
+        self.delivery = delivery

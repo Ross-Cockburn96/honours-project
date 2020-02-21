@@ -1,7 +1,7 @@
 import random
 import math
 import parameters
-from Node import Node, RechargeNode
+from Node import Node, RechargeNode, DepletionPoint
 import tools
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -77,7 +77,7 @@ class Problem:
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         
         depletionPoints, ax = self.calculateDepletionPoints()
-        depletionCoordinates = [(contents[0], contents[1]) for contents in depletionPoints]
+        depletionCoordinates = [x.getCoords() for x in depletionPoints]
         #carry out k-means clustering 
         clusterAmount = self.calculateNumberOfClusters(depletionCoordinates)
         depletionPointArray = np.array(depletionCoordinates).reshape(len(depletionCoordinates), 2)
@@ -93,6 +93,10 @@ class Problem:
         print("Drawing Drone Trips")
         tools.drawDroneTrips(self.solution.drones[0])
 
+    '''
+    Based on the current problem and solution, tests to see where nodes are running out of battery. 
+    Uses the Node data structure for representing depletion points. returns depletion points, which are tuples 
+    '''
     def calculateDepletionPoints(self):
         ax = plt.axes()
         ax.add_patch(patches.Rectangle((0,0), parameters.citySizeMax, parameters.citySizeMax))
@@ -122,7 +126,7 @@ class Problem:
                             plotY = delivery.node.yCoord
 
                         ax.plot(plotX, plotY, 'ro')
-                        depletionPoints.append((plotX, plotY, delivery)) #depletion point consists of a coordinate and the delivery the point is part of 
+                        depletionPoints.append(DepletionPoint(delivery, xCoord = plotX, yCoord = plotY)) 
                         drone.charge = parameters.batteryCharge #reset charge 
                 else: #if the delivery is first in a trip 
                     drone.charge -= delivery.time
@@ -146,7 +150,7 @@ class Problem:
                             plotY = delivery.node.yCoord
 
                         ax.plot(plotX, plotY, 'ro')
-                        depletionPoints.append((plotX,plotY, delivery))
+                        depletionPoints.append(DepletionPoint(delivery, xCoord = plotX, yCoord = plotY))
                         drone.charge = parameters.batteryCharge
         return depletionPoints, ax
 
