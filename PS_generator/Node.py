@@ -80,6 +80,7 @@ class Node:
     @classmethod
     def binarySearch(cls, sortedArray, l, r, searchVal):
         if r >= l:
+            
             mid = l + (r - l) // 2
             # If element is present at the middle itself 
             if sortedArray[mid] == searchVal: 
@@ -168,7 +169,7 @@ class RechargeNode(Node):
         self.capacity = capacity
     def __repr__(self):
         return str(self)
-        
+
     def __str__(self):
         return (f"{self.xCoord}, {self.yCoord}, {self.capacity}")
 '''

@@ -4,7 +4,7 @@ import random
 import math
 from drone import Drone 
 from trip import Trip
-from delivery import Delivery
+from delivery import Delivery, ChangeBattery
 from solution import Solution
 from problem import Problem 
 from Node import Node

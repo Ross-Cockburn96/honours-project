@@ -3,8 +3,9 @@ import parameters
 import math
 from drone import Drone 
 from trip import Trip
-from delivery import Delivery
+from delivery import Delivery, ChangeBattery
 from Node import Node
+from problem import Problem
 
 
 class Solution:
@@ -16,6 +17,7 @@ class Solution:
         self.fitness = None
         self.values = [] #populated once generate has been called 
         random.seed(parameters.seed)
+
     def generate(self):
         numOfTrips = random.randint(1,parameters.customers) 
         numOfDrones = random.randint(1, min(numOfTrips, parameters.maxDrones))
@@ -51,7 +53,7 @@ class Solution:
                 trips.append(Trip(*assignedDeliveries[:numberInTrip]))
                 del assignedDeliveries[:numberInTrip]
             self.drones.insert(droneNo, Drone(*trips))
-            
+
         self.values = self.stringBuilder() #called last for problem file to be accurate 
     
     '''
@@ -62,10 +64,39 @@ class Solution:
         #for each depletionPoint, find the nearest charging station 
         chargingStations.sort(key=lambda x: (x.xCoord, x.yCoord))
         print(f"charging stations are {chargingStations}")
-        testPoint = depletionPoints[0]
-        print(f"closest charging station to {testPoint} is {Node.binarySearch(chargingStations, 0, len(chargingStations)-1, testPoint)}")
+        nodeidTripDictionary = self.getNodeIdTripDictionary()
+        for depletionPoint in depletionPoints: 
+            delivery = depletionPoint.delivery
+
+            #check if this is the first delivery in a trip
+            #if it is, switch battery at depot
+            if delivery.prevDelivery == None: 
+                trip = nodeidTripDictionary[delivery.node.id]
+                distance = Node.distanceCalc(Problem.depotCharging, delivery.node)
+                time = delivery.time - (distance // parameters.droneSpeed)
+                #calculate time drone will be at the depot based on where it delivers the first package in the trip 
+                print(f"distance is {distance}, delivery time is {delivery.time}")
+                #create ChangeBattery action for depot node
+                switchBatteryAction = ChangeBattery(node = Problem.depotCharging, prevDelivery = None, nextDelivery = delivery, time = time)
+                
+                delivery.prevDelivery = switchBatteryAction
+                print(f"trip before is {trip}") 
+                trip.deliveries.insert(0, switchBatteryAction)
+                print(f"trip after is {trip}")
+            
+
+        #print(f"closest charging station to {testPoint} is {Node.binarySearch(chargingStations, 0, len(chargingStations)-1, testPoint)}")
 
     
+    '''
+    Returns a dictionary of delivery node id -> trip. 
+    List is sorted on the node ids of the delivery destinations 
+    '''
+    def getNodeIdTripDictionary(self):
+        #create dictionary of all deliveries and their respective trips 
+        return {delivery.node.id : trip for drone in self.drones for trip in drone.trips for delivery in trip.deliveries}
+
+
 
     def stringBuilder(self): 
         outputElements = []

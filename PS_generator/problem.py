@@ -10,6 +10,8 @@ from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
 class Problem: 
     depot = Node(xCoord = 0, yCoord = 0)
+    #depot and depot charging are the same node, however in order to distinguish between a drone returning to depot to get more packages and a drone that is getting more packages and exchanging batteries, the node is duplicated with different ids and duplicated in problem file 
+    depotCharging = (RechargeNode(parameters.customers+1, xCoord= 0, yCoord=0))
     def __init__(self, solution): 
         random.seed(parameters.seed)
         self.values = [] #only populated after 'generate' function has been called
@@ -19,7 +21,7 @@ class Problem:
     
     #time slots are calculated for each customer based on the time that the solution says the delivery arrived. This ensures time slots are feasible. 
     def nodeTimeSlotCalc(self, trip):
-        for delivery in trip.deliveries: 
+        for delivery in trip.deliveries:    
             
             #drawing a uniform random variable as mean widens the crest of the normal curve to the bounds of the range
             mean = random.randint(0,parameters.dayLength/4) 
@@ -211,6 +213,8 @@ class Problem:
         nodes.sort(key=lambda x: x.id) #sorts nodes in order of id 
         outputElements.extend(nodes) #adds nodes to problem string 
         
+        #add depot recharge node 
+        outputElements.append(str(self.depotCharging))
         #add recharge stations to problem string 
         for station in self.rechargeStations:
             outputElements.append(str(station))
