@@ -89,7 +89,7 @@ class Problem:
         #print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
         for idx, vals in enumerate(kmeans.cluster_centers_):
             x,y = vals
-            self.rechargeStations.append(RechargeNode(idx+1, int(x),int(y)))
+            self.rechargeStations.append(RechargeNode(idx+ (parameters.customers + 2), int(x),int(y)))
             ax.plot(x,y,'yo')
         plt.show()
         self.solution.includeChargingStations(self.rechargeStations, depletionPoints)
@@ -221,8 +221,10 @@ class Problem:
 
         #adds package details to problem string     
         for delivery in deliveries: 
-            outputElements.append(delivery.node.id)
-            outputElements.append(delivery.weight)
+            if delivery.node.id < parameters.customers+ 1: #only deliveries with these nodes will be package deliveries 
+                outputElements.append(delivery.node.id)
+                outputElements.append(delivery.weight)
+
         return ", ".join([str(x) for x in outputElements])
 
     def writeToFile(self): 

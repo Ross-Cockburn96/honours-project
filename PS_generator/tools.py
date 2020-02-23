@@ -142,9 +142,12 @@ def drawTrip(trip, ax=None, show=True, colour = 'k'):
     #iterates through trip deliveries and draws the previous node and potential delivery circle based on the current node 
     for delivery in trip.deliveries:
         if delivery.prevDelivery == None: #if this is the first delivery of trip then use depot as previous node 
-            maxTravelDistance = delivery.time * parameters.droneSpeed
-            drawCircle(depot, maxTravelDistance, ax, restricted = False)
-            drawLine(depot, delivery.node, ax, colour) #draw line from depot
+            if delivery.node.id == parameters.customers +1:  #if the id of the node is a the depot charging station then it is already in the trip so continue to next iteration
+                continue 
+            else: 
+                maxTravelDistance = delivery.time * parameters.droneSpeed
+                drawCircle(depot, maxTravelDistance, ax, restricted = False)
+                drawLine(depot, delivery.node, ax, colour) #draw line from depot
         else:
             timeSlotDifference = delivery.time - delivery.prevDelivery.time
             maxTravelDistance = timeSlotDifference * parameters.droneSpeed

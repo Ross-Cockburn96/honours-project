@@ -43,7 +43,7 @@ class Node:
             nextNode = nodes[idx + 1]
             distance += math.sqrt(((node.xCoord - nextNode.xCoord)**2) + ((node.yCoord - nextNode.yCoord)**2))
         #print(f"distance is {distance}")
-        return math.floor(distance * parameters.unit) #adds distance in meters to fitness function
+        return math.floor(distance) #adds distance in meters to fitness function
 
 
     """
@@ -67,6 +67,7 @@ class Node:
                 continue
             if y < 0: 
                 continue
+    
             valid = True
         self.xCoord = x
         self.yCoord = y

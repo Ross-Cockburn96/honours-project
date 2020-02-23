@@ -5,10 +5,9 @@ droneSpeed = 10 #m/s
 batteryCharge = 3600 #seconds - 1 hour of travel  
 
 
-unit = 10 #represents a unit cell in the city which is a NxN grid of cells (meters)
-#Since the city is essentially a grid with each cell being a 1km^2 area and node coordinates are whole numebrs, 
 
-#the minimum distance between each node should be 1km and so the time to travel that distance is 1000/droneSpeed
+
+
 minimumDeliveryTime = 1 #ensures that delivery times are not 0 (because it is impossible for a customer to be serviced at 0 seconds)
 customers = 50
 droneCapacity = 30 #lb
