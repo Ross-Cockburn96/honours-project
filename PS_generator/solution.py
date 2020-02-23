@@ -51,7 +51,8 @@ class Solution:
                 trips.append(Trip(*assignedDeliveries[:numberInTrip]))
                 del assignedDeliveries[:numberInTrip]
             self.drones.insert(droneNo, Drone(*trips))
-        self.values = self.stringBuilder()
+            
+        self.values = self.stringBuilder() #called last for problem file to be accurate 
     
     '''
     takes a list of all existing charging station nodes as well as a list of the deliveries that ran out of charge.

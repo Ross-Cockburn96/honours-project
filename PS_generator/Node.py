@@ -166,7 +166,11 @@ class RechargeNode(Node):
     def __init__(self, id= 0, xCoord = None, yCoord = None, capacity=None):
         super().__init__(id, xCoord, yCoord)
         self.capacity = capacity
-
+    def __repr__(self):
+        return str(self)
+        
+    def __str__(self):
+        return (f"{self.xCoord}, {self.yCoord}, {self.capacity}")
 '''
 Inherits from node, this object represents depletion points and each object has a corresponding delivery.
 The delivery is the delivery where the depletion point occured.

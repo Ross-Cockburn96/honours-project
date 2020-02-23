@@ -13,7 +13,9 @@ class Problem:
     def __init__(self, solution): 
         random.seed(parameters.seed)
         self.values = [] #only populated after 'generate' function has been called
+        self.rechargeStations = [] #populated after 'generate' function has been called 
         self.solution = solution 
+    
     
     #time slots are calculated for each customer based on the time that the solution says the delivery arrived. This ensures time slots are feasible. 
     def nodeTimeSlotCalc(self, trip):
@@ -73,7 +75,7 @@ class Problem:
                 maxWeight -= packageWeight
                 delivery.weight = packageWeight
                 maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
-        self.values = self.stringBuilder()
+        
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         
         depletionPoints, ax = self.calculateDepletionPoints()
@@ -81,18 +83,17 @@ class Problem:
         #carry out k-means clustering 
         clusterAmount = self.calculateNumberOfClusters(depletionCoordinates)
         depletionPointArray = np.array(depletionCoordinates).reshape(len(depletionCoordinates), 2)
-        chargingStations = []
         kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
         #print(f"clusters are at {kmeans.cluster_centers_}, cluster amount was {clusterAmount}")
         for idx, vals in enumerate(kmeans.cluster_centers_):
             x,y = vals
-            chargingStations.append(RechargeNode(idx+1, x,y))
+            self.rechargeStations.append(RechargeNode(idx+1, int(x),int(y)))
             ax.plot(x,y,'yo')
         plt.show()
-        self.solution.includeChargingStations(chargingStations, depletionPoints)
+        self.solution.includeChargingStations(self.rechargeStations, depletionPoints)
         print("Drawing Drone Trips")
         tools.drawDroneTrips(self.solution.drones[0])
-
+        self.values = self.stringBuilder()
     '''
     Based on the current problem and solution, tests to see where nodes are running out of battery. 
     Uses the Node data structure for representing depletion points. returns depletion points, which are tuples 
@@ -202,14 +203,19 @@ class Problem:
         outputElements = [] 
         deliveries = self.solution.getAllDeliveries()
         outputElements.append(len(deliveries)) #number of nodes
+        outputElements.append(len(self.rechargeStations))
         outputElements.append(len(deliveries)) #number of packages
 
         outputElements.append(Node(0, 0, 0)) #insert depot node at 0,0 coordinates 
         nodes = self.solution.getAllNodes() 
         nodes.sort(key=lambda x: x.id) #sorts nodes in order of id 
-        outputElements.extend(nodes)
+        outputElements.extend(nodes) #adds nodes to problem string 
         
-            
+        #add recharge stations to problem string 
+        for station in self.rechargeStations:
+            outputElements.append(str(station))
+
+        #adds package details to problem string     
         for delivery in deliveries: 
             outputElements.append(delivery.node.id)
             outputElements.append(delivery.weight)
