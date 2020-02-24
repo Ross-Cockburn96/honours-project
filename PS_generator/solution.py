@@ -44,6 +44,7 @@ class Solution:
             
             #create trips within drone and add deliveries to trips
             trips = [] 
+            startTime = 0
             while len(assignedDeliveries) > 0 :
                 if parameters.droneCargoSlots > len(assignedDeliveries):
                     maxNumber = len(assignedDeliveries)

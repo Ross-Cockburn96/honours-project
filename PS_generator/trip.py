@@ -4,6 +4,7 @@ class Trip:
     #can be instantiated with a list 
     def __init__(self, *args):
         self.deliveries = list(args)
+        self.startTime = 0 #time the trip finishes 
         if len(self.deliveries) > 1:
             self.deliveries[0].nextDelivery = self.deliveries[1] #first node 
             #forms a linked list with the deliveries in the trip

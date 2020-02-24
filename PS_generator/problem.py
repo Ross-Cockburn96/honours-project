@@ -47,7 +47,10 @@ class Problem:
         #print(f"considering trip {trip}")
         prevNode = self.depot
         prevDelivery = None
-        maxTravelDistance = trip.deliveries[0].time * parameters.droneSpeed
+        print(f"start time in coord calc is {trip.startTime}")
+        maxTravelDistance = (trip.deliveries[0].time - trip.startTime) * parameters.droneSpeed
+        oldIs = trip.deliveries[0].time * parameters.droneSpeed
+        print(f"max Travel distance is {maxTravelDistance}, time is {trip.deliveries[0].time}, old time is {oldIs}")
         #tools.drawCircle(self.depot, maxTravelDistance,ax, colourForTrip)
         for delivery in trip.deliveries:
             if prevDelivery != None:
@@ -66,18 +69,49 @@ class Problem:
         # ax.set_xlim(-50,parameters.citySizeMax)
         ax= 1
         allTrips = self.solution.getAllTrips() #get list of all trips that are in the solution 
-        
-        for trip in allTrips: 
-            self.nodeTimeSlotCalc(trip)
-            self.nodeCoordCalc(trip, ax)
-            numOfDeliveries = len(trip.deliveries)
-            maxWeight = parameters.droneCapacity - (numOfDeliveries -1) #ensure that the max weight is set such that all packages have at least a weight of 1 
-            for delivery in trip.deliveries:
-                packageWeight = random.randint(1, maxWeight)
-                maxWeight -= packageWeight
-                delivery.weight = packageWeight
-                maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
-        
+        prevTrip = None 
+        startTime = 0 
+
+        for idx, drone in enumerate(self.solution.drones):
+            print(f"drone {idx}")
+            prevTrip = None
+            startTime = 0
+            for idx2, trip in enumerate(drone.trips):
+                print(f"trip {idx2}, prevTrip = {prevTrip}")
+                self.nodeTimeSlotCalc(trip)
+                
+                #doesn't work node corrd calc needs times and times need coords
+                if prevTrip != None: 
+                    print(f"prevTrip start time is {prevTrip.startTime}")
+                    startTime = prevTrip.deliveries[-1].time + (Node.distanceCalc(self.depot, prevTrip.deliveries[-1].node) // parameters.droneSpeed)
+                    trip.startTime = startTime
+                else:
+                    trip.startTime = startTime
+                    
+                self.nodeCoordCalc(trip, ax)
+                print()
+                numOfDeliveries = len(trip.deliveries)
+                maxWeight = parameters.droneCapacity - (numOfDeliveries -1) #ensure that the max weight is set such that all packages have at least a weight of 1 
+                for delivery in trip.deliveries:
+                    packageWeight = random.randint(1, maxWeight)
+                    maxWeight -= packageWeight
+                    delivery.weight = packageWeight
+                    maxWeight += 1 #once a package is assigned a weight increase the max weight by 1 since there is one less package left to assign 
+                prevTrip = trip
+
+
+
+
+
+
+
+        # for trip in allTrips: 
+        #     self.nodeTimeSlotCalc(trip)
+        #     self.nodeCoordCalc(trip, ax)
+        #     if prevTrip != None: 
+        #         startTime = prevTrip.deliveries[-1].time + (Node.distanceCalc(self.depot, prevTrip.deliveries[-1].node) // parameters.droneSpeed)
+            
+            
         tools.drawTrip(max(allTrips, key=lambda x : len(x.deliveries))) #draws the largest trip in the problem 
         
         depletionPoints, ax = self.calculateDepletionPoints()
