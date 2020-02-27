@@ -1,8 +1,8 @@
 import random
 import parameters
+import math
 
-
-class Node:
+class Node: 
     xCoord = None
     yCoord = None 
 
@@ -17,7 +17,8 @@ class Node:
     Given a center node and a radius, populates the coordinates at a random point within the circle 
     '''
     def randomWithinCircle(self, center, radius): 
-        centerX, centerY = self.getCoords()
+    
+        centerX, centerY = center.getCoords()
 
         valid = False 
         while not valid: 
@@ -45,5 +46,15 @@ class Node:
         node2.xCoord = node1.xCoord
         node2.yCoord = node1.yCoord
 
-    def str(self):
-        return (self.xCoord, self.yCoord)    
+    
+    def __str__(self):
+        return (f"{self.xCoord, self.yCoord}")    
+
+class CustomerNode(Node): 
+    def __init__(self):
+        super().__init__()
+    
+class ChargingNode(Node):
+    def __init__(self):
+        super().__init__()
+        self.capacity = 0

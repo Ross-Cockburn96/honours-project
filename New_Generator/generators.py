@@ -1,13 +1,13 @@
 import random
 import math
-from node import Node
+from node import CustomerNode, ChargingNode
 import matplotlib.pyplot as plt
 import parameters
 
 class Problem:
     """ 
     This class is used to generate random problems to the 
-    Multiple Knapsack Problem for Package Delivery Drones 
+    Drone Delivery Problem 
     
     ...
 
@@ -38,11 +38,9 @@ class Problem:
 
     
     """
-
-    clusterToRangeRatio = .25
-    clusterDeviationFromPoint = 5
+    ax1 = parameters.ax
     def __init__(self, noOfNodes, noOfPackages, distribution="uniform" ):
-        self.nodes = []
+        self.customers = []
         self.citySize = parameters.citySize 
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
@@ -53,19 +51,18 @@ class Problem:
 
     def uniformGeneration(self):
         for _ in range(self.noOfNodes): 
-            node = Node()
-            node.random(0, self.citySize+1)
-            self.nodes.append(node)
+            customer = CustomerNode()
+            customer.random(0, self.citySize+1)
+            self.customers.append(customer)
         
-        fig, ax1 = plt.subplots(1,1)
+        
 
-        for node in self.nodes:
-            x, y = node.getCoords()
-            ax1.set_xlim([0,150])
-            ax1.set_ylim([0,150])
-            ax1.scatter(x,y, alpha=0.8)
+        for customer in self.customers:
+            x, y = customer.getCoords()
+            self.ax1.set_xlim([0,self.citySize])
+            self.ax1.set_ylim([0,self.citySize])
+            self.ax1.scatter(x,y, color='k')
         
-        plt.show()
 
 
 
@@ -73,29 +70,25 @@ class Problem:
         numberOfClusters = math.floor(self.citySize * parameters.clusterToCitySizeRatio)
         clusterCenters = []
         for _ in range(numberOfClusters):
-            cluster = Node() 
+            cluster = CustomerNode() 
             cluster.random(0, self.citySize + 1)
             clusterCenters.append(cluster)
-            self.nodes.append(cluster)
         return clusterCenters
 
 
     def clusteredGeneration(self):
         clusterCenters = self.createClusterCenters()
         for _ in range(self.noOfNodes): 
-            node = Node() #create customer node
+            customer = CustomerNode() #create customer node
             clusterIndex = random.randint(0, len(clusterCenters) - 1 ) #decide which cluster this node will belong 
-            node.randomWithinCircle(clusterCenters[clusterIndex], 500)
-            self.nodes.append(node)
-
-        fig, ax1 = plt.subplots(1,1)
-        for node in self.nodes:
-            x,y = node.str()
-            ax1.set_xlim([0,150])
-            ax1.set_ylim([0,150])
-            ax1.scatter(x,y, alpha=0.8)
+            customer.randomWithinCircle(clusterCenters[clusterIndex], 1000)
+            self.customers.append(customer)
+        for customer in self.customers:
+            x,y = customer.getCoords()
+            self.ax1.set_xlim([0,self.citySize])
+            self.ax1.set_ylim([0,self.citySize])
+            self.ax1.scatter(x,y )
         
-        plt.show()
 
 
     def generateNodes(self):
@@ -104,4 +97,12 @@ class Problem:
         else:
             self.clusteredGeneration()
 
+    def generateRechargingStations(self): 
+        numberOfStations = math.floor(parameters.rechargingNodetoCitySizeRatio * parameters.citySize)
+
+        for _ in range(numberOfStations): 
+            chargingStation = ChargingNode()
+            chargingStation.random(0, self.citySize)
+            x,y = chargingStation.getCoords()
+            self.ax1.scatter(x,y, color='b')
 
