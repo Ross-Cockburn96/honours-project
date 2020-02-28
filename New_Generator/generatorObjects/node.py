@@ -53,8 +53,19 @@ class Node:
 class CustomerNode(Node): 
     def __init__(self):
         super().__init__()
+        self.openTime = None
+        self.closeTime = None
     
 class ChargingNode(Node):
     def __init__(self):
         super().__init__()
         self.capacity = 0
+
+class Depot(Node): 
+    closeTime = parameters.dayLength
+    openTime = 0
+    def __init__(self):
+        super().__init__()
+        self.xCoord = 0
+        self.yCoord = 0
+        self.capacity = None

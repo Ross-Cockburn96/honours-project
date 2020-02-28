@@ -1,3 +1,5 @@
+from generatorObjects.node import Depot
+
 class Action:
     def __init__(self, node, prevAction, nextAction):
         self.node = node
@@ -26,3 +28,6 @@ class ChangeBattery(Action):
     def __init__(self, node, battery, prevAction=None, nextAction=None):
         super().__init__(node, prevAction, nextAction)
     
+class AtDepot(Action):
+    def __init__(self, node = Depot() , prevAction=None, nextAction=None):
+        super().__init__(node, prevAction, nextAction)

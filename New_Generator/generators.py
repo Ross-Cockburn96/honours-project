@@ -1,10 +1,10 @@
 import random
 import math
-from node import CustomerNode, ChargingNode
+from generatorObjects.node import CustomerNode, ChargingNode
 import matplotlib.pyplot as plt
 import parameters
 from generatorObjects.drone import Drone 
-from generatorObjects.action import Delivery, ChangeBattery
+from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
 from generatorObjects.package import Package 
 
@@ -112,7 +112,42 @@ class Problem:
 
 
     def generateTrips(self):
+        customersCopy = self.customers.copy() #no deep copy required
         d1 = Drone()
+        currentDrone = d1
+        packagePool = self.noOfPackages
+        packageCounter = 0 #used for assigning ids to packages
+        while packagePool > 0:  
+            
+            packagesInTrip = random.randint(1,min(5, packagePool)) #decide how many packages the drone will deliver, limited by cargo hold size
+            packagePool -= packagesInTrip 
+
+            tripActions = [] #contains the actions carried out in the trip 
+
+            #creates package objects 
+            for _ in range(packagesInTrip):
+                packageCounter += 1
+                pkg = Package(packageCounter)
+
+                #randomly selects a customer node to deliver package 
+                customer = self.customers[random.randrange(len(self.customers))] 
+                
+                #create drone action delivering package to customer 
+                delivery = Delivery(customer, pkg)
+                tripActions.append(delivery)
+
+            trip = Trip(*tripActions) #creates trip object which forms the trip linked list 
+            trip.insertAction(0, AtDepot())
+            trip.insertAction(len(trip.actions), AtDepot())
+
+            print(trip)
+
+            for action in trip.actions:
+                print(f"{action.prevAction} <--- {action} ---> {action.nextAction} ")
+            packagePool = 0
+
+
+            
 
         
 
