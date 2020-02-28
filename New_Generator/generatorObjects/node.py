@@ -46,6 +46,18 @@ class Node:
         node2.xCoord = node1.xCoord
         node2.yCoord = node1.yCoord
 
+    '''
+    Takes two nodes and returns the magnitude of their vector
+    '''
+    @classmethod
+    def distanceFinder(cls, n1, n2):
+        x1,y1 = n1.getCoords()
+        x2,y2 = n2.getCoords()
+
+        vecX = x2 - x1 
+        vecY = y2 - y1 
+    
+        return math.sqrt(vecX**2 + vecY**2)
     
     def __str__(self):
         return (f"{self.xCoord, self.yCoord}")    

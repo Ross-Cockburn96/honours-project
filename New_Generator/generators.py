@@ -1,6 +1,6 @@
 import random
 import math
-from generatorObjects.node import CustomerNode, ChargingNode
+from generatorObjects.node import CustomerNode, ChargingNode, Node
 import matplotlib.pyplot as plt
 import parameters
 from generatorObjects.drone import Drone 
@@ -136,15 +136,33 @@ class Problem:
                 #create drone action delivering package to customer 
                 delivery = Delivery(customer, pkg)
                 tripActions.append(delivery)
-
+            tripActions.insert(0, AtDepot())
+            tripActions.append(AtDepot())
+            orderedTripActions = tripActions[0] #depot
+            self.nearestNeighbour([orderedTripActions], tripActions[1:])
             trip = Trip(*tripActions) #creates trip object which forms the trip linked list 
-            trip.insertAction(0, AtDepot())
-            trip.insertAction(len(trip.actions), AtDepot())
 
             print(trip)
             tools.drawTrip(trip)
 
             packagePool = 0
+
+    '''
+    Takes a trip and returns a trip with nodes ordered by nearest neighbour heuristic 
+    '''
+    def nearestNeighbour(self, orderedTrip, tripActions):
+        consideredNode = orderedTrip[-1].node 
+        distances = []
+        if len(tripActions) == 1: 
+            orderedTrip.append(tripActions[-1])
+            return orderedTrip
+
+        for action in tripActions[:-1]:
+            distances.append((Node.distanceFinder(consideredNode, action.node), action))
+        
+        orderedTrip.append(min(distances, key = lambda x : x[0])[1])
+
+        self.nearestNeighbour(orderedTrip, tripActions.remov)
 
 
             
