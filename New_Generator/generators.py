@@ -7,6 +7,7 @@ from generatorObjects.drone import Drone
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
 from generatorObjects.package import Package 
+import tools
 
 class Problem:
     """ 
@@ -141,9 +142,8 @@ class Problem:
             trip.insertAction(len(trip.actions), AtDepot())
 
             print(trip)
+            tools.drawTrip(trip)
 
-            for action in trip.actions:
-                print(f"{action.prevAction} <--- {action} ---> {action.nextAction} ")
             packagePool = 0
 
 
