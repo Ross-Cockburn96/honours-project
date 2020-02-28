@@ -6,15 +6,12 @@ class Drone:
     def __init__(self, *args):
         self.trips = list(args)
         
-
-
     def addTrip(self, trip):
         self.trips.append(trip)
 
-    def getAllDeliveries(self):
-        deliveries = [delivery for trip in self.trips for delivery in trip.deliveries ]
-        return deliveries
-    
+    def getAllActions(self):
+        actions = [action for trip in self.trips for action in trip.actions]
+        return actions
 
     def __repr__(self):
         return (str(self.trips))

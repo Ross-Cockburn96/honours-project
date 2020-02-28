@@ -5,7 +5,8 @@ import parameters
 if __name__ == "__main__": 
     problem = Problem(100, 50,  "uniform")
     problem.generateNodes()
-    problem.generateRechargingStations()
+    #problem.generateRechargingStations()
+    problem.generateTrips()
 
     plt.sca(parameters.ax)
     plt.show()

@@ -3,6 +3,10 @@ import math
 from node import CustomerNode, ChargingNode
 import matplotlib.pyplot as plt
 import parameters
+from generatorObjects.drone import Drone 
+from generatorObjects.action import Delivery, ChangeBattery
+from generatorObjects.trip import Trip
+from generatorObjects.package import Package 
 
 class Problem:
     """ 
@@ -105,4 +109,10 @@ class Problem:
             chargingStation.random(0, self.citySize)
             x,y = chargingStation.getCoords()
             self.ax1.scatter(x,y, color='b')
+
+
+    def generateTrips(self):
+        d1 = Drone()
+
+        
 
