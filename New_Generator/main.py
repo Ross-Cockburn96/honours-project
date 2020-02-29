@@ -2,9 +2,12 @@ from generators import Problem
 import matplotlib.pyplot as plt 
 import parameters
 import sys
+import random
+import tools
 
 if __name__ == "__main__": 
-    print("here")
+
+    
     if len(sys.argv) > 1: 
         print("setting seed")
         parameters.seedVal = sys.argv[1]

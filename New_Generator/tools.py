@@ -84,3 +84,20 @@ def add_arrow(line, ax, position=None, direction='right', size=15, color=None): 
         arrowprops=dict(arrowstyle="->", color=color),
         size=size
     )
+
+def plotValues(values):
+    values = np.array(values)
+    rangeVal = max(values) - min(values)
+    numberOfInstances = len(values)
+    numIntervals = int(math.sqrt(numberOfInstances))
+    widthIntervals = rangeVal/numIntervals
+    bins = []
+
+    binValue = min(values)
+    for val in range(0, numberOfInstances, numIntervals):
+        bins.append(binValue)
+        binValue += widthIntervals 
+    bins[-1] = bins[-2] + widthIntervals 
+
+    plt.hist(values, bins = bins)
+    plt.show()

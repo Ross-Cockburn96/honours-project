@@ -21,7 +21,7 @@ class Delivery(Action):
         return str(self)
 
     def __str__(self):
-        return (super().__str__() + f" Package: {self.package.id}")
+        return (super().__str__() + f" Package: {self.package}")
 
 #TODO --- implement battery
 class ChangeBattery(Action):

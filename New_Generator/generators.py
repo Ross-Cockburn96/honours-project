@@ -122,7 +122,7 @@ class Problem:
         packageCounter = 0 #used for assigning ids to packages
         while packagePool > 0:  
             
-            packagesInTrip = random.randint(1,min(5, packagePool)) #decide how many packages the drone will deliver, limited by cargo hold size
+            packagesInTrip = random.randint(1,min(parameters.droneCargoCapacity, packagePool)) #decide how many packages the drone will deliver, limited by cargo hold size
             packagePool -= packagesInTrip 
 
             tripActions = [] #contains the actions carried out in the trip 
@@ -138,6 +138,7 @@ class Problem:
                 #create drone action delivering package to customer 
                 delivery = Delivery(customer, pkg)
                 tripActions.append(delivery)
+            deliveryActions = tripActions.copy()
             tripActions.insert(0, AtDepot())
             tripActions.append(AtDepot())
 
@@ -145,7 +146,9 @@ class Problem:
             orderedTrip = (self.nearestNeighbour([orderedTripActions], tripActions[1:]))
 
             trip = Trip(*orderedTrip) #creates trip object which forms the trip linked list 
-            tools.drawTrip(trip)
+
+            self.calculatePackageWeights(deliveryActions)
+            #tools.drawTrip(trip)
             
 
     '''
@@ -169,9 +172,12 @@ class Problem:
 
         return self.nearestNeighbour(orderedTrip, tripActions)
         
-
-
-            
-
+    def calculatePackageWeights(self,deliveries):
+        maxWeight = parameters.droneWeightCapacity - (len(deliveries) -1)
         
+        for delivery in deliveries: 
+            packageWeight = random.randint(1,maxWeight)
+            delivery.package.weight = packageWeight
+            maxWeight -= packageWeight
 
+            maxWeight += 1
