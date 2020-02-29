@@ -94,6 +94,13 @@ class ChargingNode(Node):
         super().__init__()
         self.capacity = 0
 
+class DepletionPoint(Node):
+    def __init__(self, action, xCoord, yCoord): 
+        super().__init__()
+        self.xCoord = xCoord
+        self.yCoord = yCoord
+        self.action = action #the action that was being carried out when the charge depletion occured 
+
 class Depot(Node): 
     closeTime = parameters.dayLength
     openTime = 0

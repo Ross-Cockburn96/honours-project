@@ -9,10 +9,13 @@ rechargingNodetoCitySizeRatio = 0.0020
 citySize = 20000 #m^2
 dayLength = 28800 #8 hours
 
-#drone properties
+#drone properties (can change) 
 droneWeightCapacity = 30 #lb
 droneCargoCapacity = 5
 droneSpeed = 10 #m/s
+batteryDistance = 20000 #how much distance the drone's current battery has 
+
+
 
 seedVal = None
 randomGen = random

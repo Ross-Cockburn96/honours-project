@@ -1,6 +1,6 @@
 import random
 import math
-from generatorObjects.node import CustomerNode, ChargingNode, Node
+from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint
 import matplotlib.pyplot as plt
 import parameters
 from generatorObjects.drone import Drone 
@@ -69,7 +69,7 @@ class Problem:
             x, y = customer.getCoords()
             self.ax1.set_xlim([0,self.citySize])
             self.ax1.set_ylim([0,self.citySize])
-            self.ax1.scatter(x,y, color='k')
+            #self.ax1.scatter(x,y, color='k')
         
 
 
@@ -115,7 +115,7 @@ class Problem:
             self.ax1.scatter(x,y, color='b')
 
 
-    def generateTrips(self):
+    def generateTripsandDrones(self):
         customersCopy = self.customers.copy() #no deep copy required
         currentDrone = Drone()
         packagePool = self.noOfPackages
@@ -150,14 +150,11 @@ class Problem:
             self.calculatePackageWeights(deliveryActions)
 
             tripDistance = Node.distanceCalc(*[action.node for action in trip.actions]) #pass in nodes visited in the trip to the trip distance calculator 
-            print(f"distance left on drone is {currentDrone.distanceLeft}")
             if currentDrone.distanceLeft < tripDistance: 
-                print("drone full, creating new drone")
                 #drone is unable to take on this trip, create new drone 
                 self.drones.append(currentDrone)
                 currentDrone = Drone()
             else: 
-                print("adding trip to drone")
                 currentDrone.trips.append(trip)
                 currentDrone.distanceLeft -= tripDistance
            
@@ -198,3 +195,57 @@ class Problem:
             maxWeight -= packageWeight
 
             maxWeight += 1
+    
+    def calculateChargeDepletionPoints(self):
+        ax = plt.axes()
+        
+        depletionPoints = []
+        for drone in self.drones:
+            for trip in drone.trips:
+                for action in trip.actions[1:]: 
+                    distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
+                    drone.batteryDistance -= distanceTraveled
+                    if drone.batteryDistance < 0: 
+                        
+                        depletionDistance  = distanceTraveled + drone.batteryDistance
+                        print(f"distance traveled: {distanceTraveled}, batteryLeft = {drone.batteryDistance}, depletion distance: {depletionDistance}")
+                        unitX, unitY = self.calculateUnitVector(action.node, action.prevAction.node)
+
+                        tools.drawLine(action.prevAction.node, action.node, ax)
+
+                        originX, originY = action.prevAction.node.getCoords()
+                        ax.plot(originX, originY, 'bo')
+
+                        if originX + (unitX * depletionDistance) in range(originX, action.node.xCoord +1):
+                            depletionX = originX + (unitX * depletionDistance)
+                        else:
+                            depletionX = action.node.xCoord
+                        if originY + (unitY * depletionDistance) in range(originY, action.node.yCoord + 1):
+                            depletionY = originY + (unitY * depletionDistance)
+                        else:
+                            depletionY = action.node.yCoord
+
+                        ax.plot(depletionX, depletionY, 'ro')
+
+                        depletionPoints.append(DepletionPoint(action = action, xCoord = depletionX, yCoord = depletionY))
+                        drone.batteryDistance = parameters.batteryDistance
+
+        plt.show()
+
+    def calculateUnitVector(self,node1, node2):
+        x1, y1 = node1.getCoords() 
+        x2, y2 = node2.getCoords()
+
+        vectorX = x2 - x1 
+        vectorY = y2 - y1
+
+        magVector = math.sqrt(vectorX**2 + vectorY**2)
+
+        unitX = vectorX/magVector
+        unitY = vectorY/magVector
+
+        return (unitX, unitY)
+
+    def calculateRechargeStations(self): 
+        pass
+
