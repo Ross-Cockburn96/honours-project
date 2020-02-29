@@ -5,9 +5,7 @@ class Drone:
     #takes either an individual trip or a list of trips as argument 
     def __init__(self, *args):
         self.trips = list(args)
-        
-    def addTrip(self, trip):
-        self.trips.append(trip)
+        self.distanceLeft = parameters.dayLength * parameters.droneSpeed #this is the maximum distance a drone can travel in a day 
 
     def getAllActions(self):
         actions = [action for trip in self.trips for action in trip.actions]

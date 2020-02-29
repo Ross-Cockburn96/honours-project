@@ -12,6 +12,7 @@ dayLength = 28800 #8 hours
 #drone properties
 droneWeightCapacity = 30 #lb
 droneCargoCapacity = 5
+droneSpeed = 10 #m/s
 
 seedVal = None
 randomGen = random

@@ -50,6 +50,7 @@ class Problem:
         self.citySize = parameters.citySize 
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
+        self.drones = []
         random.seed(parameters.seedVal)
         if not(distribution == "uniform" or distribution == "clustered"):
             print("distribution should be either 'uniform' or 'clustered' defaulting to uniform")
@@ -116,8 +117,7 @@ class Problem:
 
     def generateTrips(self):
         customersCopy = self.customers.copy() #no deep copy required
-        d1 = Drone()
-        currentDrone = d1
+        currentDrone = Drone()
         packagePool = self.noOfPackages
         packageCounter = 0 #used for assigning ids to packages
         while packagePool > 0:  
@@ -148,8 +148,25 @@ class Problem:
             trip = Trip(*orderedTrip) #creates trip object which forms the trip linked list 
 
             self.calculatePackageWeights(deliveryActions)
+
+            tripDistance = Node.distanceCalc(*[action.node for action in trip.actions]) #pass in nodes visited in the trip to the trip distance calculator 
+            print(f"distance left on drone is {currentDrone.distanceLeft}")
+            if currentDrone.distanceLeft < tripDistance: 
+                print("drone full, creating new drone")
+                #drone is unable to take on this trip, create new drone 
+                self.drones.append(currentDrone)
+                currentDrone = Drone()
+            else: 
+                print("adding trip to drone")
+                currentDrone.trips.append(trip)
+                currentDrone.distanceLeft -= tripDistance
+           
             #tools.drawTrip(trip)
-            
+
+        #add final drone to drone collection 
+        if self.drones[-1] != currentDrone: 
+            self.drones.append(currentDrone)
+
 
     '''
     Takes a trip and returns a trip with nodes ordered by nearest neighbour heuristic 

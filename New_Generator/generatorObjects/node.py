@@ -39,7 +39,26 @@ class Node:
             valid = True 
         
         self.xCoord = x 
-        self.yCoord = y 
+        self.yCoord = y     
+    
+    """
+    Takes any number of nodes as argument and returns the distance of the route.
+    Assumes that the order the nodes are in is the order of the path.
+    """
+    @classmethod
+    def distanceCalc(cls, *args):
+        nodes = list(args)
+        #print(f"considering nodes {str(nodes)}")
+        numOfNodes = len(nodes)
+        distance = 0
+        for idx, node in enumerate(nodes):
+            if idx == (numOfNodes-1):
+                break
+            #print(f"idx is {idx} num of nodes is {numOfNodes}")
+            nextNode = nodes[idx + 1]
+            distance += math.sqrt(((node.xCoord - nextNode.xCoord)**2) + ((node.yCoord - nextNode.yCoord)**2))
+        #print(f"distance is {distance}")
+        return math.floor(distance) #adds distance in meters to fitness function
         
     @classmethod
     def deepCopy(cls,node1, node2):
