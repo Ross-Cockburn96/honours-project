@@ -17,8 +17,9 @@ def drawTrip(trip, ax=None, show = True, colour = 'k'):
     
     prevAction = trip.actions[0]
     for action in trip.actions[1:]: 
-        ax.plot(*prevAction.node.getCoords(),'ro')
-        drawLine(prevAction.node, action.node, ax, colour)
+        if prevAction.node.getCoords() != action.node.getCoords(): #don't plot nodes on the same spot
+            ax.plot(*prevAction.node.getCoords(),'ro')
+            drawLine(prevAction.node, action.node, ax, colour)
         prevAction = action
     
     ax.plot(*trip.actions[-1].node.getCoords(), 'ro')
@@ -44,7 +45,6 @@ def drawLine(node1, node2, ax, colour = 'k'):
     midy = sum(ydata)/2
 
     #insert midpoint and (midpoint + small value) to plotting arrays so arrow can be annotated at the coords
-    
     xdata = np.insert(xdata, 1, (midx, midx + (unitX*3))) 
     ydata = np.insert(ydata, 1, (midy, midy + (unitY*3)))
 

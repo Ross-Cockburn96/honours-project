@@ -44,11 +44,13 @@ class Problem:
     
     """
     ax1 = parameters.ax
+    
     def __init__(self, noOfNodes, noOfPackages, distribution="uniform" ):
         self.customers = []
         self.citySize = parameters.citySize 
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
+        random.seed(parameters.seedVal)
         if not(distribution == "uniform" or distribution == "clustered"):
             print("distribution should be either 'uniform' or 'clustered' defaulting to uniform")
             distribution = "uniform"
@@ -138,31 +140,35 @@ class Problem:
                 tripActions.append(delivery)
             tripActions.insert(0, AtDepot())
             tripActions.append(AtDepot())
+
             orderedTripActions = tripActions[0] #depot
-            self.nearestNeighbour([orderedTripActions], tripActions[1:])
-            trip = Trip(*tripActions) #creates trip object which forms the trip linked list 
+            orderedTrip = (self.nearestNeighbour([orderedTripActions], tripActions[1:]))
 
-            print(trip)
+            trip = Trip(*orderedTrip) #creates trip object which forms the trip linked list 
             tools.drawTrip(trip)
-
-            packagePool = 0
+            
 
     '''
     Takes a trip and returns a trip with nodes ordered by nearest neighbour heuristic 
     '''
     def nearestNeighbour(self, orderedTrip, tripActions):
         consideredNode = orderedTrip[-1].node 
-        distances = []
-        if len(tripActions) == 1: 
-            orderedTrip.append(tripActions[-1])
+        distances = {}
+        if len(tripActions) == 2: 
+            orderedTrip.append(tripActions[-2])
+            orderedTrip.append(tripActions[-1]) #append depot onto the end to finish the trip
             return orderedTrip
 
-        for action in tripActions[:-1]:
-            distances.append((Node.distanceFinder(consideredNode, action.node), action))
+        for action in tripActions[:-1]: #don't include last node because that is depot 
+           distances[action] = Node.distanceFinder(consideredNode, action.node)
         
-        orderedTrip.append(min(distances, key = lambda x : x[0])[1])
+        closest = min(distances.items(), key=lambda x : x[1])
+        tripActions.remove(closest[0])
 
-        self.nearestNeighbour(orderedTrip, tripActions.remov)
+        orderedTrip.append(closest[0])
+
+        return self.nearestNeighbour(orderedTrip, tripActions)
+        
 
 
             

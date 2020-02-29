@@ -7,8 +7,8 @@ class Node:
     yCoord = None 
 
     def random(self, minVal, maxVal): 
-        self.xCoord = random.randint(minVal, maxVal)
-        self.yCoord = random.randint(minVal, maxVal)
+        self.xCoord = parameters.randomGen.randint(minVal, maxVal)
+        self.yCoord = parameters.randomGen.randint(minVal, maxVal)
 
     def getCoords(self): 
         return self.xCoord, self.yCoord
@@ -22,8 +22,8 @@ class Node:
 
         valid = False 
         while not valid: 
-            r = radius * math.sqrt(random.random())
-            theta = random.random() * 2 * math.pi
+            r = radius * math.sqrt(parameters.randomGen.random())
+            theta = parameters.randomGen.random() * 2 * math.pi
             x = math.floor(centerX + r * math.cos(theta))
             if x > parameters.citySize:
                 continue
@@ -58,7 +58,9 @@ class Node:
         vecY = y2 - y1 
     
         return math.sqrt(vecX**2 + vecY**2)
-    
+    def __repr__(self):
+        return str(self)
+
     def __str__(self):
         return (f"{self.xCoord, self.yCoord}")    
 
