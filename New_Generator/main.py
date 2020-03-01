@@ -12,7 +12,7 @@ if __name__ == "__main__":
         print("setting seed")
         parameters.seedVal = sys.argv[1]
 
-    problem = Problem(noOfNodes = 100, noOfPackages = 20,  distribution="uniform")  
+    problem = Problem(noOfNodes = 100, noOfPackages = 50,  distribution="uniform")  
     problem.generateNodes()
     #problem.generateRechargingStations()
     problem.generateTripsandDrones()
