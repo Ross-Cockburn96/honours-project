@@ -213,7 +213,7 @@ class Problem:
                         #tools.drawLine(action.prevAction.node, action.node, ax)
 
                         originX, originY = action.prevAction.node.getCoords()
-                        ax.plot(originX, originY, 'bo')
+                        #ax.plot(originX, originY, 'bo')
                         
                 
 
@@ -224,7 +224,7 @@ class Problem:
 
                         depletionPoints.append(DepletionPoint(action = action, xCoord = depletionX, yCoord = depletionY))
                         drone.batteryDistance = parameters.batteryDistance
-
+        return depletionPoints
         #plt.show()
 
     def calculateUnitVector(self,node1, node2):
