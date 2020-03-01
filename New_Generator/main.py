@@ -12,12 +12,13 @@ if __name__ == "__main__":
         print("setting seed")
         parameters.seedVal = sys.argv[1]
 
-    problem = Problem(noOfNodes = 100, noOfPackages = 50,  distribution="uniform")  
+    problem = Problem(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
     problem.generateNodes()
     #problem.generateRechargingStations()
     problem.generateTripsandDrones()
     depletionPoints = problem.calculateChargeDepletionPoints()
     rechargeStations = problem.calculateRechargeStations(depletionPoints)
+    problem.includeChargingStations(depletionPoints, rechargeStations)
 
     plt.sca(parameters.ax)
     plt.show()

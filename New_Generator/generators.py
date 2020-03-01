@@ -1,6 +1,6 @@
 import random
 import math
-from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint
+from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 import matplotlib.pyplot as plt
 import parameters
 from generatorObjects.drone import Drone 
@@ -72,7 +72,7 @@ class Problem:
             x, y = customer.getCoords()
             self.ax1.set_xlim([0,self.citySize])
             self.ax1.set_ylim([0,self.citySize])
-            #self.ax1.scatter(x,y, color='k')
+            self.ax1.scatter(x,y, color='k')
         
 
 
@@ -207,24 +207,24 @@ class Problem:
             for trip in drone.trips:
                 for action in trip.actions[1:]: 
                     distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
-                    drone.batteryDistance -= distanceTraveled
-                    if drone.batteryDistance < 0: 
+                    drone.battery.batteryDistance -= distanceTraveled
+                    if drone.battery.batteryDistance < 0: 
                         
-                        depletionDistance  = distanceTraveled + drone.batteryDistance
+                        depletionDistance  = distanceTraveled + drone.battery.batteryDistance
                         unitX, unitY = self.calculateUnitVector(action.prevAction.node, action.node) #ensure origin node is first arg and dest node is 2nd for correct unit vector direction
 
-                        tools.drawLine(action.prevAction.node, action.node, self.ax1)
+                        #tools.drawLine(action.prevAction.node, action.node, self.ax1)
 
                         originX, originY = action.prevAction.node.getCoords()
-                        self.ax1.plot(originX, originY, 'bo')
+                        #self.ax1.plot(originX, originY, 'bo')
 
                         depletionX = originX + (unitX * depletionDistance)
                         depletionY = originY + (unitY * depletionDistance)
 
-                        self.ax1.plot(depletionX, depletionY, 'ro')
+                        #self.ax1.plot(depletionX, depletionY, 'ro')
 
-                        depletionPoints.append(DepletionPoint(action = action, xCoord = depletionX, yCoord = depletionY))
-                        drone.batteryDistance = parameters.batteryDistance
+                        depletionPoints.append(DepletionPoint(action = action, trip = trip, drone = drone, xCoord = depletionX, yCoord = depletionY))
+                        drone.battery.batteryDistance = parameters.batteryDistance #reset battery charge to calculate next depletion point
         return depletionPoints
         #plt.show()
 
@@ -255,13 +255,15 @@ class Problem:
             rechargeStations.append(ChargingNode(int(x),int(y)))
             self.ax1.plot(x,y,'yo')
 
-        
+        return rechargeStations
 
     def calculateNumberOfClusters(self, depletionCoordinates):
         pointArray = np.array(depletionCoordinates).reshape(len(depletionCoordinates),2)
 
         distortions = [] 
-        numberOfClusters = 10 # max number of clusters possible
+        numberOfClusters = 15 # max number of clusters possible
+        print(numberOfClusters)
+        print(len(pointArray))
         K = range(1,numberOfClusters)
 
         for k in K: 
@@ -272,8 +274,46 @@ class Problem:
         #distortion is calculated as the sum of the squared distances from each point to its assigned center
         #the elbow is where distortion rate plateaus as more cluster centers get added
         for idx, val in enumerate(distortions[1:]):
-            if val/distortions[idx] > .90:
+            if val/distortions[idx] > .95:
                 numberOfClusters = idx + 1 #select the number of clusters as the previous distortion value (+1 because python indexes from 0) 
                 break #end loop when elbow is found 
        
         return numberOfClusters
+    
+    def includeChargingStations(self, depletionPoints, rechargingStations): 
+        trip = depletionPoints[0].trip 
+        rechargingStations.sort(key = lambda x : (x.xCoord, x.yCoord))
+        for depletionPoint in depletionPoints: 
+            print(f"considering depletion point {depletionPoint.getCoords()}")
+            action = depletionPoint.action
+            trip = depletionPoint.trip
+            drone = depletionPoint.drone
+            
+            if "AtDepot" in str(type(action.prevAction)): #if the depletion point was on the movement from the origin
+                print(f"need to switch at depot")
+                changeBatteryAction = ChangeBattery(action.prevAction.node, drone.battery) #create action to change battery at depot 
+                Depot.batteriesHeld.append(drone.battery) #add the battery dropped off to the batteries held list
+                Depot.capacity += 1 #increment the battery slot capacity required by depot
+                drone.battery = changeBatteryAction.batterySelected #switch drone battery to the new battery which is selected when action is instantiated
+                trip.actions[0] = changeBatteryAction #change first action from AtDepot to ChangeBattery
+
+            else: 
+                closestChargingPoint = Node.binarySearch(rechargingStations, 0, len(rechargingStations)-1, action.prevAction.node)
+                chargeRemaining = Node.distanceFinder(depletionPoint, action.prevAction.node) #charge at depletion point is 0 so charge remaining at start of action is distance from prevAction node to depletionPoint
+                distanceToChargePoint = Node.distanceFinder(action.prevAction.node, closestChargingPoint)
+                if distanceToChargePoint <= chargeRemaining: 
+                    changeBatteryAction = ChangeBattery(closestChargingPoint, drone.battery) #create action to change battery at charging point
+                    closestChargingPoint.batteriesHeld.append(drone.battery)
+                    closestChargingPoint.capacity += 1
+                    drone.battery = changeBatteryAction.batterySelected
+                    idx = trip.actions.index(action)
+                    trip.insertAction(idx, changeBatteryAction) #insert change battery action between origin and dest action nodes on linked list
+                else: 
+                    print(f"COULD NOT REACH node {closestChargingPoint} distance was {distanceToChargePoint}")
+                    newStation = ChargingNode(depletionPoint.xCoord, depletionPoint.yCoord)
+                    rechargingStations.append(newStation) #create a new charging station 
+                    rechargingStations.sort(key = lambda x : (x.xCoord, x.yCoord)) #resort the list to allow binary search to work and the option for this charging station to be used by another drone
+                    closestPoint = Node.binarySearch(rechargingStations, 0, len(rechargingStations)-1, action.prevAction.node)
+                    distance = Node.distanceFinder(action.prevAction.node, newStation)
+                    print(f"closest point to depletion point {depletionPoint.getCoords()} is {closestPoint} distance to new station is {distance}")
+        print(f"batteries held in depot: {Depot.batteriesHeld} capacity: {Depot.capacity}")  

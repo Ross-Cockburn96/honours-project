@@ -8,6 +8,7 @@ import random
 
 from generatorObjects.node import Node
 
+
 def drawTrip(trip, ax=None, show = True, colour = 'k'):
     if ax == None:
         ax = plt.axes() 
@@ -26,6 +27,12 @@ def drawTrip(trip, ax=None, show = True, colour = 'k'):
     if show:
         plt.show()
 
+def drawDroneTrips(drone): 
+    ax = plt.axes() 
+    for trip in drone.trips: 
+        colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
+        drawTrip(trip, ax, False, colourForTrip)
+    plt.show()
 def drawLine(node1, node2, ax, colour = 'k'):
     x1, y1 = node1.getCoords()
     x2, y2 = node2.getCoords()

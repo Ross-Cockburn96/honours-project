@@ -1,5 +1,5 @@
 from generatorObjects.node import Depot
-
+from generatorObjects.battery import Battery
 class Action:
     def __init__(self, node, prevAction, nextAction):
         self.node = node
@@ -26,6 +26,8 @@ class Delivery(Action):
 #TODO --- implement battery
 class ChangeBattery(Action):
     def __init__(self, node, battery, prevAction=None, nextAction=None):
+        self.batteryDropped = battery
+        self.batterySelected = Battery()
         super().__init__(node, prevAction, nextAction)
     
 class AtDepot(Action):
