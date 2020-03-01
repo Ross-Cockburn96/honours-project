@@ -19,5 +19,5 @@ if __name__ == "__main__":
     depletionPoints = problem.calculateChargeDepletionPoints()
     rechargeStations = problem.calculateRechargeStations(depletionPoints)
 
-    # plt.sca(parameters.ax)
-    # plt.show()
+    plt.sca(parameters.ax)
+    plt.show()

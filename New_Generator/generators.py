@@ -108,7 +108,7 @@ class Problem:
         else:
             self.clusteredGeneration()
 
-    def generateRechargingStations(self): 
+    def generateRechargingStations(self): #not used
         numberOfStations = math.floor(parameters.rechargingNodetoCitySizeRatio * parameters.citySize)
 
         for _ in range(numberOfStations): 
@@ -213,15 +213,15 @@ class Problem:
                         depletionDistance  = distanceTraveled + drone.batteryDistance
                         unitX, unitY = self.calculateUnitVector(action.prevAction.node, action.node) #ensure origin node is first arg and dest node is 2nd for correct unit vector direction
 
-                        #tools.drawLine(action.prevAction.node, action.node, ax)
+                        tools.drawLine(action.prevAction.node, action.node, self.ax1)
 
                         originX, originY = action.prevAction.node.getCoords()
-                        #ax.plot(originX, originY, 'bo')
+                        self.ax1.plot(originX, originY, 'bo')
 
                         depletionX = originX + (unitX * depletionDistance)
                         depletionY = originY + (unitY * depletionDistance)
 
-                        #ax.plot(depletionX, depletionY, 'ro')
+                        self.ax1.plot(depletionX, depletionY, 'ro')
 
                         depletionPoints.append(DepletionPoint(action = action, xCoord = depletionX, yCoord = depletionY))
                         drone.batteryDistance = parameters.batteryDistance
@@ -243,8 +243,17 @@ class Problem:
         return (unitX, unitY)
 
     def calculateRechargeStations(self, depletionPoints): 
+        rechargeStations = []
         depletionCoords = [x.getCoords() for x in depletionPoints]
         clusterAmount = self.calculateNumberOfClusters(depletionCoords)
+
+        depletionPointArray = np.array(depletionCoords).reshape(len(depletionCoords),2 )
+        kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
+
+        for idx, vals in enumerate(kmeans.cluster_centers_):
+            x,y = vals
+            rechargeStations.append(ChargingNode(int(x),int(y)))
+            self.ax1.plot(x,y,'yo')
 
         
 
@@ -263,7 +272,7 @@ class Problem:
         #distortion is calculated as the sum of the squared distances from each point to its assigned center
         #the elbow is where distortion rate plateaus as more cluster centers get added
         for idx, val in enumerate(distortions[1:]):
-            if val/distortions[idx] > .85:
+            if val/distortions[idx] > .90:
                 numberOfClusters = idx + 1 #select the number of clusters as the previous distortion value (+1 because python indexes from 0) 
                 break #end loop when elbow is found 
        

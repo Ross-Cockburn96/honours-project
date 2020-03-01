@@ -90,8 +90,10 @@ class CustomerNode(Node):
         self.closeTime = None
     
 class ChargingNode(Node):
-    def __init__(self):
+    def __init__(self, xCoord, yCoord):
         super().__init__()
+        self.xCoord = xCoord
+        self.yCoord = yCoord
         self.capacity = 0
 
 class DepletionPoint(Node):
