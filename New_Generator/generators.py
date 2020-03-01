@@ -7,6 +7,9 @@ from generatorObjects.drone import Drone
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
 from generatorObjects.package import Package 
+import numpy as np
+from sklearn.cluster import KMeans 
+from scipy.spatial.distance import cdist
 import tools
 
 class Problem:
@@ -208,14 +211,12 @@ class Problem:
                     if drone.batteryDistance < 0: 
                         
                         depletionDistance  = distanceTraveled + drone.batteryDistance
-                        unitX, unitY = self.calculateUnitVector(action.prevAction.node, action.node)
+                        unitX, unitY = self.calculateUnitVector(action.prevAction.node, action.node) #ensure origin node is first arg and dest node is 2nd for correct unit vector direction
 
                         #tools.drawLine(action.prevAction.node, action.node, ax)
 
                         originX, originY = action.prevAction.node.getCoords()
                         #ax.plot(originX, originY, 'bo')
-                        
-                
 
                         depletionX = originX + (unitX * depletionDistance)
                         depletionY = originY + (unitY * depletionDistance)
@@ -241,6 +242,29 @@ class Problem:
 
         return (unitX, unitY)
 
-    def calculateRechargeStations(self): 
-        pass
+    def calculateRechargeStations(self, depletionPoints): 
+        depletionCoords = [x.getCoords() for x in depletionPoints]
+        clusterAmount = self.calculateNumberOfClusters(depletionCoords)
 
+        
+
+    def calculateNumberOfClusters(self, depletionCoordinates):
+        pointArray = np.array(depletionCoordinates).reshape(len(depletionCoordinates),2)
+
+        distortions = [] 
+        numberOfClusters = 10 # max number of clusters possible
+        K = range(1,numberOfClusters)
+
+        for k in K: 
+            kmeanModel = KMeans(n_clusters = k).fit(pointArray)
+            kmeanModel.fit(pointArray)
+            distortions.append(sum(np.min(cdist(pointArray, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / pointArray.shape[0])
+        #iterate through the distortion values and compare the the previous value (accessed through idx)
+        #distortion is calculated as the sum of the squared distances from each point to its assigned center
+        #the elbow is where distortion rate plateaus as more cluster centers get added
+        for idx, val in enumerate(distortions[1:]):
+            if val/distortions[idx] > .85:
+                numberOfClusters = idx + 1 #select the number of clusters as the previous distortion value (+1 because python indexes from 0) 
+                break #end loop when elbow is found 
+       
+        return numberOfClusters

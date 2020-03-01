@@ -17,7 +17,7 @@ if __name__ == "__main__":
     #problem.generateRechargingStations()
     problem.generateTripsandDrones()
     depletionPoints = problem.calculateChargeDepletionPoints()
-    rechargeStations = problem.calculateRechargeStations()
+    rechargeStations = problem.calculateRechargeStations(depletionPoints)
 
     # plt.sca(parameters.ax)
     # plt.show()
