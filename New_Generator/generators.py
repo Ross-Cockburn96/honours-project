@@ -156,17 +156,16 @@ class Problem:
             if currentDrone.distanceLeft < tripDistance: 
                 #drone is unable to take on this trip, create new drone 
                 self.drones.append(currentDrone)
-                currentDrone = Drone()
+                currentDrone = Drone(trip)
+                currentDrone.distanceLeft -= tripDistance
             else: 
                 currentDrone.trips.append(trip)
                 currentDrone.distanceLeft -= tripDistance
            
-            #tools.drawTrip(trip)
-
+            
         #add final drone to drone collection 
         if self.drones[-1] != currentDrone: 
             self.drones.append(currentDrone)
-
 
     '''
     Takes a trip and returns a trip with nodes ordered by nearest neighbour heuristic 
@@ -284,9 +283,7 @@ class Problem:
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
-        for drone in self.drones: 
-            if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
-                print("NEED TO CREATE A NEW BLOODY DRONE FFS1")
+        
 
         for depletionPoint in depletionPoints: 
             action = depletionPoint.action
@@ -324,10 +321,18 @@ class Problem:
                     rechargingStations.append(newStation) #create a new charging station 
                     closestPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                     distance = Node.distanceFinder(action.prevAction.node, newStation)
-
         for drone in self.drones: 
             if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
-                print("NEED TO CREATE A NEW BLOODY DRONE FFS2")
+                lastTrip = drone.trips.pop() #remove trip from drone
+                tripDistance =  Node.distanceCalc(*[action.node for action in lastTrip.actions])
+                if self.drones[-1].distanceLeft > tripDistance:
+                    self.drones[-1].trips.append(lastTrip)
+                    self.drones[-1].distanceLeft -= tripDistance 
+                else:
+                    newDrone = Drone(lastTrip)
+                    self.drones.append(newDrone)
+                    newDrone.distanceLeft -= tripDistance
+   
         # print() 
         # print("capacity stats for kmean stations")
         # total = 0
