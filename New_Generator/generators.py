@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
 import tools
 
-class Problem:
+class Generator:
     """ 
     This class is used to generate random problems to the 
     Drone Delivery Problem 
@@ -393,3 +393,19 @@ class Problem:
             upperBound = time + halfRange
         #print(f"time: {time}, lowerBound: {lowerBound}, upperBound: {upperBound}")
         return int(lowerBound), int(upperBound)
+
+    def createSolutionFile(self):
+        outputElements = [] 
+        outputElements.append(len(self.drones))
+        for drone in self.drones: 
+            outputElements.append(len(drone.trips))
+            for trip in drone.trips: 
+                outputElements.append(len(trip.actions))
+                for action in trip.actions: 
+                    pass
+
+
+        pass
+    
+    def createProblemFile(self):
+        pass

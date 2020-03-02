@@ -1,4 +1,4 @@
-from generators import Problem 
+from generators import Generator 
 import matplotlib.pyplot as plt 
 import parameters
 import sys
@@ -12,13 +12,17 @@ if __name__ == "__main__":
         print("setting seed")
         parameters.seedVal = int(sys.argv[1])
 
-    problem = Problem(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
-    problem.generateNodes()
+    generator = Generator(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
+    generator.generateNodes()
     #problem.generateRechargingStations()
-    problem.generateTripsandDrones()
-    depletionPoints = problem.calculateChargeDepletionPoints()
-    rechargeStations = problem.calculateRechargeStations(depletionPoints)
-    problem.includeChargingStations(depletionPoints, rechargeStations)
-    problem.createTimeWindows() 
+    generator.generateTripsandDrones()
+    depletionPoints = generator.calculateChargeDepletionPoints()
+    rechargeStations = generator.calculateRechargeStations(depletionPoints)
+    generator.includeChargingStations(depletionPoints, rechargeStations)
+    generator.createTimeWindows() 
+
+    generator.createSolutionFile()
+    generator.createProblemFile()
+    
     plt.sca(parameters.ax)
     plt.show()
