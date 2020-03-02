@@ -7,7 +7,7 @@ rechargingNodetoCitySizeRatio = 0.0020
 
 #can change
 citySize = 20000 #m^2
-dayLength = 28800 #8 hours
+dayLength = 28800 #s (8 hours)
 
 #drone properties (can change) 
 droneWeightCapacity = 30 #lb
@@ -21,3 +21,4 @@ seedVal = None
 randomGen = random
 randomGen.seed(seedVal)
 ax = plt.axes()
+timeSlotStandardDev = 60

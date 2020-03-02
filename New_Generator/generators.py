@@ -348,3 +348,48 @@ class Problem:
         # print(f"total for new stations is {total}")
         # print()
         # print(f"batteries held in depot: {Depot.batteriesHeld} capacity: {Depot.capacity}")  
+
+    def createTimeWindows(self): 
+        for drone in self.drones:
+            timeDelivered = 0 
+            for trip in drone.trips: 
+                for action in trip.actions[1:]: 
+                    timeToCompleteAction = Node.distanceFinder(action.node, action.prevAction.node) // parameters.droneSpeed
+                    if "Delivery" in str(type(action)): 
+                        lowerBound, upperBound = self.calculateTimeWindow(timeDelivered)
+                        #since customer nodes can receive multiple deliveries, only set the open time to lower bound if it is null (as a previous delivery will have a ) 
+                        if action.node.openTime == None:
+                            action.node.openTime = lowerBound
+                        else: 
+                            action.node.openTime = min(action.node.openTime, lowerBound)
+                        
+                        if action.node.closeTime == None:
+                            action.node.closeTime = upperBound
+                        else: 
+                            action.node.closeTime = max(action.node.closeTime, upperBound)
+                    print(action.node)
+                    timeDelivered += timeToCompleteAction
+
+
+                    
+            
+    '''
+    Takes a time in seconds and returns a tuple with lower and upper bounds of the window
+    '''
+    def calculateTimeWindow(self, time):
+        lowerBound = None 
+        upperBound = None
+        #drawing a uniform random variable as mean widens the crest of the normal curve to the bounds of the range
+        mean = random.randint(0, parameters.dayLength/4)
+        halfRange = abs(math.floor(random.gauss(mean, parameters.timeSlotStandardDev)))
+        if time - halfRange < 0:
+            lowerBound = 0
+        else:
+            lowerBound = time - halfRange
+        
+        if time + halfRange > parameters.dayLength:
+            upperBound = parameters.dayLength
+        else: 
+            upperBound = time + halfRange
+        #print(f"time: {time}, lowerBound: {lowerBound}, upperBound: {upperBound}")
+        return int(lowerBound), int(upperBound)

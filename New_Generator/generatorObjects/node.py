@@ -151,7 +151,7 @@ class Node:
         return str(self)
 
     def __str__(self):
-        return (f"{self.xCoord, self.yCoord}")    
+        return f"{self.xCoord, self.yCoord}"  
 
 
 class CustomerNode(Node): 
@@ -159,6 +159,12 @@ class CustomerNode(Node):
         super().__init__()
         self.openTime = None
         self.closeTime = None
+
+    def __repr__(self):
+        return str(self)
+    
+    def __str__(self):
+        return super().__str__() + f"{self.openTime, self.closeTime}"
     
 class ChargingNode(Node):
     def __init__(self, xCoord, yCoord):
