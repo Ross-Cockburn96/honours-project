@@ -218,10 +218,10 @@ class Problem:
                         originX, originY = action.prevAction.node.getCoords()
                         #self.ax1.plot(originX, originY, 'bo')
 
-                        depletionX = originX + (unitX * depletionDistance)
-                        depletionY = originY + (unitY * depletionDistance)
+                        depletionX = int(originX + (unitX * depletionDistance))
+                        depletionY = int(originY + (unitY * depletionDistance))
 
-                        #self.ax1.plot(depletionX, depletionY, 'ro')
+                        self.ax1.plot(depletionX, depletionY, 'ro')
 
                         depletionPoints.append(DepletionPoint(action = action, trip = trip, drone = drone, xCoord = depletionX, yCoord = depletionY))
                         drone.battery.batteryDistance = parameters.batteryDistance #reset battery charge to calculate next depletion point
@@ -248,7 +248,7 @@ class Problem:
         clusterAmount = self.calculateNumberOfClusters(depletionCoords)
 
         depletionPointArray = np.array(depletionCoords).reshape(len(depletionCoords),2 )
-        kmeans = KMeans(n_clusters = clusterAmount, random_state = 0).fit(depletionPointArray)
+        kmeans = KMeans(n_clusters = clusterAmount, random_state = parameters.seedVal).fit(depletionPointArray)
 
         for idx, vals in enumerate(kmeans.cluster_centers_):
             x,y = vals
@@ -282,15 +282,18 @@ class Problem:
     
     def includeChargingStations(self, depletionPoints, rechargingStations): 
         trip = depletionPoints[0].trip 
-        rechargingStations.sort(key = lambda x : (x.xCoord, x.yCoord))
+        numberOfRecharge = len(rechargingStations)
+        newChargingStations = []
+        for drone in self.drones: 
+            if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
+                print("NEED TO CREATE A NEW BLOODY DRONE FFS1")
+
         for depletionPoint in depletionPoints: 
-            print(f"considering depletion point {depletionPoint.getCoords()}")
             action = depletionPoint.action
             trip = depletionPoint.trip
             drone = depletionPoint.drone
             
             if "AtDepot" in str(type(action.prevAction)): #if the depletion point was on the movement from the origin
-                print(f"need to switch at depot")
                 changeBatteryAction = ChangeBattery(action.prevAction.node, drone.battery) #create action to change battery at depot 
                 Depot.batteriesHeld.append(drone.battery) #add the battery dropped off to the batteries held list
                 Depot.capacity += 1 #increment the battery slot capacity required by depot
@@ -298,7 +301,7 @@ class Problem:
                 trip.actions[0] = changeBatteryAction #change first action from AtDepot to ChangeBattery
 
             else: 
-                closestChargingPoint = Node.binarySearch(rechargingStations, 0, len(rechargingStations)-1, action.prevAction.node)
+                closestChargingPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                 chargeRemaining = Node.distanceFinder(depletionPoint, action.prevAction.node) #charge at depletion point is 0 so charge remaining at start of action is distance from prevAction node to depletionPoint
                 distanceToChargePoint = Node.distanceFinder(action.prevAction.node, closestChargingPoint)
                 if distanceToChargePoint <= chargeRemaining: 
@@ -309,11 +312,34 @@ class Problem:
                     idx = trip.actions.index(action)
                     trip.insertAction(idx, changeBatteryAction) #insert change battery action between origin and dest action nodes on linked list
                 else: 
-                    print(f"COULD NOT REACH node {closestChargingPoint} distance was {distanceToChargePoint}")
                     newStation = ChargingNode(depletionPoint.xCoord, depletionPoint.yCoord)
+                    #self.ax1.plot(depletionPoint.xCoord, depletionPoint.yCoord, 'bx') #shows new stations added
+                    changeBatteryAction = ChangeBattery(newStation, drone.battery)
+                    newStation.batteriesHeld.append(drone.battery)
+                    newStation.capacity += 1
+                    drone.battery = changeBatteryAction.batterySelected
+                    idx = trip.actions.index(action)
+                    trip.insertAction(idx, changeBatteryAction)
+                    #newChargingStations.append(newStation) #used for keeping track of the new stations
                     rechargingStations.append(newStation) #create a new charging station 
-                    rechargingStations.sort(key = lambda x : (x.xCoord, x.yCoord)) #resort the list to allow binary search to work and the option for this charging station to be used by another drone
-                    closestPoint = Node.binarySearch(rechargingStations, 0, len(rechargingStations)-1, action.prevAction.node)
+                    closestPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                     distance = Node.distanceFinder(action.prevAction.node, newStation)
-                    print(f"closest point to depletion point {depletionPoint.getCoords()} is {closestPoint} distance to new station is {distance}")
-        print(f"batteries held in depot: {Depot.batteriesHeld} capacity: {Depot.capacity}")  
+
+        for drone in self.drones: 
+            if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
+                print("NEED TO CREATE A NEW BLOODY DRONE FFS2")
+        # print() 
+        # print("capacity stats for kmean stations")
+        # total = 0
+        # for station in rechargingStations[:numberOfRecharge]:
+        #     total += station.capacity
+        #     print(station.capacity)
+        # print(f"total for kmean stations is {total}")
+        # total = 0
+        # print("capacity for generated stations")
+        # for station in newChargingStations: 
+        #     total += station.capacity
+        #     print(station.capacity)
+        # print(f"total for new stations is {total}")
+        # print()
+        # print(f"batteries held in depot: {Depot.batteriesHeld} capacity: {Depot.capacity}")  

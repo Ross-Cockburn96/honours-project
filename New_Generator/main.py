@@ -10,9 +10,9 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1: 
         print("setting seed")
-        parameters.seedVal = sys.argv[1]
+        parameters.seedVal = int(sys.argv[1])
 
-    problem = Problem(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
+    problem = Problem(noOfNodes = 100, noOfPackages = 400,  distribution="uniform")  
     problem.generateNodes()
     #problem.generateRechargingStations()
     problem.generateTripsandDrones()

@@ -97,9 +97,9 @@ class Node:
                 candidates.insert(0, sortedArray[r-1])
                 candidates.append(sortedArray[r+1])
             elif r==0 or r==-1:  
-                candidates.append(sortedArray[r+1])
+                candidates.append(sortedArray[r+1], sortedArray[r+2])
             else:
-                candidates.insert(0, sortedArray[r-1])
+                candidates.insert(0, sortedArray[r-1], sortedArray[r+1])
             print(candidates)
             #creates a list of magnitutes from the distance vectors from searchVal to each of the candidates 
             candidateVectorMags = list(map(cls.distanceFinder, candidates, [searchVal]*len(candidates))) 
