@@ -417,10 +417,13 @@ class Generator:
             file.seek(0)
             file.write(solutionString)
 
-    
+    '''
+    format: {number of customers}{number of packages}{number of recharge stations}{depot coords and ids of batteries which start there}{customer coordinates with their time windows}{packages with id, weights and destination}{recharge stations and their respective starting batteries}
+    All nodes, including charging nodes have an implied id val of their position in the problem file. Depot has id 0, first customer has id 1. The ids of recharging nodes continue after the packages, starting from noOfCustomers + 1
+    '''
     def createProblemFile(self):
         outputElements = [] 
-        outputElements.append(self.noOfNodes)
+        outputElements.append(self.noOfNodes) 
         outputElements.append(self.noOfPackages)
         outputElements.append(len(self.rechargeStations))
         outputElements.append(Depot()) #add depot to the problem string
