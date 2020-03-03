@@ -155,7 +155,7 @@ class Node:
         return str(self)
 
     def __str__(self):
-        return f"{self.xCoord}, {self.yCoord}"  
+        return f"{self.xCoord},{self.yCoord}"  
 
 
 class CustomerNode(Node): 
@@ -170,7 +170,7 @@ class CustomerNode(Node):
         return str(self)
     
     def __str__(self):
-        return f"{super().__str__()}, {self.openTime} , {self.closeTime}"
+        return f"{super().__str__()},{self.openTime},{self.closeTime}"
 
 '''
 A charging station, this has coordinates and can be visited by a drone to switch out batteries 
@@ -212,4 +212,4 @@ class Depot(Node):
         return str(self)
     
     def __str__(self):
-        return f"{self.xCoord}, {self.yCoord}"
+        return f"{self.xCoord},{self.yCoord}"

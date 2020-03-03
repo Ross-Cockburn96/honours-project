@@ -8,4 +8,4 @@ class Package:
         return str(self)
     
     def __str__(self):
-        return f"{self.id}, {self.weight}"
+        return f"{self.id},{self.weight}"
