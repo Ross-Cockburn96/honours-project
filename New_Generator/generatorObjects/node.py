@@ -171,7 +171,11 @@ class CustomerNode(Node):
     
     def __str__(self):
         return f"{super().__str__()}, {self.openTime} , {self.closeTime}"
-    
+
+'''
+A charging station, this has coordinates and can be visited by a drone to switch out batteries 
+The batteriesheld variable is a list of batteries that the node should have at the start 
+'''
 class ChargingNode(Node):
     def __init__(self, xCoord, yCoord):
         super().__init__()
@@ -208,4 +212,4 @@ class Depot(Node):
         return str(self)
     
     def __str__(self):
-        return f"{self.id, self.xCoord, self.yCoord}"
+        return f"{self.xCoord}, {self.yCoord}"

@@ -250,7 +250,7 @@ class Generator:
         clusterAmount = self.calculateNumberOfClusters(depletionCoords)
 
         depletionPointArray = np.array(depletionCoords).reshape(len(depletionCoords),2 )
-        kmeans = KMeans(n_clusters = clusterAmount, random_state = parameters.seedVal).fit(depletionPointArray)
+        kmeans = KMeans(n_clusters = clusterAmount, random_state = random.randint(1,10)).fit(depletionPointArray)
 
         for idx, vals in enumerate(kmeans.cluster_centers_):
             x,y = vals
@@ -294,10 +294,10 @@ class Generator:
             drone = depletionPoint.drone
             
             if "AtDepot" in str(type(action.prevAction)): #if the depletion point was on the movement from the origin
-                changeBatteryAction = ChangeBattery(action.prevAction.node, drone.battery) #create action to change battery at depot 
+                changeBatteryAction = ChangeBattery(action.prevAction.node, drone.battery) #create action to change battery at depot. Change battery automatically switches the drone's battery to a new one
+                drone.battery = changeBatteryAction.batterySelected #switch drone battery to the new battery which is selected when action is instantiated
                 Depot.batteriesHeld.append(drone.battery) #add the battery dropped off to the batteries held list
                 Depot.capacity += 1 #increment the battery slot capacity required by depot
-                drone.battery = changeBatteryAction.batterySelected #switch drone battery to the new battery which is selected when action is instantiated
                 trip.actions[0] = changeBatteryAction #change first action from AtDepot to ChangeBattery
 
             else: 
@@ -306,24 +306,25 @@ class Generator:
                 distanceToChargePoint = Node.distanceFinder(action.prevAction.node, closestChargingPoint)
                 if distanceToChargePoint <= chargeRemaining: 
                     changeBatteryAction = ChangeBattery(closestChargingPoint, drone.battery) #create action to change battery at charging point
+                    drone.battery = changeBatteryAction.batterySelected
                     closestChargingPoint.batteriesHeld.append(drone.battery)
                     closestChargingPoint.capacity += 1
-                    drone.battery = changeBatteryAction.batterySelected
                     idx = trip.actions.index(action)
                     trip.insertAction(idx, changeBatteryAction) #insert change battery action between origin and dest action nodes on linked list
                 else: 
                     newStation = ChargingNode(depletionPoint.xCoord, depletionPoint.yCoord)
                     #self.ax1.plot(depletionPoint.xCoord, depletionPoint.yCoord, 'bx') #shows new stations added
                     changeBatteryAction = ChangeBattery(newStation, drone.battery)
+                    drone.battery = changeBatteryAction.batterySelected
                     newStation.batteriesHeld.append(drone.battery)
                     newStation.capacity += 1
-                    drone.battery = changeBatteryAction.batterySelected
                     idx = trip.actions.index(action)
                     trip.insertAction(idx, changeBatteryAction)
                     #newChargingStations.append(newStation) #used for keeping track of the new stations
                     rechargingStations.append(newStation) #create a new charging station 
                     closestPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                     distance = Node.distanceFinder(action.prevAction.node, newStation)
+
         for drone in self.drones: 
             if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
                 lastTrip = drone.trips.pop() #remove trip from drone
@@ -335,7 +336,6 @@ class Generator:
                     newDrone = Drone(lastTrip)
                     self.drones.append(newDrone)
                     newDrone.distanceLeft -= tripDistance
-   
         # print() 
         # print("capacity stats for kmean stations")
         # total = 0
@@ -424,8 +424,10 @@ class Generator:
         outputElements.append(self.noOfPackages)
         outputElements.append(len(self.rechargeStations))
         outputElements.append(Depot()) #add depot to the problem string
+        outputElements.append(len(Depot.batteriesHeld))
+        for battery in Depot.batteriesHeld:
+            outputElements.append(battery)
         for customer in self.customers: 
-            print(f"{customer} is type {type(customer)}")
             outputElements.append(customer)
         for package in self.packages: 
             outputElements.append(package)
@@ -433,8 +435,10 @@ class Generator:
         for rechargeStation in self.rechargeStations: 
             outputElements.append(rechargeStation)
             outputElements.append(len(rechargeStation.batteriesHeld))
-            for battery in rechargeStation.batteriesHeld: 
-                outputElements.append(battery) #needs fixed - batteries held is ones held at the end not at start 
+            for battery in rechargeStation.batteriesHeld: #needs fixed - batteries held is ones held at the end not at start 
+                outputElements.append(battery) 
             
-        
-        print(outputElements)
+        problemString = ",".join([str(element) for element in outputElements])
+        with open("problem.txt", "w") as file: 
+            file.seek(0)
+            file.write(problemString)
