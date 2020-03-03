@@ -20,6 +20,7 @@ def drawTrip(trip, ax=None, show = True, colour = 'k'):
     for action in trip.actions[1:]: 
         if prevAction.node.getCoords() != action.node.getCoords(): #don't plot nodes on the same spot
             ax.plot(*prevAction.node.getCoords(),'ro')
+            ax.annotate(action.node.id, action.node.getCoords())
             drawLine(prevAction.node, action.node, ax, colour)
         prevAction = action
     
@@ -28,11 +29,14 @@ def drawTrip(trip, ax=None, show = True, colour = 'k'):
         plt.show()
 
 def drawDroneTrips(drone): 
+    plt.cla()
     ax = plt.axes() 
+    ax.add_patch(patches.Rectangle((0,0), parameters.citySize, parameters.citySize))
     for trip in drone.trips: 
         colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
         drawTrip(trip, ax, False, colourForTrip)
     plt.show()
+
 def drawLine(node1, node2, ax, colour = 'k'):
     x1, y1 = node1.getCoords()
     x2, y2 = node2.getCoords()

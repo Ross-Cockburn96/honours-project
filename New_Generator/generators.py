@@ -367,7 +367,6 @@ class Generator:
                             action.node.closeTime = upperBound
                         else: 
                             action.node.closeTime = max(action.node.closeTime, upperBound)
-                    print(action.node)
                     timeDelivered += timeToCompleteAction
 
 
@@ -398,14 +397,23 @@ class Generator:
         outputElements = [] 
         outputElements.append(len(self.drones))
         for drone in self.drones: 
+            #tools.drawDroneTrips(drone)
             outputElements.append(len(drone.trips))
             for trip in drone.trips: 
                 outputElements.append(len(trip.actions))
                 for action in trip.actions: 
-                    pass
+                    outputElements.append(action.node.id)
+                    #if action a deliver action add id of package delivered to solution file 
+                    if (action.node.id) > 0 and (action.node.id <= self.noOfNodes):
+                        outputElements.append(action.package.id)
+                    elif (action.node.id > self.noOfNodes):
+                        outputElements.append(action.batteryDropped)
+                        outputElements.append(action.batterySelected)
+        solutionString = ",".join([str(element) for element in outputElements])
+        with open("solution.txt", "w") as file:
+            file.seek(0)
+            file.write(solutionString)
 
-
-        pass
     
     def createProblemFile(self):
         pass

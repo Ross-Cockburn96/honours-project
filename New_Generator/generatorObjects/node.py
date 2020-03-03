@@ -5,6 +5,10 @@ import math
 class Node: 
     xCoord = None
     yCoord = None 
+    idCounter = 1
+    def __init__(self):
+        self.id = Node.idCounter
+        Node.idCounter += 1
 
     def random(self, minVal, maxVal): 
         self.xCoord = parameters.randomGen.randint(minVal, maxVal)
@@ -177,6 +181,9 @@ class ChargingNode(Node):
 class DepletionPoint(Node):
     def __init__(self, action, drone, trip, xCoord, yCoord): 
         super().__init__()
+        self.id = None
+        Node.idCounter -= 1 
+
         self.xCoord = xCoord
         self.yCoord = yCoord
         self.drone = drone #drone that was depleted
@@ -190,5 +197,7 @@ class Depot(Node):
     capacity = 0
     def __init__(self):
         super().__init__()
+        self.id = 0 
+        Node.idCounter -= 1
         self.xCoord = 0
         self.yCoord = 0
