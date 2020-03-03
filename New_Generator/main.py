@@ -19,6 +19,7 @@ if __name__ == "__main__":
     depletionPoints = generator.calculateChargeDepletionPoints()
     rechargeStations = generator.calculateRechargeStations(depletionPoints)
     generator.includeChargingStations(depletionPoints, rechargeStations)
+    generator.rechargeStations = rechargeStations
     generator.createTimeWindows() 
 
     generator.createSolutionFile()

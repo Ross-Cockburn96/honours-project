@@ -155,20 +155,22 @@ class Node:
         return str(self)
 
     def __str__(self):
-        return f"{self.xCoord, self.yCoord}"  
+        return f"{self.xCoord}, {self.yCoord}"  
 
 
 class CustomerNode(Node): 
     def __init__(self):
         super().__init__()
-        self.openTime = None
-        self.closeTime = None
+        lower = random.randint(0,parameters.dayLength)
+        upper = random.randint(lower, parameters.dayLength)
+        self.openTime = lower
+        self.closeTime = upper
 
     def __repr__(self):
         return str(self)
     
     def __str__(self):
-        return super().__str__() + f"{self.openTime, self.closeTime}"
+        return f"{super().__str__()}, {self.openTime} , {self.closeTime}"
     
 class ChargingNode(Node):
     def __init__(self, xCoord, yCoord):
@@ -201,3 +203,9 @@ class Depot(Node):
         Node.idCounter -= 1
         self.xCoord = 0
         self.yCoord = 0
+
+    def __repr__(self):
+        return str(self)
+    
+    def __str__(self):
+        return f"{self.id, self.xCoord, self.yCoord}"

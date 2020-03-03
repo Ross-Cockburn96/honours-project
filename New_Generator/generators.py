@@ -54,6 +54,8 @@ class Generator:
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
         self.drones = []
+        self.rechargeStations = []
+        self.packages = []
         random.seed(parameters.seedVal)
         if not(distribution == "uniform" or distribution == "clustered"):
             print("distribution should be either 'uniform' or 'clustered' defaulting to uniform")
@@ -134,10 +136,11 @@ class Generator:
             for _ in range(packagesInTrip):
                 packageCounter += 1
                 pkg = Package(packageCounter)
+                self.packages.append(pkg)
 
                 #randomly selects a customer node to deliver package 
                 customer = self.customers[random.randrange(len(self.customers))] 
-                
+                pkg.destination = customer
                 #create drone action delivering package to customer 
                 delivery = Delivery(customer, pkg)
                 tripActions.append(delivery)
@@ -416,4 +419,22 @@ class Generator:
 
     
     def createProblemFile(self):
-        pass
+        outputElements = [] 
+        outputElements.append(self.noOfNodes)
+        outputElements.append(self.noOfPackages)
+        outputElements.append(len(self.rechargeStations))
+        outputElements.append(Depot()) #add depot to the problem string
+        for customer in self.customers: 
+            print(f"{customer} is type {type(customer)}")
+            outputElements.append(customer)
+        for package in self.packages: 
+            outputElements.append(package)
+            outputElements.append(package.destination.id)
+        for rechargeStation in self.rechargeStations: 
+            outputElements.append(rechargeStation)
+            outputElements.append(len(rechargeStation.batteriesHeld))
+            for battery in rechargeStation.batteriesHeld: 
+                outputElements.append(battery) #needs fixed - batteries held is ones held at the end not at start 
+            
+        
+        print(outputElements)
