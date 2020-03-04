@@ -75,18 +75,12 @@ def buildNodes(problemElements):
         chargeStation.batteriesHeld = [Battery.createWithID(batteryID) for batteryID in problemElements[problemCountIdx:problemCountIdx + numberOfBatteries]]
         nodes.append(chargeStation)
         problemCountIdx += numberOfBatteries
-    
-    print(nodes)
-    print()
-    print(packages)
 
-    
 
 def buildObjects(solutionElements):
     finished = False 
     solutionCountIdx = 1 #this index gives the number of trips in the first drone 
     
-    drones = []
     #loops through the drones
     while solutionCountIdx < len(solutionElements):
         droneTrips = int(solutionElements[solutionCountIdx])
@@ -106,25 +100,17 @@ def buildObjects(solutionElements):
                 element = int(solutionElements[solutionCountIdx])
                 if element == 0: 
                     action = AtDepot()
-                    print(f"created depot {action}")
                     solutionCountIdx += 1
                 elif element > numberOfCustomers: 
-                    action = ChangeBattery(element, Battery.createWithID(solutionElements[solutionCountIdx + 1]), Battery.createWithID(solutionElements[solutionCountIdx + 2]))
-                    print(f"created charghing {action}")
+                    action = ChangeBattery(nodes[element], Battery.createWithID(solutionElements[solutionCountIdx + 1]), Battery.createWithID(solutionElements[solutionCountIdx + 2]))
                     solutionCountIdx += 3
                 else: 
-                    action = Delivery(element, solutionElements[solutionCountIdx + 1])
-                    print(f"created delivery {action}")
+                    action = Delivery(nodes[element], solutionElements[solutionCountIdx + 1])
                     solutionCountIdx +=2
                 actions.append(action)
             trips.append(Trip(actions))
-            for trip in trips:
-                for action in trip.actions:
-                    print(action)
-                    print(type(action))
         drones.append(Drone(trips))
-            
-
+ 
 
 with open(problem) as file:
     problemData = file.read()
@@ -139,9 +125,7 @@ with open(solution) as file:
     solutionData = file.read() 
     solutionElements = solutionData.split(",")
     solutionElements = [int(e) for e in solutionElements]
-    #buildObjects(solutionElements)
-    # for drone in drones: 
-    #     print(drone)
+    buildObjects(solutionElements)
     
 
 def checkPackagesDelivered():
