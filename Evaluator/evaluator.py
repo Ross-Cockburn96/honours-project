@@ -84,7 +84,6 @@ def buildObjects(solutionElements):
     #loops through the drones
     while solutionCountIdx < len(solutionElements):
         droneTrips = int(solutionElements[solutionCountIdx])
-        drone = Drone()
 
         solutionCountIdx += 1
 
@@ -105,11 +104,12 @@ def buildObjects(solutionElements):
                     action = ChangeBattery(nodes[element], Battery.createWithID(solutionElements[solutionCountIdx + 1]), Battery.createWithID(solutionElements[solutionCountIdx + 2]))
                     solutionCountIdx += 3
                 else: 
-                    action = Delivery(nodes[element], solutionElements[solutionCountIdx + 1])
+                    action = Delivery(nodes[element], packages[solutionElements[solutionCountIdx + 1]-1]) #package ids start at 1 but package list index starts at 0 so minus one from the id in the solution to get correct package
                     solutionCountIdx +=2
                 actions.append(action)
-            trips.append(Trip(actions))
-        drones.append(Drone(trips))
+            trips.append(Trip(*actions))
+        drones.append(Drone(*trips))
+        #print(f"len of rebuilt drone trips is {len(drones[0].trips)}")
  
 
 with open(problem) as file:
@@ -128,8 +128,17 @@ with open(solution) as file:
     buildObjects(solutionElements)
     
 
-def checkPackagesDelivered():
-    pass
+def countUniquePackagesDelivered():
+    packages = [] 
+
+    #create a list of all packages delivered in the solution
+    for drone in drones:
+        for action in drone.getAllActions():
+            if "Delivery" in str(type(action)):
+                packages.append(action.package.id)
+
+    return len(set(packages))
+
 
 
 with open(outputLocation, "w") as file:
@@ -147,8 +156,13 @@ with open(outputLocation, "w") as file:
         result = "PASS"
     else: 
         result = "FAIL"
-    file.write(f"Drones used in solution: {solutionElements[0]}: {result}")
-    result = checkPackagesDelivered()
+    file.write(f"Drones used in solution => {solutionElements[0]}: {result}\n")
+    packagesDelivered = countUniquePackagesDelivered()
+    if packagesDelivered == numberOfPackages:
+        result == "PASS"
+    else:
+        result = "FAIL"
+    file.write(f"Packages delivered by solution => {packagesDelivered} out of {numberOfPackages}: {result}\n")
 
 
 
