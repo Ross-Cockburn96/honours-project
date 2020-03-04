@@ -35,7 +35,7 @@ packages = []
 numberOfCustomers = None
 numberOfRechargeStations = None
 numberOfPackages = None
-
+maxBatteriesAvailable = None
 
 def buildNodes(problemElements): 
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
@@ -119,6 +119,7 @@ with open(problem) as file:
     numberOfCustomers = problemElements[2]
     numberOfRechargeStations = problemElements[4]
     numberOfPackages = problemElements[3]
+    maxBatteriesAvailable = problemElements[1]
     buildNodes(problemElements)
 
 with open(solution) as file: 
@@ -139,13 +140,23 @@ def countUniquePackagesDelivered():
 
     return len(set(packages))
 
-
+def countBatteriesUsed():
+    batteries = []
+    #create a list of all batteries used in the solution
+    for drone in drones:
+        batteries.append(drone.battery)
+        for action in drone.getAllActions():
+            if "ChangeBattery" in str(type(action)):
+                batteries.append(action.batterySelected)
+    batteries.sort(key=lambda x : x.id)
+    print(batteries)
+    return len(set(batteries))
 
 with open(outputLocation, "w") as file:
     file.seek(0)
     file.write(f"PROBLEM FILE DATA\n------------------------------------------------------------\n")
     file.write(f"Maximum Number of drones available: {problemElements[0]}\n")
-    file.write(f"Maximum Number of batteries available: {problemElements[1]}\n")
+    file.write(f"Maximum Number of batteries available: {maxBatteriesAvailable}\n")
     file.write(f"Number of customers in problem file: {numberOfCustomers}\n")
     file.write(f"Number of packages to be delivered by drones: {numberOfPackages}\n")
     file.write(f"Number of recharging stations in the problem: {numberOfRechargeStations}\n\n")
@@ -157,13 +168,20 @@ with open(outputLocation, "w") as file:
     else: 
         result = "FAIL"
     file.write(f"Drones used in solution => {solutionElements[0]}: {result}\n")
+    
     packagesDelivered = countUniquePackagesDelivered()
     if packagesDelivered == numberOfPackages:
         result == "PASS"
     else:
         result = "FAIL"
     file.write(f"Packages delivered by solution => {packagesDelivered} out of {numberOfPackages}: {result}\n")
-
+    
+    batteriesUsed = countBatteriesUsed()
+    if batteriesUsed > maxBatteriesAvailable:
+        result = "FAIL"
+    else:
+        result = "PASS"
+    file.write(f"Number of batteries used by solution => {batteriesUsed}, maximum available is {maxBatteriesAvailable}: {result}\n")
 
 
 
