@@ -7,6 +7,7 @@ from generatorObjects.drone import Drone
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
 from generatorObjects.package import Package 
+from generatorObjects.battery import Battery
 import numpy as np
 from sklearn.cluster import KMeans 
 from scipy.spatial.distance import cdist
@@ -264,8 +265,6 @@ class Generator:
 
         distortions = [] 
         numberOfClusters = 15 # max number of clusters possible
-        print(numberOfClusters)
-        print(len(pointArray))
         K = range(1,numberOfClusters)
 
         for k in K: 
@@ -396,6 +395,9 @@ class Generator:
         #print(f"time: {time}, lowerBound: {lowerBound}, upperBound: {upperBound}")
         return int(lowerBound), int(upperBound)
 
+    '''
+    format: {number of drones used}(FOR EACH DRONE){number of trips in drone}(FOR EACH TRIP IN DRONE){number of actions in trip}{id of nodes visited in trip}{details of node visited either package delviered or battery dropped off/picked up}
+    '''
     def createSolutionFile(self):
         outputElements = [] 
         outputElements.append(len(self.drones))
@@ -423,6 +425,8 @@ class Generator:
     '''
     def createProblemFile(self):
         outputElements = [] 
+        outputElements.append(parameters.maxDrones)
+        outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
         outputElements.append(self.noOfNodes) 
         outputElements.append(self.noOfPackages)
         outputElements.append(len(self.rechargeStations))

@@ -22,3 +22,6 @@ randomGen = random
 randomGen.seed(seedVal)
 ax = plt.axes()
 timeSlotStandardDev = 60
+
+#problem parameters can be changed to make problem easier/harder to solve 
+maxDrones = 20
