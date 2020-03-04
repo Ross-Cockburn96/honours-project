@@ -23,11 +23,12 @@ class Delivery(Action):
     def __str__(self):
         return (super().__str__() + f" Package: {self.package}")
 
-#TODO --- implement battery
 class ChangeBattery(Action):
-    def __init__(self, node, battery, prevAction=None, nextAction=None):
-        self.batteryDropped = battery
-        self.batterySelected = Battery()
+    def __init__(self, node, batteryDropped, batterySelected = None, prevAction=None, nextAction=None):
+        if batterySelected == None: 
+            batterySelected = Battery.createNew()
+        self.batteryDropped = batteryDropped
+        self.batterySelected = batterySelected
         super().__init__(node, prevAction, nextAction)
     
 class AtDepot(Action):

@@ -1,7 +1,8 @@
+import sys
+sys.path.insert(0, "..")
 from generators import Generator 
 import matplotlib.pyplot as plt 
 import parameters
-import sys
 import random
 import tools
 

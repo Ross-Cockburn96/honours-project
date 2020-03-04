@@ -1,5 +1,5 @@
 import random
-import parameters
+import new_generator.parameters as parameters
 import math
 
 class Node: 
@@ -159,12 +159,23 @@ class Node:
 
 
 class CustomerNode(Node): 
-    def __init__(self):
+    def __init__(self, openTime, closeTime):
         super().__init__()
+        self.closeTime = closeTime
+        self.openTime = openTime
+
+    @classmethod
+    def createNew(cls):
         lower = random.randint(0,parameters.dayLength)
         upper = random.randint(lower, parameters.dayLength)
-        self.openTime = lower
-        self.closeTime = upper
+        return cls(lower, upper)
+    
+    @classmethod
+    def rebuild(cls, x, y,openTime, closeTime):
+        node = cls(openTime, closeTime)
+        node.xCoord= x
+        node.yCoord =y
+        return node
 
     def __repr__(self):
         return str(self)

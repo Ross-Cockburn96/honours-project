@@ -1,8 +1,9 @@
 import random
 import math
+import os 
 from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 import matplotlib.pyplot as plt
-import parameters
+import parameters as parameters
 from generatorObjects.drone import Drone 
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
@@ -65,7 +66,7 @@ class Generator:
 
     def uniformGeneration(self):
         for _ in range(self.noOfNodes): 
-            customer = CustomerNode()
+            customer = CustomerNode.createNew()
             customer.random(0, self.citySize+1)
             self.customers.append(customer)
         
@@ -84,7 +85,7 @@ class Generator:
         numberOfClusters = math.floor(self.citySize * parameters.clusterToCitySizeRatio)
         clusterCenters = []
         for _ in range(numberOfClusters):
-            cluster = CustomerNode() 
+            cluster = CustomerNode.createNew() 
             cluster.random(0, self.citySize + 1)
             clusterCenters.append(cluster)
         return clusterCenters
@@ -93,7 +94,7 @@ class Generator:
     def clusteredGeneration(self):
         clusterCenters = self.createClusterCenters()
         for _ in range(self.noOfNodes): 
-            customer = CustomerNode() #create customer node
+            customer = CustomerNode.createNew() #create customer node
             clusterIndex = random.randint(0, len(clusterCenters) - 1 ) #decide which cluster this node will belong 
             customer.randomWithinCircle(clusterCenters[clusterIndex], 1000)
             self.customers.append(customer)
