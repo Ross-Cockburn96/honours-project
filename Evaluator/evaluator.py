@@ -143,6 +143,7 @@ def countUniquePackagesDelivered():
 def countBatteriesUsed():
     batteries = []
     #create a list of all batteries used in the solution
+    batteries.extend(Depot.batteriesHeld)
     for drone in drones:
         batteries.append(drone.battery)
         for action in drone.getAllActions():

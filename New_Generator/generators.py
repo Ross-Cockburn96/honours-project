@@ -286,8 +286,6 @@ class Generator:
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
-        
-
         for depletionPoint in depletionPoints: 
             action = depletionPoint.action
             trip = depletionPoint.trip
@@ -296,10 +294,10 @@ class Generator:
             if "AtDepot" in str(type(action.prevAction)): #if the depletion point was on the movement from the origin
                 changeBatteryAction = ChangeBattery(action.prevAction.node, drone.battery) #create action to change battery at depot. Change battery automatically switches the drone's battery to a new one
                 drone.battery = changeBatteryAction.batterySelected #switch drone battery to the new battery which is selected when action is instantiated
-                Depot.batteriesHeld.append(drone.battery) #add the battery dropped off to the batteries held list
+                Depot.batteriesHeld.append(drone.battery) #add the battery dropped off to the batteries held list 
                 Depot.capacity += 1 #increment the battery slot capacity required by depot
-                trip.actions[0] = changeBatteryAction #change first action from AtDepot to ChangeBattery
-
+                del trip.actions[0]
+                trip.insertAction(0, changeBatteryAction)  #change first action from AtDepot to ChangeBattery
             else: 
                 closestChargingPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                 chargeRemaining = Node.distanceFinder(depletionPoint, action.prevAction.node) #charge at depletion point is 0 so charge remaining at start of action is distance from prevAction node to depletionPoint
@@ -324,7 +322,7 @@ class Generator:
                     rechargingStations.append(newStation) #create a new charging station 
                     closestPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                     distance = Node.distanceFinder(action.prevAction.node, newStation)
-
+        #check that each drone can complete its trips within a day, if it can't move trip to drone with space (can only be last in list) or create a new drone 
         for drone in self.drones: 
             if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
                 lastTrip = drone.trips.pop() #remove trip from drone
@@ -415,6 +413,7 @@ class Generator:
                     elif (action.node.id > self.noOfNodes):
                         outputElements.append(action.batteryDropped)
                         outputElements.append(action.batterySelected)
+
         solutionString = ",".join([str(element) for element in outputElements])
         with open("solution.txt", "w") as file:
             file.seek(0)
