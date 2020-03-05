@@ -6,7 +6,7 @@ from generatorObjects.trip import Trip
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.battery import Battery
 from generatorObjects.package import Package
-from generatorObjects.node import Depot, ChargingNode, CustomerNode
+from generatorObjects.node import Depot, ChargingNode, CustomerNode, Node
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--solution", "-s", nargs='?', type=str, help="Solution file address", required=True)
@@ -36,6 +36,10 @@ numberOfCustomers = None
 numberOfRechargeStations = None
 numberOfPackages = None
 maxBatteriesAvailable = None
+
+#fixed properties
+dayLength = 28800
+droneSpeed = 10 #m/s
 
 def buildNodes(problemElements): 
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
@@ -150,8 +154,34 @@ def countBatteriesUsed():
             if "ChangeBattery" in str(type(action)):
                 batteries.append(action.batterySelected)
     batteries.sort(key=lambda x : x.id)
-    print(batteries)
     return len(set(batteries))
+
+def countDroneChargeDepletion(): 
+    numberOfDepletions = 0
+    for drone in drones: 
+        if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > dayLength * droneSpeed:
+            print("NEED TO CREATE A NEW BLOODY DRONE FFS1")
+
+    for drone in drones: 
+        for trip in drone.trips: 
+            for action in trip.actions[1:]: 
+                if "ChangeBattery" in str(type(action)):
+                    print()
+                    print(f"changing battery from battery with {drone.battery.batteryDistance}")
+                    drone.battery = action.batterySelected
+                    print(f"to {drone.battery.batteryDistance}")
+                    print()
+                    #may need to calculate the charge of the battery selected
+                distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
+                drone.battery.batteryDistance -= distanceTraveled
+                print(drone.battery.batteryDistance)
+                if drone.battery.batteryDistance < 0: 
+                    numberOfDepletions += 1
+                    break
+            else:
+                continue 
+            break
+    return numberOfDepletions
 
 with open(outputLocation, "w") as file:
     file.seek(0)
@@ -175,7 +205,7 @@ with open(outputLocation, "w") as file:
         result == "PASS"
     else:
         result = "FAIL"
-    file.write(f"Packages delivered by solution => {packagesDelivered} out of {numberOfPackages}: {result}\n")
+    file.write(f"Packages delivered by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")
     
     batteriesUsed = countBatteriesUsed()
     if batteriesUsed > maxBatteriesAvailable:
@@ -184,5 +214,10 @@ with open(outputLocation, "w") as file:
         result = "PASS"
     file.write(f"Number of batteries used by solution => {batteriesUsed}, maximum available is {maxBatteriesAvailable}: {result}\n")
 
-
+    batteriesOutOfCharge = countDroneChargeDepletion()
+    if batteriesOutOfCharge > 0: 
+        result = "FAIL"
+    else:
+        result = "PASS"
+    file.write(f"Number of drones that ran out of power in solution => {batteriesOutOfCharge}/{len(drones)}: {result}")
 

@@ -286,6 +286,7 @@ class Generator:
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
+        droneOriginalStates = set({}) #won't work
         for depletionPoint in depletionPoints: 
             action = depletionPoint.action
             trip = depletionPoint.trip
@@ -322,6 +323,11 @@ class Generator:
                     rechargingStations.append(newStation) #create a new charging station 
                     closestPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                     distance = Node.distanceFinder(action.prevAction.node, newStation)
+        
+        for drone in self.drones: 
+            for trip in drone.trips:
+                for action in trip.actions: 
+                    
         #check that each drone can complete its trips within a day, if it can't move trip to drone with space (can only be last in list) or create a new drone 
         for drone in self.drones: 
             if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:

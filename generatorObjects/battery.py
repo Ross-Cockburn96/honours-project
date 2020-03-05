@@ -6,7 +6,7 @@ class Battery:
     def __init__(self, batteryID): 
         self.id = batteryID
         self.batteryDistance = parameters.batteryDistance #distance left on battery
-    
+        
     #use for problem and solution generation 
     @classmethod
     def createNew(cls):
