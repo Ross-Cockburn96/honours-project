@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, "..")
 from generators import Generator 
+from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 import matplotlib.pyplot as plt 
 import parameters
 import random
@@ -17,9 +18,21 @@ if __name__ == "__main__":
     generator.generateNodes()
     #problem.generateRechargingStations()
     generator.generateTripsandDrones()
+    
     depletionPoints = generator.calculateChargeDepletionPoints()
     rechargeStations = generator.calculateRechargeStations(depletionPoints)
     generator.includeChargingStations(depletionPoints, rechargeStations)
+    depletionPoints = generator.calculateChargeDepletionPoints()
+
+    #check that the distance added to trip from rerouting to charging stations doesn't cause new depletion points
+    while len(depletionPoints) > 0:
+        print(len(depletionPoints))
+        chargingStations = [] 
+        for point in depletionPoints: 
+            chargingStations.append(ChargingNode(point.xCoord, point.yCoord))
+            generator.includeChargingStations(depletionPoints, chargingStations)
+        depletionPoints = generator.calculateChargeDepletionPoints()
+  
     generator.rechargeStations = rechargeStations
     generator.createTimeWindows() 
 

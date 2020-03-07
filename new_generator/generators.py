@@ -205,13 +205,17 @@ class Generator:
     
     def calculateChargeDepletionPoints(self):
         #ax = plt.axes()
-        
+        print(f"calculating charge depletion points")
         depletionPoints = []
         for drone in self.drones:
+            drone.battery.batteryDistance = parameters.batteryDistance #ensure drone batteries always start full
             for trip in drone.trips:
                 for action in trip.actions[1:]: 
                     distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
-                    drone.battery.batteryDistance -= distanceTraveled
+                    if "Delivery" in str(type(action)):
+                        drone.battery.batteryDistance -= distanceTraveled
+                    else: 
+                        drone.battery.batteryDistance = parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations
                     if drone.battery.batteryDistance < 0: 
                         
                         depletionDistance  = distanceTraveled + drone.battery.batteryDistance
@@ -225,12 +229,13 @@ class Generator:
                         depletionX = int(originX + (unitX * depletionDistance))
                         depletionY = int(originY + (unitY * depletionDistance))
 
-                        self.ax1.plot(depletionX, depletionY, 'ro')
+                        #self.ax1.plot(depletionX, depletionY, 'ro')
 
                         depletionPoints.append(DepletionPoint(action = action, trip = trip, drone = drone, xCoord = depletionX, yCoord = depletionY))
                         drone.battery.batteryDistance = parameters.batteryDistance #reset battery charge to calculate next depletion point
-        return depletionPoints
         #plt.show()
+        return depletionPoints
+        
 
     def calculateUnitVector(self,node1, node2):
         x1, y1 = node1.getCoords() 
@@ -286,7 +291,6 @@ class Generator:
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
-        droneOriginalStates = set({}) #won't work
         for depletionPoint in depletionPoints: 
             action = depletionPoint.action
             trip = depletionPoint.trip
@@ -323,10 +327,7 @@ class Generator:
                     rechargingStations.append(newStation) #create a new charging station 
                     closestPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
                     distance = Node.distanceFinder(action.prevAction.node, newStation)
-        
-        for drone in self.drones: 
-            for trip in drone.trips:
-                for action in trip.actions: 
+
                     
         #check that each drone can complete its trips within a day, if it can't move trip to drone with space (can only be last in list) or create a new drone 
         for drone in self.drones: 
