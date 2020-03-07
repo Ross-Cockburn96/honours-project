@@ -205,7 +205,6 @@ class Generator:
     
     def calculateChargeDepletionPoints(self):
         #ax = plt.axes()
-        print(f"calculating charge depletion points")
         depletionPoints = []
         for drone in self.drones:
             drone.battery.batteryDistance = parameters.batteryDistance #ensure drone batteries always start full

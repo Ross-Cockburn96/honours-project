@@ -88,23 +88,26 @@ def buildObjects(solutionElements):
     #loops through the drones
     while solutionCountIdx < len(solutionElements):
         droneTrips = int(solutionElements[solutionCountIdx])
-
+        print(f"drone trips: {droneTrips}")
         solutionCountIdx += 1
 
         #loops through the trips of the drone
         trips = []
         for _ in range(droneTrips):
             tripActions = int(solutionElements[solutionCountIdx])
+            print(f"actions in trip {tripActions}")
             solutionCountIdx += 1
 
             actions = []
             #loops through the actions of a trip
             for _ in range(tripActions): 
                 element = int(solutionElements[solutionCountIdx])
+                print(element)
                 if element == 0: 
                     action = AtDepot()
                     solutionCountIdx += 1
                 elif element > numberOfCustomers: 
+                    print(f"LENGTH of nodes is {len(nodes)} trying element {element}")
                     action = ChangeBattery(nodes[element], Battery.createWithID(solutionElements[solutionCountIdx + 1]), Battery.createWithID(solutionElements[solutionCountIdx + 2]))
                     solutionCountIdx += 3
                 else: 
@@ -125,6 +128,7 @@ with open(problem) as file:
     numberOfPackages = problemElements[3]
     maxBatteriesAvailable = problemElements[1]
     buildNodes(problemElements)
+    print(len(nodes))
 
 with open(solution) as file: 
     solutionData = file.read() 
