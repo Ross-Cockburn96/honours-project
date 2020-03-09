@@ -42,6 +42,7 @@ maxBatteriesAvailable = None
 dayLength = 28800
 droneSpeed = 10 #m/s
 droneCargoLimit = 5
+droneWeightLimit = 30 #lb
 
 def buildNodes(problemElements): 
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
@@ -202,6 +203,30 @@ def droneCargoCount():
                 numberOfTripsWithTooManyPackages += 1
     return numberOfTripsWithTooManyPackages, tripCount
 
+def droneWeightCount():
+    numberOfTripswithTooHeavyPackages = 0 
+    for drone in drones:
+        for trip in drone.trips:
+            weightTotal = 0
+            for action in trip.actions:
+                if "Delivery" in str(type(action)):
+                    weightTotal += action.package.weight
+            if weightTotal > 30: 
+                numberOfTripswithTooHeavyPackages += 1
+    return numberOfTripswithTooHeavyPackages
+
+def checkStartAndFinishPositions(): 
+    tripsNotStartingAtDepot = 0 
+    tripsNotFinishingAtDepot = 0 
+    for drone in drones:
+        for trip in drone.trips: 
+            if trip.actions[0].node.getCoords() != (0,0):
+                tripsNotStartingAtDepot += 1
+            if trip.actions[-1].node.getCoords() != (0,0):
+                tripsNotFinishingAtDepot -= 1
+    
+    return tripsNotFinishingAtDepot, tripsNotStartingAtDepot
+            
 
 with open(outputLocation, "w") as file:
     file.seek(0)
@@ -255,4 +280,22 @@ with open(outputLocation, "w") as file:
         result = "PASS" 
     file.write(f"Number of trips that overloaded the drone cargo limit => {overloadedTrips}/{numOfTrips}: {result}\n")
 
+    overweightedTrips = droneWeightCount()
+    if overweightedTrips > 0:
+        result = "FAIL"
+    else:
+        result = "PASS"
+    file.write(f"Number of trips that contain a cargo that is too heavy for their drone => {overweightedTrips}/{numOfTrips}: {result}\n")
     
+    notFinishing, notStarting = checkStartAndFinishPositions()
+    if notStarting > 0: 
+        result = "FAIL" 
+    else:
+        result = "PASS"
+    file.write(f"Number of trips where drone does not start at the depot => {notStarting}/{numOfTrips}: {result}\n")
+
+    if notFinishing > 0:
+        result = "FAIL"
+    else:
+        result = "PASS"
+    file.write(f"Number of trips where drone does finish at the depot => {notFinishing}/{numOfTrips}: {result}\n")
