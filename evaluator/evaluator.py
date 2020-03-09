@@ -37,6 +37,14 @@ numberOfRechargeStations = None
 numberOfPackages = None
 maxBatteriesAvailable = None
 
+#objective constants - change depending on what problem instance is used but remain constant for each solution evaluated
+maxDistanceTraveled = None
+maxDrones = None 
+maxBatteries = None 
+
+dronesUsedMultiplier = None #multipliers used to make each component of the objective function equally important
+batteriesUsedMultiplier = None 
+
 
 #fixed properties
 dayLength = 28800
@@ -223,10 +231,28 @@ def checkStartAndFinishPositions():
             if trip.actions[0].node.getCoords() != (0,0):
                 tripsNotStartingAtDepot += 1
             if trip.actions[-1].node.getCoords() != (0,0):
-                tripsNotFinishingAtDepot -= 1
+                tripsNotFinishingAtDepot += 1
     
     return tripsNotFinishingAtDepot, tripsNotStartingAtDepot
             
+def initialiseObjectiveConstants():
+    global maxDrones, maxDistanceTraveled, maxBatteries, dronesUsedMultiplier, batteriesUsedMultiplier
+    maxDrones = problemElements[0]
+    maxDistanceTraveled = maxDrones * dayLength * droneSpeed #max distance possible is if all drones are used and are travelling all day without stopping 
+    maxBatteries = maxBatteriesAvailable
+
+    dronesUsedMultiplier = maxDistanceTraveled/maxDrones
+    batteriesUsedMultiplier = maxDistanceTraveled/maxBatteries
+
+def evaluateSolutionFitness(batteriesUsed):
+    actualDistanceTraveled = 0 
+    for drone in drones:
+        for trip in drone.trips:
+            actualDistanceTraveled += Node.distanceCalc(*[action.node for action in trip.actions])
+
+    actualDronesUsed = solutionElements[0]
+    actualBatteriesUsed = batteriesUsed
+    return (actualDistanceTraveled + actualDronesUsed * dronesUsedMultiplier + actualBatteriesUsed * batteriesUsedMultiplier)
 
 with open(outputLocation, "w") as file:
     file.seek(0)
@@ -299,3 +325,10 @@ with open(outputLocation, "w") as file:
     else:
         result = "PASS"
     file.write(f"Number of trips where drone does finish at the depot => {notFinishing}/{numOfTrips}: {result}\n")
+    
+    file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")
+    initialiseObjectiveConstants()
+    score = evaluateSolutionFitness(batteriesUsed)
+    
+    #file.write(f"{score:.20f}\n")
+    file.write(f"{int(score)}\n")
