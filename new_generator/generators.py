@@ -210,15 +210,23 @@ class Generator:
         for drone in self.drones:
             drone.battery.batteryDistance = parameters.batteryDistance #ensure drone batteries always start full
             for trip in drone.trips:
+                print()
+            
                 for action in trip.actions[1:]: 
-                    distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
+                    print(f"battery remianing is {drone.battery.batteryDistance}")
+                    print(F"prev action is {action.prevAction.node}, current action is {action.node}")
+                    print(f"action type is {type(action)}")
+                    distanceTraveled = int(Node.distanceFinder(action.node, action.prevAction.node))
                     if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                         drone.battery.batteryDistance -= distanceTraveled
                     else: 
+                        print(drone.battery.batteryDistance)
                         drone.battery.batteryDistance = parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations
+                        print(drone.battery.batteryDistance)
                     if drone.battery.batteryDistance < 0: 
-                        
+                        print(f"batter below 0, {drone.battery.batteryDistance}")
                         depletionDistance  = distanceTraveled + drone.battery.batteryDistance
+                        print(f"depletion distance is {depletionDistance}")
                         unitX, unitY = self.calculateUnitVector(action.prevAction.node, action.node) #ensure origin node is first arg and dest node is 2nd for correct unit vector direction
 
                         #tools.drawLine(action.prevAction.node, action.node, self.ax1)
@@ -228,7 +236,7 @@ class Generator:
 
                         depletionX = int(originX + (unitX * depletionDistance))
                         depletionY = int(originY + (unitY * depletionDistance))
-
+                        print(f"adding depletion point at {depletionX}, {depletionY}")
                         #self.ax1.plot(depletionX, depletionY, 'ro')
 
                         depletionPoints.append(DepletionPoint(action = action, trip = trip, drone = drone, xCoord = depletionX, yCoord = depletionY))
@@ -290,12 +298,15 @@ class Generator:
         return numberOfClusters
     
     def includeChargingStations(self, depletionPoints, rechargingStations): 
-        print(rechargingStations)
         trip = depletionPoints[0].trip 
+        print(f"CHARGING STATIONS")
+        print(depletionPoints)
+        print(rechargingStations)
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
         for depletionPoint in depletionPoints: 
             action = depletionPoint.action
+            #print(F"prev action is {action.prevAction.node}, current action is {action.node}")
             trip = depletionPoint.trip
             drone = depletionPoint.drone
             
@@ -306,10 +317,16 @@ class Generator:
                 Depot.capacity += 1 #increment the battery slot capacity required by depot
                 del trip.actions[0]
                 trip.insertAction(0, changeBatteryAction)  #change first action from AtDepot to ChangeBattery
+                print(F"[INCLUDE] prev action is {action.prevAction.node}, current action is {action.node}, before is {action.prevAction.prevAction}")
+                actionCopy = action.prevAction
+                while actionCopy != None: 
+                    print(f"prev is {action.prevAction}")
+                    actionCopy = actionCopy.prevAction
             else: 
-                closestChargingPoint = min(rechargingStations, key = lambda x : Node.distanceFinder(x, action.prevAction.node))
-                chargeRemaining = Node.distanceFinder(depletionPoint, action.prevAction.node) #charge at depletion point is 0 so charge remaining at start of action is distance from prevAction node to depletionPoint
-                distanceToChargePoint = Node.distanceFinder(action.prevAction.node, closestChargingPoint)
+                closestChargingPoint = min(rechargingStations, key = lambda x : int(Node.distanceFinder(x, action.prevAction.node)))
+                print(closestChargingPoint)
+                chargeRemaining = int(Node.distanceFinder(depletionPoint, action.prevAction.node)) #charge at depletion point is 0 so charge remaining at start of action is distance from prevAction node to depletionPoint
+                distanceToChargePoint = int(Node.distanceFinder(action.prevAction.node, closestChargingPoint))
                 if distanceToChargePoint <= chargeRemaining: 
                     changeBatteryAction = ChangeBattery(closestChargingPoint, drone.battery) #create action to change battery at charging point
                     drone.battery = changeBatteryAction.batterySelected
@@ -344,6 +361,12 @@ class Generator:
                     newDrone = Drone(lastTrip)
                     self.drones.append(newDrone)
                     newDrone.distanceLeft -= tripDistance
+        
+        for drone in self.drones: 
+            for trip in drone.trips:
+                print()
+                for action in trip.actions:
+                    print(f"{action} type {type(action)}")
         # print() 
         # print("capacity stats for kmean stations")
         # total = 0

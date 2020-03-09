@@ -25,15 +25,20 @@ if __name__ == "__main__":
     generator.includeChargingStations(depletionPoints, rechargeStations)
     generator.rechargeStations = rechargeStations
     depletionPoints = generator.calculateChargeDepletionPoints()
-
+    count = 0 
     #check that the distance added to trip from rerouting to charging stations doesn't cause new depletion points
     while len(depletionPoints) > 0:
+        count += 1
         chargingStations = [] 
         for point in depletionPoints: 
             chargingStations.append(ChargingNode(point.xCoord, point.yCoord))
         generator.rechargeStations.extend(chargingStations)
         generator.includeChargingStations(depletionPoints, chargingStations)
+        if count > 1: 
+            break
         depletionPoints = generator.calculateChargeDepletionPoints()
+       
+        
   
     
     generator.createTimeWindows() 
