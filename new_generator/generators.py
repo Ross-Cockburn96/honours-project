@@ -59,6 +59,7 @@ class Generator:
         self.rechargeStations = []
         self.packages = []
         random.seed(parameters.seedVal)
+
         if not(distribution == "uniform" or distribution == "clustered"):
             print("distribution should be either 'uniform' or 'clustered' defaulting to uniform")
             distribution = "uniform"
@@ -76,7 +77,7 @@ class Generator:
             x, y = customer.getCoords()
             self.ax1.set_xlim([0,self.citySize])
             self.ax1.set_ylim([0,self.citySize])
-            self.ax1.scatter(x,y, color='k')
+            #self.ax1.scatter(x,y, color='k')
         
 
 
@@ -211,7 +212,7 @@ class Generator:
             for trip in drone.trips:
                 for action in trip.actions[1:]: 
                     distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
-                    if "Delivery" in str(type(action)):
+                    if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                         drone.battery.batteryDistance -= distanceTraveled
                     else: 
                         drone.battery.batteryDistance = parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations
@@ -256,8 +257,10 @@ class Generator:
         clusterAmount = self.calculateNumberOfClusters(depletionCoords)
 
         depletionPointArray = np.array(depletionCoords).reshape(len(depletionCoords),2 )
-        kmeans = KMeans(n_clusters = clusterAmount, random_state = random.randint(1,10)).fit(depletionPointArray)
-
+        seed = random.randint(1,10)
+        print(f"SEED IS {seed}")
+        kmeans = KMeans(n_clusters = clusterAmount, random_state = seed).fit(depletionPointArray)
+        print(kmeans.cluster_centers_)
         for idx, vals in enumerate(kmeans.cluster_centers_):
             x,y = vals
             rechargeStations.append(ChargingNode(int(x),int(y)))
@@ -271,9 +274,9 @@ class Generator:
         distortions = [] 
         numberOfClusters = 15 # max number of clusters possible
         K = range(1,numberOfClusters)
-
+        seed = random.randint(1,10)
         for k in K: 
-            kmeanModel = KMeans(n_clusters = k).fit(pointArray)
+            kmeanModel = KMeans(n_clusters = k, random_state = seed).fit(pointArray)
             kmeanModel.fit(pointArray)
             distortions.append(sum(np.min(cdist(pointArray, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / pointArray.shape[0])
         #iterate through the distortion values and compare the the previous value (accessed through idx)
@@ -287,6 +290,7 @@ class Generator:
         return numberOfClusters
     
     def includeChargingStations(self, depletionPoints, rechargingStations): 
+        print(rechargingStations)
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
@@ -430,6 +434,8 @@ class Generator:
     All nodes, including charging nodes have an implied id val of their position in the problem file. Depot has id 0, first customer has id 1. The ids of recharging nodes continue after the packages, starting from noOfCustomers + 1
     '''
     def createProblemFile(self):
+        print()
+        print()
         outputElements = [] 
         outputElements.append(parameters.maxDrones)
         outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
@@ -455,3 +461,4 @@ class Generator:
         with open("problem.txt", "w") as file: 
             file.seek(0)
             file.write(problemString)
+        

@@ -169,15 +169,19 @@ def countDroneChargeDepletion():
     for drone in drones: 
         for trip in drone.trips: 
             for action in trip.actions[1:]: 
-                if "ChangeBattery" in str(type(action)):
+                if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
+                    distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
+                    drone.battery.batteryDistance -= distanceTraveled
+                else:
                     print()
+                    print(action.node)
                     print(f"changing battery from battery with {drone.battery.batteryDistance}")
                     drone.battery = action.batterySelected
                     print(f"to {drone.battery.batteryDistance}")
                     print()
                     #may need to calculate the charge of the battery selected
-                distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
-                drone.battery.batteryDistance -= distanceTraveled
+                
+                
                 print(drone.battery.batteryDistance)
                 if drone.battery.batteryDistance < 0: 
                     numberOfDepletions += 1
