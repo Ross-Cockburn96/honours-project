@@ -19,7 +19,7 @@ if __name__ == "__main__":
         file.truncate(0)
         file.close()
 
-    generator = Generator(noOfNodes = 100, noOfPackages = 300,  distribution="uniform")  
+    generator = Generator(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
     generator.generateNodes()
     #problem.generateRechargingStations()
     generator.generateTripsandDrones()
