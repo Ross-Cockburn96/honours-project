@@ -37,9 +37,11 @@ numberOfRechargeStations = None
 numberOfPackages = None
 maxBatteriesAvailable = None
 
+
 #fixed properties
 dayLength = 28800
 droneSpeed = 10 #m/s
+droneCargoLimit = 5
 
 def buildNodes(problemElements): 
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
@@ -88,26 +90,22 @@ def buildObjects(solutionElements):
     #loops through the drones
     while solutionCountIdx < len(solutionElements):
         droneTrips = int(solutionElements[solutionCountIdx])
-        print(f"drone trips: {droneTrips}")
         solutionCountIdx += 1
 
         #loops through the trips of the drone
         trips = []
         for _ in range(droneTrips):
             tripActions = int(solutionElements[solutionCountIdx])
-            print(f"actions in trip {tripActions}")
             solutionCountIdx += 1
 
             actions = []
             #loops through the actions of a trip
             for _ in range(tripActions): 
                 element = int(solutionElements[solutionCountIdx])
-                print(element)
                 if element == 0: 
                     action = AtDepot()
                     solutionCountIdx += 1
                 elif element > numberOfCustomers: 
-                    print(f"LENGTH of nodes is {len(nodes)} trying element {element}")
                     action = ChangeBattery(nodes[element], Battery.createWithID(solutionElements[solutionCountIdx + 1]), Battery.createWithID(solutionElements[solutionCountIdx + 2]))
                     solutionCountIdx += 3
                 else: 
@@ -128,7 +126,6 @@ with open(problem) as file:
     numberOfPackages = problemElements[3]
     maxBatteriesAvailable = problemElements[1]
     buildNodes(problemElements)
-    print(len(nodes))
 
 with open(solution) as file: 
     solutionData = file.read() 
@@ -148,6 +145,18 @@ def countUniquePackagesDelivered():
 
     return len(set(packages))
 
+def checkCustomerDemandsSatisfied():
+    packageDemandDic = dict(zip([pkg.id for pkg in packages], [pkg.destination for pkg in packages]))
+    packagesDeliveredCorrectly = 0
+    for drone in drones:
+        for trip in drone.trips:
+            for action in trip.actions:
+                if "Delivery" in str(type(action)):
+                    if action.node.id == packageDemandDic[action.package.id]:
+                        packagesDeliveredCorrectly += 1
+    
+    return packagesDeliveredCorrectly
+
 def countBatteriesUsed():
     batteries = []
     #create a list of all batteries used in the solution
@@ -163,26 +172,14 @@ def countBatteriesUsed():
 def countDroneChargeDepletion(): 
     numberOfDepletions = 0
     for drone in drones: 
-        if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > dayLength * droneSpeed:
-            print("NEED TO CREATE A NEW BLOODY DRONE FFS1")
-
-    for drone in drones: 
         for trip in drone.trips: 
             for action in trip.actions[1:]: 
                 if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                     distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
                     drone.battery.batteryDistance -= distanceTraveled
                 else:
-                    print()
-                    print(action.node)
-                    print(f"changing battery from battery with {drone.battery.batteryDistance}")
                     drone.battery = action.batterySelected
-                    print(f"to {drone.battery.batteryDistance}")
-                    print()
                     #may need to calculate the charge of the battery selected
-                
-                
-                print(drone.battery.batteryDistance)
                 if drone.battery.batteryDistance < 0: 
                     numberOfDepletions += 1
                     break
@@ -190,6 +187,21 @@ def countDroneChargeDepletion():
                 continue 
             break
     return numberOfDepletions
+
+def droneCargoCount():
+    numberOfTripsWithTooManyPackages = 0
+    tripCount = 0
+    for drone in drones:
+        for trip in drone.trips:
+            tripCount += 1
+            packageCount = 0
+            for action in trip.actions:
+                if "Delivery" in str(type(action)):
+                    packageCount += 1
+            if packageCount > 5: 
+                numberOfTripsWithTooManyPackages += 1
+    return numberOfTripsWithTooManyPackages, tripCount
+
 
 with open(outputLocation, "w") as file:
     file.seek(0)
@@ -214,6 +226,13 @@ with open(outputLocation, "w") as file:
     else:
         result = "FAIL"
     file.write(f"Packages delivered by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")
+
+    correctlyDeliveredPackages = checkCustomerDemandsSatisfied()
+    if correctlyDeliveredPackages == numberOfPackages:
+        result = "PASS"
+    else:
+        result = "FAIL"
+    file.write(f"Packages delivered to correct customer => {correctlyDeliveredPackages}/{numberOfPackages}: {result}\n")
     
     batteriesUsed = countBatteriesUsed()
     if batteriesUsed > maxBatteriesAvailable:
@@ -227,5 +246,13 @@ with open(outputLocation, "w") as file:
         result = "FAIL"
     else:
         result = "PASS"
-    file.write(f"Number of drones that ran out of power in solution => {batteriesOutOfCharge}/{len(drones)}: {result}")
+    file.write(f"Number of drones that ran out of power in solution => {batteriesOutOfCharge}/{len(drones)}: {result}\n")
 
+    overloadedTrips, numOfTrips = droneCargoCount()
+    if overloadedTrips > 0: 
+        result = "FAIL" 
+    else: 
+        result = "PASS" 
+    file.write(f"Number of trips that overloaded the drone cargo limit => {overloadedTrips}/{numOfTrips}: {result}\n")
+
+    
