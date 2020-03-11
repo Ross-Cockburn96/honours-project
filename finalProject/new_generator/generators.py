@@ -1,6 +1,7 @@
 import random
 import math
 import os 
+print("here")
 from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 import matplotlib.pyplot as plt
 import parameters as parameters

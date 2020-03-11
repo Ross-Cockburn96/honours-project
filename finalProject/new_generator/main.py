@@ -1,6 +1,8 @@
 import sys
-sys.path.insert(0, "..")
+from context import generatorObjects
 from generators import Generator 
+import os 
+
 from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 from generatorObjects.action import ChangeBattery
 import matplotlib.pyplot as plt 
@@ -14,10 +16,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: 
         print("setting seed")
         parameters.seedVal = int(sys.argv[1])
-    
-    with open ("debug.txt", "r+") as file: 
-        file.truncate(0)
-        file.close()
 
     generator = Generator(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
     generator.generateNodes()

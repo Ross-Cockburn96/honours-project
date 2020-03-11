@@ -1,6 +1,6 @@
 import sys 
 import argparse
-sys.path.insert(0,"..")
+from context import generatorObjects
 from generatorObjects.drone import Drone
 from generatorObjects.trip import Trip
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
