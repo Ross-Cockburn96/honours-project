@@ -17,7 +17,7 @@ if __name__ == "__main__":
         print("setting seed")
         Parameters.seedVal = int(sys.argv[1])
 
-    generator = Generator(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
+    generator = Generator(distribution="uniform")  
     generator.generateNodes()
     #problem.generateRechargingStations()
     generator.generateTripsandDrones()

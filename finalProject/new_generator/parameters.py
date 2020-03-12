@@ -11,7 +11,8 @@ class Parameters:
     #can change
     citySize = 20000 #m^2
     dayLength = 28800 #s (8 hours)
-
+    noOfPackages = 100
+    noOfCustomers = 100
 
     #drone properties (can change) 
     droneSpeed = 10 #m/s

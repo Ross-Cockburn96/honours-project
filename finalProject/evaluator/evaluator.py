@@ -10,8 +10,6 @@ parser.add_argument("--solution", "-s", nargs='?', type=str, help="Solution file
 parser.add_argument("--problem", "-p", nargs='?', type=str, help="Problem file address", required=True)
 parser.add_argument("--output", "-o", nargs='?', type=str, default="output.txt", help="Output file write address")
 
-
-
 try:
     args = parser.parse_args()
     args = vars(args)
@@ -48,12 +46,6 @@ dayLength = 28800
 droneSpeed = 10 #m/s
 droneCargoLimit = 5
 droneWeightLimit = 30 #lb
-
-
-
-
-        #print(f"len of rebuilt drone trips is {len(drones[0].trips)}")
- 
 
 with open(problem) as file:
     problemData = file.read()

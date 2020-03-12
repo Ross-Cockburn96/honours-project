@@ -50,11 +50,11 @@ class Generator:
     """
     ax1 = Parameters.ax
     
-    def __init__(self, noOfNodes, noOfPackages, distribution="uniform" ):
+    def __init__(self, distribution="uniform" ):
         self.customers = []
         self.citySize = Parameters.citySize 
-        self.noOfNodes = noOfNodes
-        self.noOfPackages = noOfPackages
+        self.noOfNodes = Parameters.noOfCustomers
+        self.noOfPackages = Parameters.noOfPackages
         self.drones = []
         self.rechargeStations = []
         self.packages = []
