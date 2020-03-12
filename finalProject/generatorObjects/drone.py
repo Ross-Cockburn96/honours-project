@@ -1,13 +1,13 @@
 
 import os 
 print (os.getcwd())
-import new_generator.parameters as parameters
+from new_generator.parameters import Parameters 
 from generatorObjects.battery import Battery
 class Drone:
     #takes either an individual trip or a list of trips as argument 
     def __init__(self, *args):
         self.trips = list(args)
-        self.distanceLeft = parameters.dayLength * parameters.droneSpeed #this is the maximum distance a drone can travel in a day 
+        self.distanceLeft = Parameters.dayLength * Parameters.droneSpeed #this is the maximum distance a drone can travel in a day 
         self.battery = Battery.createNew()
 
     def getAllActions(self):

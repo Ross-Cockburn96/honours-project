@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 import numpy as np
 import scipy.stats as stats
 import math
-import parameters
+from .parameters import Parameters
 import random
 
 from generatorObjects.node import Node
@@ -12,9 +12,9 @@ from generatorObjects.node import Node
 def drawTrip(trip, ax=None, show = True, colour = 'k'):
     if ax == None:
         ax = plt.axes() 
-        ax.set_ylim(0,parameters.citySize)
-        ax.set_xlim(0,parameters.citySize)
-        ax.add_patch(patches.Rectangle((0,0), parameters.citySize, parameters.citySize))
+        ax.set_ylim(0,Parameters.citySize)
+        ax.set_xlim(0,Parameters.citySize)
+        ax.add_patch(patches.Rectangle((0,0), Parameters.citySize, Parameters.citySize))
     
     prevAction = trip.actions[0]
     for action in trip.actions[1:]: 
@@ -31,7 +31,7 @@ def drawTrip(trip, ax=None, show = True, colour = 'k'):
 def drawDroneTrips(drone): 
     plt.cla()
     ax = plt.axes() 
-    ax.add_patch(patches.Rectangle((0,0), parameters.citySize, parameters.citySize))
+    ax.add_patch(patches.Rectangle((0,0), Parameters.citySize, Parameters.citySize))
     for trip in drone.trips: 
         colourForTrip = (random.uniform(0,1), random.uniform(0,1), random.uniform(0,1))
         drawTrip(trip, ax, False, colourForTrip)

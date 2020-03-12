@@ -1,5 +1,5 @@
 import random
-import new_generator.parameters as parameters
+from new_generator.parameters import Parameters 
 import math
 
 class Node: 
@@ -11,8 +11,8 @@ class Node:
         Node.idCounter += 1
 
     def random(self, minVal, maxVal): 
-        self.xCoord = parameters.randomGen.randint(minVal, maxVal)
-        self.yCoord = parameters.randomGen.randint(minVal, maxVal)
+        self.xCoord = Parameters.randomGen.randint(minVal, maxVal)
+        self.yCoord = Parameters.randomGen.randint(minVal, maxVal)
 
     def getCoords(self): 
         return self.xCoord, self.yCoord
@@ -26,16 +26,16 @@ class Node:
 
         valid = False 
         while not valid: 
-            r = radius * math.sqrt(parameters.randomGen.random())
-            theta = parameters.randomGen.random() * 2 * math.pi
+            r = radius * math.sqrt(Parameters.randomGen.random())
+            theta = Parameters.randomGen.random() * 2 * math.pi
             x = math.floor(centerX + r * math.cos(theta))
-            if x > parameters.citySize:
+            if x > Parameters.citySize:
                 continue
             if x < 0:
                 continue
 
             y = math.floor(centerY + r * math.sin(theta))
-            if y > parameters.citySize:
+            if y > Parameters.citySize:
                 continue 
             if y < 0: 
                 continue 
@@ -166,8 +166,8 @@ class CustomerNode(Node):
 
     @classmethod
     def createNew(cls):
-        lower = random.randint(0,parameters.dayLength)
-        upper = random.randint(lower, parameters.dayLength)
+        lower = random.randint(0,Parameters.dayLength)
+        upper = random.randint(lower, Parameters.dayLength)
         return cls(lower, upper)
     
     @classmethod
@@ -208,7 +208,7 @@ class DepletionPoint(Node):
         self.action = action #the action that was being carried out when the charge depletion occured 
 
 class Depot(Node): 
-    closeTime = parameters.dayLength
+    closeTime = Parameters.dayLength
     openTime = 0
     batteriesHeld = []
     capacity = 0

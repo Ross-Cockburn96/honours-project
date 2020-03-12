@@ -1,21 +1,21 @@
 import sys
-from context import generatorObjects
-from generators import Generator 
+#from context import generatorObjects
+from .generators import Generator 
 import os 
 
 from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 from generatorObjects.action import ChangeBattery
 import matplotlib.pyplot as plt 
-import parameters
+from .parameters import Parameters
 import random
-import tools
+import new_generator.tools
 
 if __name__ == "__main__": 
 
     
     if len(sys.argv) > 1: 
         print("setting seed")
-        parameters.seedVal = int(sys.argv[1])
+        Parameters.seedVal = int(sys.argv[1])
 
     generator = Generator(noOfNodes = 100, noOfPackages = 100,  distribution="uniform")  
     generator.generateNodes()

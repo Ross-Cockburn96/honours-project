@@ -1,11 +1,11 @@
-import new_generator.parameters as parameters
+from new_generator.parameters import Parameters
 
 class Battery:
     idCounter = 1 #increments by one each time a battery class is created
 
     def __init__(self, batteryID): 
         self.id = batteryID
-        self.batteryDistance = parameters.batteryDistance #distance left on battery
+        self.batteryDistance = Parameters.batteryDistance #distance left on battery
         
     #use for problem and solution generation 
     @classmethod

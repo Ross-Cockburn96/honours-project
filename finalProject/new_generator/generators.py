@@ -3,7 +3,7 @@ import math
 import os 
 from generatorObjects.node import CustomerNode, ChargingNode, Node, DepletionPoint, Depot
 import matplotlib.pyplot as plt
-import parameters as parameters
+from .parameters import Parameters 
 from generatorObjects.drone import Drone 
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
@@ -12,7 +12,7 @@ from generatorObjects.battery import Battery
 import numpy as np
 from sklearn.cluster import KMeans 
 from scipy.spatial.distance import cdist
-import tools
+import new_generator.tools
 
 class Generator:
     """ 
@@ -48,17 +48,17 @@ class Generator:
 
     
     """
-    ax1 = parameters.ax
+    ax1 = Parameters.ax
     
     def __init__(self, noOfNodes, noOfPackages, distribution="uniform" ):
         self.customers = []
-        self.citySize = parameters.citySize 
+        self.citySize = Parameters.citySize 
         self.noOfNodes = noOfNodes
         self.noOfPackages = noOfPackages
         self.drones = []
         self.rechargeStations = []
         self.packages = []
-        random.seed(parameters.seedVal)
+        random.seed(Parameters.seedVal)
 
         if not(distribution == "uniform" or distribution == "clustered"):
             print("distribution should be either 'uniform' or 'clustered' defaulting to uniform")
@@ -83,7 +83,7 @@ class Generator:
 
 
     def createClusterCenters(self):
-        numberOfClusters = math.floor(self.citySize * parameters.clusterToCitySizeRatio)
+        numberOfClusters = math.floor(self.citySize * Parameters.clusterToCitySizeRatio)
         clusterCenters = []
         for _ in range(numberOfClusters):
             cluster = CustomerNode.createNew() 
@@ -114,7 +114,7 @@ class Generator:
             self.clusteredGeneration()
 
     def generateRechargingStations(self): #not used
-        numberOfStations = math.floor(parameters.rechargingNodetoCitySizeRatio * parameters.citySize)
+        numberOfStations = math.floor(Parameters.rechargingNodetoCitySizeRatio * Parameters.citySize)
 
         for _ in range(numberOfStations): 
             chargingStation = ChargingNode()
@@ -130,7 +130,7 @@ class Generator:
         packageCounter = 0 #used for assigning ids to packages
         while packagePool > 0:  
             
-            packagesInTrip = random.randint(1,min(parameters.droneCargoCapacity, packagePool)) #decide how many packages the drone will deliver, limited by cargo hold size
+            packagesInTrip = random.randint(1,min(Parameters.droneCargoCapacity, packagePool)) #decide how many packages the drone will deliver, limited by cargo hold size
             packagePool -= packagesInTrip 
 
             tripActions = [] #contains the actions carried out in the trip 
@@ -196,7 +196,7 @@ class Generator:
         return self.nearestNeighbour(orderedTrip, tripActions)
         
     def calculatePackageWeights(self,deliveries):
-        maxWeight = parameters.droneWeightCapacity - (len(deliveries) -1)
+        maxWeight = Parameters.droneWeightCapacity - (len(deliveries) -1)
         
         for delivery in deliveries: 
             packageWeight = random.randint(1,maxWeight)
@@ -209,14 +209,14 @@ class Generator:
         #ax = plt.axes()
         depletionPoints = []
         for drone in self.drones:
-            drone.battery.batteryDistance = parameters.batteryDistance #ensure drone batteries always start full
+            drone.battery.batteryDistance = Parameters.batteryDistance #ensure drone batteries always start full
             for trip in drone.trips:            
                 for action in trip.actions[1:]: 
                     distanceTraveled = int(Node.distanceFinder(action.node, action.prevAction.node))
                     if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                         drone.battery.batteryDistance -= distanceTraveled
                     else: 
-                        drone.battery.batteryDistance = parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations
+                        drone.battery.batteryDistance = Parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations
                     if drone.battery.batteryDistance < 0: 
                         depletionDistance  = distanceTraveled + drone.battery.batteryDistance
                         unitX, unitY = self.calculateUnitVector(action.prevAction.node, action.node) #ensure origin node is first arg and dest node is 2nd for correct unit vector direction
@@ -231,7 +231,7 @@ class Generator:
                         #self.ax1.plot(depletionX, depletionY, 'ro')
 
                         depletionPoints.append(DepletionPoint(action = action, trip = trip, drone = drone, xCoord = depletionX, yCoord = depletionY))
-                        drone.battery.batteryDistance = parameters.batteryDistance #reset battery charge to calculate next depletion point
+                        drone.battery.batteryDistance = Parameters.batteryDistance #reset battery charge to calculate next depletion point
         #plt.show()
         return depletionPoints
         
@@ -335,7 +335,7 @@ class Generator:
                 
         #check that each drone can complete its trips within a day, if it can't move trip to drone with space (can only be last in list) or create a new drone 
         for drone in self.drones: 
-            if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > parameters.dayLength * parameters.droneSpeed:
+            if Node.distanceCalc(*[action.node for action in drone.getAllActions()]) > Parameters.dayLength * Parameters.droneSpeed:
                 lastTrip = drone.trips.pop() #remove trip from drone
                 tripDistance =  Node.distanceCalc(*[action.node for action in lastTrip.actions])
                 if self.drones[-1].distanceLeft > tripDistance:
@@ -367,7 +367,7 @@ class Generator:
             timeDelivered = 0 
             for trip in drone.trips: 
                 for action in trip.actions[1:]: 
-                    timeToCompleteAction = Node.distanceFinder(action.node, action.prevAction.node) // parameters.droneSpeed
+                    timeToCompleteAction = Node.distanceFinder(action.node, action.prevAction.node) // Parameters.droneSpeed
                     if "Delivery" in str(type(action)): 
                         lowerBound, upperBound = self.calculateTimeWindow(timeDelivered)
                         #since customer nodes can receive multiple deliveries, only set the open time to lower bound if it is null (as a previous delivery will have a ) 
@@ -392,15 +392,15 @@ class Generator:
         lowerBound = None 
         upperBound = None
         #drawing a uniform random variable as mean widens the crest of the normal curve to the bounds of the range
-        mean = random.randint(0, parameters.dayLength/4)
-        halfRange = abs(math.floor(random.gauss(mean, parameters.timeSlotStandardDev)))
+        mean = random.randint(0, Parameters.dayLength/4)
+        halfRange = abs(math.floor(random.gauss(mean, Parameters.timeSlotStandardDev)))
         if time - halfRange < 0:
             lowerBound = 0
         else:
             lowerBound = time - halfRange
         
-        if time + halfRange > parameters.dayLength:
-            upperBound = parameters.dayLength
+        if time + halfRange > Parameters.dayLength:
+            upperBound = Parameters.dayLength
         else: 
             upperBound = time + halfRange
         #print(f"time: {time}, lowerBound: {lowerBound}, upperBound: {upperBound}")
@@ -437,7 +437,7 @@ class Generator:
     '''
     def createProblemFile(self):
         outputElements = [] 
-        outputElements.append(parameters.maxDrones)
+        outputElements.append(Parameters.maxDrones)
         outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
         outputElements.append(self.noOfNodes) 
         outputElements.append(self.noOfPackages)
