@@ -1,12 +1,9 @@
 import sys 
 import argparse
-from context import generatorObjects
-from generatorObjects.drone import Drone
-from generatorObjects.trip import Trip
-from generatorObjects.action import Delivery, ChangeBattery, AtDepot
-from generatorObjects.battery import Battery
-from generatorObjects.package import Package
-from generatorObjects.node import Depot, ChargingNode, CustomerNode, Node
+from fileParsers.nodeBuilder import buildNodes
+from fileParsers.objectBuilder import buildObjects
+from generatorObjects.node import Depot, Node
+#from context import generatorObjects
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--solution", "-s", nargs='?', type=str, help="Solution file address", required=True)
@@ -52,77 +49,9 @@ droneSpeed = 10 #m/s
 droneCargoLimit = 5
 droneWeightLimit = 30 #lb
 
-def buildNodes(problemElements): 
-    problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
-    depot = Depot()
-    nodes.append(depot)
-    numberBatteriesInDepot = problemElements[problemCountIdx]
-    problemCountIdx += 1
-
-    #extract number of batteries initialised to depot
-    for _ in range(numberBatteriesInDepot):
-        Depot.batteriesHeld.append(Battery.createWithID(problemElements[problemCountIdx]))
-        problemCountIdx += 1
-
-    #extract customer nodes from problem file
-    for _ in range(numberOfCustomers): 
-        customerNode = CustomerNode.rebuild(*problemElements[problemCountIdx:problemCountIdx+4])
-        nodes.append(customerNode)
-        problemCountIdx += 4
-
-    #extract package data from problem file 
-    for _ in range(numberOfPackages):
-        package = Package(problemElements[problemCountIdx])
-        problemCountIdx += 1
-        package.weight = problemElements[problemCountIdx]
-        problemCountIdx += 1
-        package.destination = problemElements[problemCountIdx]
-        problemCountIdx += 1
-        packages.append(package)
-    
-    #extract recharging station from problem file 
-    for _ in range(numberOfRechargeStations):
-        chargeStation = ChargingNode(*problemElements[problemCountIdx:problemCountIdx+2])
-        problemCountIdx += 2
-        numberOfBatteries = problemElements[problemCountIdx] #the number of batteries initialised at this recharging station
-        problemCountIdx += 1
-        chargeStation.capacity = numberOfBatteries
-        chargeStation.batteriesHeld = [Battery.createWithID(batteryID) for batteryID in problemElements[problemCountIdx:problemCountIdx + numberOfBatteries]]
-        nodes.append(chargeStation)
-        problemCountIdx += numberOfBatteries
 
 
-def buildObjects(solutionElements):
-    finished = False 
-    solutionCountIdx = 1 #this index gives the number of trips in the first drone 
-    
-    #loops through the drones
-    while solutionCountIdx < len(solutionElements):
-        droneTrips = int(solutionElements[solutionCountIdx])
-        solutionCountIdx += 1
 
-        #loops through the trips of the drone
-        trips = []
-        for _ in range(droneTrips):
-            tripActions = int(solutionElements[solutionCountIdx])
-            solutionCountIdx += 1
-
-            actions = []
-            #loops through the actions of a trip
-            for _ in range(tripActions): 
-                element = int(solutionElements[solutionCountIdx])
-                if element == 0: 
-                    action = AtDepot()
-                    solutionCountIdx += 1
-                elif element > numberOfCustomers: 
-                    action = ChangeBattery(nodes[element], Battery.createWithID(solutionElements[solutionCountIdx + 1]), Battery.createWithID(solutionElements[solutionCountIdx + 2]))
-                    solutionCountIdx += 3
-                else: 
-                    action = Delivery(nodes[element], packages[solutionElements[solutionCountIdx + 1]-1]) #package ids start at 1 but package list index starts at 0 so minus one from the id in the solution to get correct package
-                    solutionCountIdx +=2
-                actions.append(action)
-            trips.append(Trip(*actions))
-        drones.append(Drone(*trips))
         #print(f"len of rebuilt drone trips is {len(drones[0].trips)}")
  
 
@@ -134,13 +63,13 @@ with open(problem) as file:
     numberOfRechargeStations = problemElements[4]
     numberOfPackages = problemElements[3]
     maxBatteriesAvailable = problemElements[1]
-    buildNodes(problemElements)
+    nodes, packages = buildNodes(problemElements)
 
 with open(solution) as file: 
     solutionData = file.read() 
     solutionElements = solutionData.split(",")
     solutionElements = [int(e) for e in solutionElements]
-    buildObjects(solutionElements)
+    drones = buildObjects(solutionElements, numberOfCustomers, nodes, packages)
     
 
 def countUniquePackagesDelivered():
