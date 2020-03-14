@@ -115,20 +115,6 @@ def decoder(individual):
             else:
                 drone.trips.append(trip)
                 drones.append(drone)
-    if len(droneActions) > 0: 
-        if (cargoTracker > params["cargoSlotNum"]) or (weightTracker > params["cargoWeightLimit"]):
-            del trip
-        droneActions.insert(0, AtDepot())
-        droneActions.append(AtDepot())
-        trip = Trip(*droneActions)
-        tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
-        if (drones[-1].distanceLeft < tripDistance):
-            print(f"last trip {trip}")
-            drone = Drone(trip)
-            drones.append(drone)
-        else:
-            print(f"last trip {trip}")
-            drones[-1].trips.append(trip)
 
     counter = 0
     print(f"chromosome is {individual.chromosome}")
