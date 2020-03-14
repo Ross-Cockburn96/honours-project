@@ -63,8 +63,10 @@ def decoder(individual):
     cargoTracker = 0
     weightTracker = 0
     distanceTracker = 0 
-    
-    for gene in individual.chromosome:
+    packageSum = 0 
+    packageSum2 = 0
+    for idx,gene in enumerate(individual.chromosome):
+        packageSum2 += 1
         package = packages[gene-1] #package ids start from 1
         destinationNode = nodes[package.destination] #node ids start from 0 
         newDelivery = Delivery(destinationNode, package) #create a new delivery acrion 
@@ -73,7 +75,7 @@ def decoder(individual):
         weightTracker += package.weight
         
         #if the new delivery made the trip invalid then remove it from trip and form the trip object
-        if (cargoTracker > 5) or (weightTracker > params["cargoWeightLimit"]):
+        if (cargoTracker > params["cargoSlotNum"]) or (weightTracker > params["cargoWeightLimit"]) or (idx == 99):
             #reset trackers
             cargoTracker = 0
             weightTracker = 0
@@ -81,21 +83,32 @@ def decoder(individual):
             #each trip will start and end at the depot 
             droneActions.insert(0, AtDepot())
             droneActions.append(AtDepot())
+            
             #form the trip object
             trip = Trip(*droneActions)
+            
             #action that was not taken on this trip will be part of the next trip
             droneActions = [newDelivery]
         
             tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
             #drone can't deliver this trip i
-            if drone.distanceLeft < tripDistance: 
+            if (drone.distanceLeft < tripDistance) or (idx == 99): 
                 drones.append(drone)
                 #start building new drone
-                drone = Drone()
+                if idx < 99:
+                    drone = Drone()
             else:
                 drone.trips.append(trip)
                 drone.distanceLeft -= tripDistance
-    
+    if len(droneActions) > 0: 
+        trip = Trip(*droneActions)
+        tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
+        if (drones[-1].distanceLeft < tripDistance):
+            drone = Drone(trip)
+            drones.append(drone)
+        else:
+            drones[-1].trips.append(trip)
+
     elements = phenotype(drones)
     return elements
 
