@@ -12,7 +12,6 @@ from objectDeconstructors.phenotype import phenotype
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--problem", "-p", nargs='?', type=str, help="Problem file address", required=True)
-
 try:
     args = parser.parse_args()
     args = vars(args)
@@ -63,52 +62,84 @@ def decoder(individual):
     cargoTracker = 0
     weightTracker = 0
     distanceTracker = 0 
-    packageSum = 0 
-    packageSum2 = 0
+
     for idx,gene in enumerate(individual.chromosome):
-        packageSum2 += 1
         package = packages[gene-1] #package ids start from 1
         destinationNode = nodes[package.destination] #node ids start from 0 
         newDelivery = Delivery(destinationNode, package) #create a new delivery acrion 
         droneActions.append(newDelivery)
         cargoTracker += 1 
         weightTracker += package.weight
-        
         #if the new delivery made the trip invalid then remove it from trip and form the trip object
-        if (cargoTracker > params["cargoSlotNum"]) or (weightTracker > params["cargoWeightLimit"]) or (idx == 99):
+        if (cargoTracker > params["cargoSlotNum"]) or (weightTracker > params["cargoWeightLimit"]):
+            print(idx)
             #reset trackers
             cargoTracker = 0
             weightTracker = 0
+                
             del droneActions[-1]
             #each trip will start and end at the depot 
             droneActions.insert(0, AtDepot())
             droneActions.append(AtDepot())
-            
             #form the trip object
             trip = Trip(*droneActions)
             
             #action that was not taken on this trip will be part of the next trip
+            print(f"drone actions before delete is {droneActions}")
             droneActions = [newDelivery]
         
             tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
             #drone can't deliver this trip i
-            if (drone.distanceLeft < tripDistance) or (idx == 99): 
+            if (drone.distanceLeft < tripDistance): 
                 drones.append(drone)
+                print(f"forming drone index {idx}")
+                print(f"actions on next trip are {droneActions}")
+                for trip2 in drone.trips:
+                    print(f"forming with {trip2}")
                 #start building new drone
-                if idx < 99:
-                    drone = Drone()
+                
+                drone = Drone(trip)
             else:
                 drone.trips.append(trip)
+                print(f"added trip {idx} {len(trip.actions)}")
                 drone.distanceLeft -= tripDistance
+        elif idx == params["numGenes"] - 1:
+            droneActions.insert(0, AtDepot())
+            droneActions.append(AtDepot())
+            trip = Trip(*droneActions)
+            tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
+            #if drone can't deliver the trip add the drone and create and add new drone to finish decoding
+            if (drone.distanceLeft < tripDistance): 
+                drones.append(drone)
+                drones.append(Drone(trip))
+            else:
+                drone.trips.append(trip)
+                drones.append(drone)
     if len(droneActions) > 0: 
+        if (cargoTracker > params["cargoSlotNum"]) or (weightTracker > params["cargoWeightLimit"]):
+            del trip
+        droneActions.insert(0, AtDepot())
+        droneActions.append(AtDepot())
         trip = Trip(*droneActions)
         tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
         if (drones[-1].distanceLeft < tripDistance):
+            print(f"last trip {trip}")
             drone = Drone(trip)
             drones.append(drone)
         else:
+            print(f"last trip {trip}")
             drones[-1].trips.append(trip)
 
+    counter = 0
+    print(f"chromosome is {individual.chromosome}")
+    for drone in drones:
+        for trip in drone.trips:
+            for action in trip.actions: 
+                if "Delivery" in str(type(action)):
+                    print(f"{action.package.id}  {nodes[action.package.destination]}")
+                    
+                    counter += 1
+    print(counter)
     elements = phenotype(drones)
     return elements
 
