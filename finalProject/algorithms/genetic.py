@@ -72,10 +72,11 @@ def decoder(individual):
         weightTracker += package.weight
         #if the new delivery made the trip invalid then remove it from trip and form the trip object
         if (cargoTracker > params["cargoSlotNum"]) or (weightTracker > params["cargoWeightLimit"]):
+            
             print(idx)
             #reset trackers
-            cargoTracker = 0
-            weightTracker = 0
+            cargoTracker = 1
+            weightTracker = package.weight
                 
             del droneActions[-1]
             #each trip will start and end at the depot 
@@ -103,16 +104,19 @@ def decoder(individual):
                 drone.trips.append(trip)
                 print(f"added trip {idx} {len(trip.actions)}")
                 drone.distanceLeft -= tripDistance
-        elif idx == params["numGenes"] - 1:
+        if idx == params["numGenes"] - 1:
+            print(f"final")
             droneActions.insert(0, AtDepot())
             droneActions.append(AtDepot())
             trip = Trip(*droneActions)
             tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
             #if drone can't deliver the trip add the drone and create and add new drone to finish decoding
             if (drone.distanceLeft < tripDistance): 
+                print(f"new drone")
                 drones.append(drone)
                 drones.append(Drone(trip))
             else:
+                print(f"old drone")
                 drone.trips.append(trip)
                 drones.append(drone)
 
