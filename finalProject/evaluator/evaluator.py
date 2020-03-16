@@ -72,7 +72,6 @@ def countUniquePackagesDelivered():
         for action in drone.getAllActions():
             if "Delivery" in str(type(action)):
                 packages.append(action.package.id)
-    print(len(packages))
     return len(set(packages))
 
 def checkCustomerDemandsSatisfied():

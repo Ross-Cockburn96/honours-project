@@ -28,8 +28,13 @@ with open(problem) as file:
 
 packages = []
 nodes = []
-
+chargingStations = [] 
 nodes, packages = buildNodes(problemElements)
+
+for node in nodes:
+    if "ChargingStation" in str(type(node)):
+        chargingStations.append(node)
+
 
 params["numGenes"] = len(packages)
 #genetic algorithm parameters
@@ -56,7 +61,6 @@ def decoder(individual):
     droneActions = [] 
 
     drone = Drone()
-
 
     cargoTracker = 0
     weightTracker = 0
@@ -110,8 +114,38 @@ def decoder(individual):
                 drones.append(drone)
 
     counter = 0
+
+    includeChargingStations(drones)
+
     elements = phenotype(drones)
     return elements
+
+def includeChargingStations(drones):
+    for drone in drones: 
+        for trip in trip: 
+            tripDistance = Node.distanceCalc(*[action.node for action in trip.actions])
+            #if trip will cause battery to run out of charge, add 
+            while drone.battery.batteryDistance - tripDistance < 0: 
+            if drone.battery.batteryDistance - tripDistance < 0: 
+                for action in trip.actions[1:]:
+
+def insertIntoTrip(trip):
+    for idx, action in enumerate(trip.actions):
+        if action in trip.actions[:-1]:
+            if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
+                distanceToTravel = Node.distanceFinder(action.node, action.nextAction.node)
+                provisionalValue = drone.battery.batteryDistance - distanceToTravel
+            else:
+                drone.battery = action.batterySelected
+            if provisionalValue < 0:
+                timeAccessingChargeStation = (Parameters.dayLength - drone.distanceLeft) / Parameters.droneSpeed
+                chargingStation = min(chargingStations, key=lambda x : int(Node.distanceFinder(x, action.node)))
+                distanceToStation = Node.distanceFinder(action.node, chargingStation)
+                
+                #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
+                changeBatteryAction = ChangeBattery(chargingStation, drone.battery, max(chargingStation.batteriesHeld, key=lambda x : x.batteryDistance))
+                trip.insert(idx, chargingStation)
+
 
 start()
 

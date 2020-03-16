@@ -17,7 +17,8 @@ class Parameters:
     #drone properties (can change) 
     droneSpeed = 10 #m/s
     batteryDistance = 20000 #how much distance the drone's current battery has 
-
+    batteryChargingRate = 2 #m/s
+    
     seedVal = None
     randomGen = random
     randomGen.seed(seedVal)
