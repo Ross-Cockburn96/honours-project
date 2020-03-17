@@ -10,9 +10,9 @@ from .parameters import Parameters
 import random
 import new_generator.tools
 
+
 if __name__ == "__main__": 
 
-    
     if len(sys.argv) > 1: 
         print("setting seed")
         Parameters.seedVal = int(sys.argv[1])

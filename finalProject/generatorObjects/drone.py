@@ -1,6 +1,5 @@
 
 import os 
-print (os.getcwd())
 from new_generator.parameters import Parameters 
 from generatorObjects.battery import Battery
 class Drone:

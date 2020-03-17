@@ -5,6 +5,7 @@ class Individual:
     def __init__(self):
         self.chromosome = list(range(1, params["numGenes"]+1)) #ordered permutations (shuffled in initialise)
     def initialise(self):
+        random.seed(1001)
         random.shuffle(self.chromosome)
     
     def __repr__(self):

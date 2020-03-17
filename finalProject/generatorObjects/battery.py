@@ -6,8 +6,8 @@ class Battery:
     def __init__(self, batteryID): 
         self.id = batteryID
         self.batteryDistance = Parameters.batteryDistance #distance left on battery
-        self.dockedTime = None #the time the battery started to charge
-    #use for problem and solution generation 
+        self.dockedTime = 0 #the time the battery started to charge
+    
     @classmethod
     def createNew(cls):
         objectID = Battery.idCounter

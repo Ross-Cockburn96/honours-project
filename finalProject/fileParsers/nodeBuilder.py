@@ -15,6 +15,7 @@ def buildNodes(problemElements):
 
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
     depot = Depot()
+    
     nodes = []
     packages = []
     nodes.append(depot)
