@@ -197,7 +197,7 @@ with open(outputLocation, "w") as file:
         result == "PASS"
     else:
         result = "FAIL"
-    file.write(f"Packages delivered by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")
+    file.write(f"Packages scheduled for delivery by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")
 
     correctlyDeliveredPackages = checkCustomerDemandsSatisfied()
     if correctlyDeliveredPackages == numberOfPackages:
