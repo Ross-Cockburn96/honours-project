@@ -135,8 +135,6 @@ def includeChargingStations(drones):
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
                 break
-    print(val.count(1))
-    print(tripCounter)
 
     # for trip in drones[0].trips[:-2]:
     #     insertIntoTrip(trip, drones[0])
@@ -172,7 +170,7 @@ def insertIntoTrip(trip, drone):
                 swapIndex = action.node.batteriesHeld.index(action.batterySelected)
                 action.node.batteriesHeld[swapIndex] = action.batteryDropped
             else:
-                stationHistory = []
+                stationHistory = [] #clear station history when an action that isn't a change battery action is carried out
 
             #what the battery amount would be when arriving at the next node
             provisionalBatteryLevel = drone.battery.batteryDistance - distanceToTravel
@@ -213,6 +211,10 @@ def insertIntoTrip(trip, drone):
 
                 #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
                 changeBatteryAction = ChangeBattery(chargingStation, drone.battery, realBattery)
+                if ("AtDepot" in str(type(action))) and (chargingStation.getCoords() == (0,0)):
+                    print("replacing at depot with charging node")
+                    del trip.actions[0]
+                    trip.insertAction(0, changeBatteryAction)
                 #print(trip)
                 trip.insertAction(idx+1, changeBatteryAction)
                 #print(trip)

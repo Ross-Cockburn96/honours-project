@@ -421,7 +421,6 @@ class Generator:
                     outputElements.append(action.node.id)
                     #if action a deliver action add id of package delivered to solution file 
                     if (action.node.id) > 0 and (action.node.id <= self.noOfNodes):
-                        print(action.package.id)
                         outputElements.append(action.package.id)
                     elif (action.node.id > self.noOfNodes):
                         outputElements.append(action.batteryDropped)
