@@ -59,5 +59,8 @@ if __name__ == "__main__":
     generator.createGenotype()
     generator.createProblemFile()
     
+    for trip in generator.drones[2].trips:
+        print(trip)
+
     # plt.sca(parameters.ax)
     # plt.show()

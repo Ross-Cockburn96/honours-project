@@ -37,16 +37,18 @@ for node in nodes:
         chargingStations.append(node)
 
 chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
-
+#add the depot to charging stations 
+chargingStations.append(nodes[0])
 params["numGenes"] = len(packages)
 #genetic algorithm parameters
-popsize = 1
+popsize = 10
 
 def start():
     population = initialise()
-    #individual = Individual()
-    #individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
-    phenotype = decoder(population[0])
+    #evaluatePopulation(population)
+    individual = Individual()
+    individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
+    phenotype = decoder(individual)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
         file.seek(0)
@@ -61,6 +63,10 @@ def initialise():
         population.append(individual)
     return population
 
+def evaluatePopulation(population):
+    for individual in population: 
+        phenotype = decoder(individual)
+
 def decoder(individual):
     drones = []
     droneActions = [] 
@@ -70,12 +76,10 @@ def decoder(individual):
     cargoTracker = 0
     weightTracker = 0
     distanceTracker = 0 
-
     for idx,gene in enumerate(individual.chromosome):
-        print(gene)
         package = packages[gene-1] #package ids start from 1
         destinationNode = nodes[package.destination] #node ids start from 0 
-        newDelivery = Delivery(destinationNode, package) #create a new delivery acrion 
+        newDelivery = Delivery(destinationNode, package) #create a new delivery action 
         droneActions.append(newDelivery)
         cargoTracker += 1 
         weightTracker += package.weight
@@ -120,22 +124,23 @@ def decoder(individual):
                 drones.append(drone)
 
     counter = 0
+    
     includeChargingStations(drones)
-
     elements = phenotype(drones)
+    #elements = phenotype(drones)
     return elements
 
 def includeChargingStations(drones):
-    tripCounter = 0
-    val = []
     for drone in drones:
         for trip in drone.trips:
-            tripCounter += 1
-            val.append(insertIntoTrip(trip, drone))
+            if insertIntoTrip(trip, drone) == -1: 
+                break
     print(val.count(1))
     print(tripCounter)
-    # trip = drones[1].trips[0]
-    # insertIntoTrip(trip, drones[0])
+
+    # for trip in drones[0].trips[:-2]:
+    #     insertIntoTrip(trip, drones[0])
+   
     # print(trip)
     # for drone in drones: 
     #  for trip in drone.trips: 
@@ -143,7 +148,8 @@ def includeChargingStations(drones):
 
 
 def calculateChargedValues(battery, currentTime):
-    battery.batteryDistance += ((currentTime - battery.dockedTime)*Parameters.batteryChargingRate)
+    if battery.dockedTime != None:
+        battery.batteryDistance += ((currentTime - battery.dockedTime)*Parameters.batteryChargingRate)
     return battery
 
 
@@ -151,22 +157,22 @@ def insertIntoTrip(trip, drone):
     isAddition = False
     startingCharge = drone.battery.batteryDistance #records what charge the battery hard at the start of the trip
     #print(f"starting charge is {startingCharge}")
-    time = 0 
     stationHistory = [] #this keeps track of the charging stations that have been visited in a row. It is cleared as soon as a delivery is made. Stops infinite looping between 2 charging stations
     for idx, action in enumerate(trip.actions):
         if action in trip.actions[:-1]:
             distanceToTravel = Node.distanceFinder(action.node, action.nextAction.node)
-            timeAtNextNode = time + (distanceToTravel/Parameters.droneSpeed) #the time that the next action on this drone would be completed
+            timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) #the time that the next action on this drone would be completed
             #print(f"current node is {action.node} next node is {action.nextAction.node}")
             #if the current action is to change battery, then switch battery amount to battery selected
             if "ChangeBattery" in str(type(action)):
                 #print(f"switching battery")
+                drone.battery.dockedTime = drone.time
                 drone.battery = action.batterySelected
                 #update charging station to contain dropped off battery 
                 swapIndex = action.node.batteriesHeld.index(action.batterySelected)
                 action.node.batteriesHeld[swapIndex] = action.batteryDropped
             else:
-                stationHistory = [] 
+                stationHistory = []
 
             #what the battery amount would be when arriving at the next node
             provisionalBatteryLevel = drone.battery.batteryDistance - distanceToTravel
@@ -180,18 +186,28 @@ def insertIntoTrip(trip, drone):
                 #it is not possible for the drone to complete this trip
                 #print(f"distance to station {distanceToStation}, distance left on battery {drone.battery.batteryDistance}") 
                 if distanceToStation > drone.battery.batteryDistance:
-                    print("no station found")
-                    return 1
+                    #print("no station found")
+                    return -1
                 drone.battery.batteryDistance -= distanceToStation
-                timeAtNextNode = time + (distanceToStation / Parameters.droneSpeed) #next node will now be the charging station
+                timeAtNextNode = drone.time + (distanceToStation / Parameters.droneSpeed) #next node will now be the charging station
                 batteriesCopy = copy.deepcopy(chargingStation.batteriesHeld)
                 #reduce list to only those batteries that exist at the station at the time the drone visits. 
+                # print(batteriesCopy)
+                # print(drone.time)
+                # for battery12 in batteriesCopy: 
+                #     print(battery12.dockedTime)
                 batteriesCopy = list(filter(lambda x, timeAtNextNode = timeAtNextNode: x.dockedTime <= timeAtNextNode if (x.dockedTime != None) else True, batteriesCopy))
-                #return the highest charged battery after adjusting for the battery charge times
-                highestCharged = max([calculateChargedValues(battery, timeAtNextNode) for battery in batteriesCopy], key = lambda x : x.batteryDistance)
+                #print(batteriesCopy)
+                #check the list is not empty
+                if batteriesCopy:
+                    #return the highest charged battery after adjusting for the battery charge times
+                    highestCharged = max([calculateChargedValues(battery, timeAtNextNode) for battery in batteriesCopy], key = lambda x : x.batteryDistance)
+                else: 
+                    #drone is depleted
+                    #print(f"finishing")
+                    return -1
                 if highestCharged.batteryDistance > Parameters.batteryDistance:
                     highestCharged.batteryDistance = Parameters.batteryDistance
-                
                 realBattery = chargingStation.batteriesHeld[batteriesCopy.index(highestCharged)] #selects the unmodified battery object
                 realBattery.batteryDistance = highestCharged.batteryDistance #update this battery's charge value
 
@@ -204,7 +220,7 @@ def insertIntoTrip(trip, drone):
         
             else:
                 drone.battery.batteryDistance = provisionalBatteryLevel
-        time = timeAtNextNode   
+        drone.time = timeAtNextNode   
     return 2 
     #if there has been an addition to the trip start calculating again
     # if isAddition and run < 2:
