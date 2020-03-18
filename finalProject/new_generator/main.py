@@ -56,6 +56,7 @@ if __name__ == "__main__":
     generator.createTimeWindows() 
 
     generator.createSolutionFile()
+    generator.createGenotype()
     generator.createProblemFile()
     
     # plt.sca(parameters.ax)

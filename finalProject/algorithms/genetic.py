@@ -44,8 +44,11 @@ popsize = 1
 
 def start():
     population = initialise()
+    #individual = Individual()
+    #individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
     phenotype = decoder(population[0])
     with open ("solutionSample.txt", "w") as file:
+        print("writing to sample")
         file.seek(0)
         string = ",".join([str(element) for element in phenotype])
         file.write(string)
@@ -69,6 +72,7 @@ def decoder(individual):
     distanceTracker = 0 
 
     for idx,gene in enumerate(individual.chromosome):
+        print(gene)
         package = packages[gene-1] #package ids start from 1
         destinationNode = nodes[package.destination] #node ids start from 0 
         newDelivery = Delivery(destinationNode, package) #create a new delivery acrion 
@@ -116,21 +120,20 @@ def decoder(individual):
                 drones.append(drone)
 
     counter = 0
-
     includeChargingStations(drones)
 
     elements = phenotype(drones)
     return elements
 
 def includeChargingStations(drones):
-    # tripCounter = 0
-    # val = []
+    tripCounter = 0
+    val = []
     for drone in drones:
         for trip in drone.trips:
-            # tripCounter += 1
+            tripCounter += 1
             val.append(insertIntoTrip(trip, drone))
-    # print(val.count(1))
-    # print(tripCounter)
+    print(val.count(1))
+    print(tripCounter)
     # trip = drones[1].trips[0]
     # insertIntoTrip(trip, drones[0])
     # print(trip)

@@ -421,6 +421,7 @@ class Generator:
                     outputElements.append(action.node.id)
                     #if action a deliver action add id of package delivered to solution file 
                     if (action.node.id) > 0 and (action.node.id <= self.noOfNodes):
+                        print(action.package.id)
                         outputElements.append(action.package.id)
                     elif (action.node.id > self.noOfNodes):
                         outputElements.append(action.batteryDropped)
@@ -428,6 +429,22 @@ class Generator:
 
         solutionString = ",".join([str(element) for element in outputElements])
         with open("solution.txt", "w") as file:
+            file.seek(0)
+            file.write(solutionString)
+
+    '''
+    Used for creating a file that allows the testing of the decoder in the genetic algorithm
+    '''
+    def createGenotype(self):
+        outputElements = [] 
+        for drone in self.drones: 
+            for trip in drone.trips:
+                for action in trip.actions: 
+                    if "Delivery" in str(type(action)):
+                        outputElements.append(action.package.id)
+        
+        solutionString = ",".join([str(element) for element in outputElements])
+        with open("genotype.txt", "w") as file:
             file.seek(0)
             file.write(solutionString)
 
