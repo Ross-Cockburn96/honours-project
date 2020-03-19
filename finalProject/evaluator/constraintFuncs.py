@@ -32,7 +32,7 @@ def countBatteriesUsed(drones):
         batteries.append(drone.battery)
         for action in drone.getAllActions():
             if "ChangeBattery" in str(type(action)):
-                print(f"change battery action: {action}, {type(action)}")
+                #print(f"change battery action: {action}, {type(action)}")
                 batteries.append(action.batterySelected)
     batteries.sort(key=lambda x : x.id)
     return len(set(batteries))

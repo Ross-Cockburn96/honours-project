@@ -73,7 +73,12 @@ def initialiseObjectiveConstants():
     dronesUsedMultiplier = maxDistanceTraveled/maxDrones
     batteriesUsedMultiplier = maxDistanceTraveled/maxBatteries
 
+def norm(x, xMax):
+    return x/xMax
+
 def evaluateSolutionFitness(batteriesUsed):
+    maxScore = 1000
+    noObjectives = 3
     actualDistanceTraveled = 0 
     for drone in drones:
         for trip in drone.trips:
@@ -81,7 +86,11 @@ def evaluateSolutionFitness(batteriesUsed):
 
     actualDronesUsed = solutionElements[0]
     actualBatteriesUsed = batteriesUsed
-    return (actualDistanceTraveled + actualDronesUsed * dronesUsedMultiplier + actualBatteriesUsed * batteriesUsedMultiplier)
+    distanceNorm = norm(actualDistanceTraveled, maxDistanceTraveled)
+    dronesNorm = norm(actualDronesUsed, maxDrones)
+    batteriesNorm = norm(actualBatteriesUsed, maxBatteries)
+
+    return int(distanceNorm * (maxScore/noObjectives) + (dronesNorm * (maxScore/noObjectives)) + (batteriesNorm * (maxScore/noObjectives)))
 
 with open(outputLocation, "w") as file:
     file.seek(0)

@@ -1,5 +1,6 @@
 import argparse
 import copy
+import random
 from fileParsers.nodeBuilder import buildNodes
 from .parameters import params 
 from .individual import Individual 
@@ -10,6 +11,9 @@ from generatorObjects.trip import Trip
 from generatorObjects.battery import Battery
 from generatorObjects.node import Node
 from objectDeconstructors.phenotype import phenotype
+from evaluator.constraintFuncs import *
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--problem", "-p", nargs='?', type=str, help="Problem file address", required=True)
@@ -45,16 +49,30 @@ popsize = 10
 
 def start():
     population = initialise()
-    #evaluatePopulation(population)
-    individual = Individual()
-    individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
-    phenotype = decoder(individual)
-    with open ("solutionSample.txt", "w") as file:
-        print("writing to sample")
-        file.seek(0)
-        string = ",".join([str(element) for element in phenotype])
-        file.write(string)
+    evaluatePopulation(population)
+    #individual = Individual()
+    #individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
+    
+    #phenotype, _ = decoder(population)
+    for _ in range(5000):
+        parent1 = tournamentSelect(population)
+        parent2 = tournamentSelect(population)
+        
+        child = crossover(parent1, parent2)
+        _,drones = decoder(child)
+        child.drones = drones
+        child.fitness = evaluate(child.drones)
 
+        replace(child, population)
+
+        best = min(population, key = lambda x : x.fitness)
+        print([i.fitness for i in population])
+        print(f"BEST IN ITERATION: {best.fitness}")
+    # with open ("solutionSample.txt", "w") as file:
+    #     print("writing to sample")
+    #     file.seek(0)
+    #     string = ",".join([str(element) for element in phenotype])
+    #     file.write(string)
 def initialise():
     population = []
     for _ in range(popsize):
@@ -65,8 +83,77 @@ def initialise():
 
 def evaluatePopulation(population):
     for individual in population: 
-        phenotype = decoder(individual)
+        _, drones = decoder(individual)
+        individual.drones = drones
+        individual.fitness = evaluate(drones)
+    
+    for individual in population:
+        print(f"fitness is {individual.fitness}")
 
+def norm(x, xMax):
+    return x/xMax
+
+def evaluate(drones):
+    numDepletions = countDroneChargeDepletion(drones)
+    actualDistanceTraveled = 0
+    maxDrones = problemElements[0]
+    dayLength = 28800
+    droneSpeed = 10
+    maxDistanceTraveled = maxDrones * dayLength * droneSpeed #max distance possible is if all drones are used and are travelling all day without stopping 
+    maxBatteries = problemElements[1]
+    for drone in drones:
+        for trip in drone.trips:
+            actualDistanceTraveled += Node.distanceCalc(*[action.node for action in trip.actions])
+    
+    actualDronesUsed = len(drones)
+    actualBatteriesUsed = countBatteriesUsed(drones)
+    numDronesDepleted = countDroneChargeDepletion(drones)
+
+    maxScore = 1000
+    numObjectives = 4
+    scoreRatio = maxScore/4
+    distanceNorm = norm(actualDistanceTraveled, maxDistanceTraveled)
+    dronesNorm = norm(actualDronesUsed, maxDrones)
+    batteriesNorm = norm(actualBatteriesUsed, maxBatteries)
+    depletionNorm = norm(numDronesDepleted, actualDronesUsed)
+
+    return int((distanceNorm * scoreRatio) + (dronesNorm * scoreRatio) + (batteriesNorm * scoreRatio) + (depletionNorm * scoreRatio))
+
+def tournamentSelect(population):
+    competitors = []
+    for idx in range(params["tournamentSize"]):
+        individual = population[random.randrange(len(population))]
+        competitors.append(individual)
+    
+    winner = min(competitors, key=lambda x : x.fitness)
+    return copy.deepcopy(winner)
+
+def crossover(parent1, parent2):
+    child = Individual()
+    geneA = random.randrange(params["numGenes"])
+    geneB = random.randrange(params["numGenes"])
+
+    startGene = min(geneA,geneB)
+    endGene = max(geneA, geneB)
+
+    for i in range(startGene, endGene):
+        child.chromosome[i] = parent1.chromosome[i]
+    
+    for i in range(startGene):
+        child.chromosome[i] = parent2.chromosome[i]
+    
+    for i in range(endGene, params["numGenes"]):
+        child.chromosome[i] = parent2.chromosome[i]
+    
+    return child
+
+def replace(child, population):
+    worst = min(population, key=lambda x : x.fitness)
+    if child.fitness < worst.fitness:
+        population[population.index(worst)] = child
+'''
+takes indirect genotype and builds the phenotype, returns the phenotype in it's raw format (elements) and in it's object format (drones)
+'''
 def decoder(individual):
     drones = []
     droneActions = [] 
@@ -128,7 +215,7 @@ def decoder(individual):
     includeChargingStations(drones)
     elements = phenotype(drones)
     #elements = phenotype(drones)
-    return elements
+    return elements, drones
 
 def includeChargingStations(drones):
     for drone in drones:
@@ -212,7 +299,7 @@ def insertIntoTrip(trip, drone):
                 #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
                 changeBatteryAction = ChangeBattery(chargingStation, drone.battery, realBattery)
                 if ("AtDepot" in str(type(action))) and (chargingStation.getCoords() == (0,0)):
-                    print("replacing at depot with charging node")
+                    #print("replacing at depot with charging node")
                     del trip.actions[0]
                     trip.insertAction(0, changeBatteryAction)
                 #print(trip)
