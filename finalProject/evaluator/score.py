@@ -7,7 +7,18 @@ class Fitness:
         self.maxDrones = problemElements[0]
         self.maxDistanceTraveled = self.maxDrones * params["dayLength"] * params["droneSpeed"]
         self.maxBatteries = problemElements[1]
-
+        self.maxLateness = self.calcMaxLateness(problemElements)
+    
+    def calcMaxLateness(self, problemElements):
+        maxLateness = 0
+        numberOfCustomers = problemElements[2]
+        #start at first customer node 
+        index = 7 + problemElements[7] + 1
+        for _ in range(100): 
+            closeTime = problemElements[index + 3]
+            maxLateness += params["dayLength"] - closeTime
+            index += 4
+        return maxLateness
 
     def actualDistanceCalculation(self, drones):
         actualDistanceTraveled = 0
@@ -41,15 +52,15 @@ class Fitness:
         noObjectives = 3 #the number of objectives listed in the initialiser 
 
         actualDistanceTraveled = self.actualDistanceCalculation(drones)
-        lateness = self.actualLatenessCalculation(copy.deepcopy(drones)) #pass a copy of the list so that changing the drone variables don't affect the original list
-        print(lateness)
+        actualLateness = self.actualLatenessCalculation(copy.deepcopy(drones)) #pass a copy of the list so that changing the drone variables don't affect the original list
         actualDronesUsed = len(drones)
         actualBatteriesUsed = countBatteriesUsed(drones)
         
         distanceNormalised = actualDistanceTraveled/self.maxDistanceTraveled
+        latenessNormalised = actualLateness/self.maxLateness
         dronesNormalised = actualDronesUsed/self.maxDrones
         batteriesNormalised = actualBatteriesUsed/self.maxBatteries
 
-        normalisedObjectivValues = [distanceNormalised, dronesNormalised, batteriesNormalised]
+        normalisedObjectivValues = [distanceNormalised, dronesNormalised, batteriesNormalised, latenessNormalised]
 
         return int(sum([obj * (maxScore/noObjectives) for obj in normalisedObjectivValues]))
