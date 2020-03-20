@@ -1,5 +1,6 @@
 import sys 
 import argparse
+import copy
 from .score import Fitness
 from fileParsers.nodeBuilder import buildNodes
 from fileParsers.objectBuilder import buildObjects
@@ -86,12 +87,12 @@ with open(outputLocation, "w") as file:
         result = "FAIL"
     file.write(f"Packages scheduled for delivery by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")
 
-    correctlyDeliveredPackages = checkCustomerDemandsSatisfied(drones, packages)
+    correctlyDeliveredPackages = checkCustomerDemandsSatisfied(copy.deepcopy(drones), packages)
     if correctlyDeliveredPackages == numberOfPackages:
         result = "PASS"
     else:
         result = "FAIL"
-    file.write(f"Packages delivered to correct customer => {correctlyDeliveredPackages}/{numberOfPackages}: {result}\n")
+    file.write(f"Packages delivered successfully to correct customer => {correctlyDeliveredPackages}/{numberOfPackages}: {result}\n")
     
     batteriesUsed = countBatteriesUsed(drones)
     if batteriesUsed > maxBatteriesAvailable:
@@ -100,7 +101,7 @@ with open(outputLocation, "w") as file:
         result = "PASS"
     file.write(f"Number of batteries used by solution => {batteriesUsed}, maximum available is {maxBatteriesAvailable}: {result}\n")
 
-    batteriesOutOfCharge = countDroneChargeDepletion(drones)
+    batteriesOutOfCharge = countDroneChargeDepletion(copy.deepcopy(drones)) #calculating depletion points changed variables of drones so deep copy for safety
     if batteriesOutOfCharge > 0: 
         result = "FAIL"
     else:

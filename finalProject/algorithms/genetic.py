@@ -52,18 +52,20 @@ popsize = 100
 def start():
     population = initialise()
     evaluatePopulation(population)
+    
     startWorst = max(population, key=lambda x: x.fitness)
     popcopy = copy.deepcopy(population)
     #individual = Individual()
     #individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
     
     #phenotype, _ = decoder(population)
-    for _ in range(2000):
+    for _ in range(1):
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
         
         child = crossover(parent1, parent2)
         mutate(child)
+        
         child.phenotype, child.drones = decoder(child)
         child.fitness = fitnessEvaluator.evaluate(child.drones)
         print(f"fitness of child is {child.fitness}")
@@ -113,6 +115,8 @@ def tournamentSelect(population):
 
 def crossover(parent1, parent2):
     child = Individual()
+    childP1 = []
+    childP2 = []
     geneA = random.randrange(params["numGenes"])
     geneB = random.randrange(params["numGenes"])
 
@@ -120,14 +124,12 @@ def crossover(parent1, parent2):
     endGene = max(geneA, geneB)
 
     for i in range(startGene, endGene):
-        child.chromosome[i] = parent1.chromosome[i]
+        childP1.append(parent1.chromosome[i])
     
-    for i in range(startGene):
-        child.chromosome[i] = parent2.chromosome[i]
-    
-    for i in range(endGene, params["numGenes"]):
-        child.chromosome[i] = parent2.chromosome[i]
-    
+    childP2 = [item for item in parent2.chromosome if item not in childP1]
+
+    child.chromosome = childP1
+    child.chromosome.extend(childP2)
     return child
 
 def mutate(child):

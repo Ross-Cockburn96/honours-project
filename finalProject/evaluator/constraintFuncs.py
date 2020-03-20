@@ -9,6 +9,7 @@ def countUniquePackagesDelivered(drones):
         for action in drone.getAllActions():
             if "Delivery" in str(type(action)):
                 packages.append(action.package.id)
+    print(len(packages))
     return len(set(packages))
 
 def checkCustomerDemandsSatisfied(drones, packages):
@@ -16,10 +17,23 @@ def checkCustomerDemandsSatisfied(drones, packages):
     packagesDeliveredCorrectly = 0
     for drone in drones:
         for trip in drone.trips:
-            for action in trip.actions:
-                if "Delivery" in str(type(action)):
-                    if action.node.id == packageDemandDic[action.package.id]:
-                        packagesDeliveredCorrectly += 1
+            for action in trip.actions[1:]:
+                if not "ChangeBattery" in str(type(action)):
+                    if "Delivery" in str(type(action)):
+                        if action.node.id == packageDemandDic[action.package.id]:
+                            packagesDeliveredCorrectly += 1
+                    else:   
+                        distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
+                        drone.battery.batteryDistance -= distanceTraveled
+                else:
+                    drone.battery = action.batterySelected
+                if drone.battery.batteryDistance < 0:
+                    break
+            else:
+                continue
+            break
+    return packagesDeliveredCorrectly
+            
 
     return packagesDeliveredCorrectly
 
