@@ -1,6 +1,7 @@
 import argparse
 import copy
 import random
+from evaluator.score import Fitness
 from fileParsers.nodeBuilder import buildNodes
 from .parameters import params 
 from .individual import Individual 
@@ -99,34 +100,12 @@ def evaluatePopulation(population):
     for individual in population:
         print(f"fitness is {individual.fitness}")
 
-def norm(x, xMax):
-    return x/xMax
+
 
 def evaluate(drones):
-    numDepletions = countDroneChargeDepletion(drones)
-    actualDistanceTraveled = 0
-    maxDrones = problemElements[0]
-    dayLength = 28800
-    droneSpeed = 10
-    maxDistanceTraveled = maxDrones * dayLength * droneSpeed #max distance possible is if all drones are used and are travelling all day without stopping 
-    maxBatteries = problemElements[1]
-    for drone in drones:
-        for trip in drone.trips:
-            actualDistanceTraveled += Node.distanceCalc(*[action.node for action in trip.actions])
-    
-    actualDronesUsed = len(drones)
-    actualBatteriesUsed = countBatteriesUsed(drones)
-    numDronesDepleted = countDroneChargeDepletion(drones)
+    fitnessEvaluator = Fitness(problemElements)
+    return fitnessEvaluator.evaluate(drones)
 
-    maxScore = 1000
-    numObjectives = 4
-    scoreRatio = maxScore/4
-    distanceNorm = norm(actualDistanceTraveled, maxDistanceTraveled)
-    dronesNorm = norm(actualDronesUsed, maxDrones)
-    batteriesNorm = norm(actualBatteriesUsed, maxBatteries)
-    depletionNorm = norm(numDronesDepleted, actualDronesUsed)
-
-    return int((distanceNorm * scoreRatio) + (dronesNorm * scoreRatio) + (batteriesNorm * scoreRatio) + (depletionNorm * scoreRatio))
 
 def tournamentSelect(population):
     competitors = []

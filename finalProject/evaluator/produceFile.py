@@ -1,5 +1,6 @@
 import sys 
 import argparse
+from .score import Fitness
 from fileParsers.nodeBuilder import buildNodes
 from fileParsers.objectBuilder import buildObjects
 from generatorObjects.node import Depot, Node
@@ -76,21 +77,11 @@ def initialiseObjectiveConstants():
 def norm(x, xMax):
     return x/xMax
 
-def evaluateSolutionFitness(batteriesUsed):
-    maxScore = 1000
-    noObjectives = 3
-    actualDistanceTraveled = 0 
-    for drone in drones:
-        for trip in drone.trips:
-            actualDistanceTraveled += Node.distanceCalc(*[action.node for action in trip.actions])
+def evaluateSolutionFitness(problemElements):
+    evaluator = Fitness(problemElements)
+    return evaluator.evaluate(drones)
 
-    actualDronesUsed = solutionElements[0]
-    actualBatteriesUsed = batteriesUsed
-    distanceNorm = norm(actualDistanceTraveled, maxDistanceTraveled)
-    dronesNorm = norm(actualDronesUsed, maxDrones)
-    batteriesNorm = norm(actualBatteriesUsed, maxBatteries)
 
-    return int(distanceNorm * (maxScore/noObjectives) + (dronesNorm * (maxScore/noObjectives)) + (batteriesNorm * (maxScore/noObjectives)))
 
 with open(outputLocation, "w") as file:
     file.seek(0)
@@ -166,7 +157,6 @@ with open(outputLocation, "w") as file:
     
     file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")
     initialiseObjectiveConstants()
-    score = evaluateSolutionFitness(batteriesUsed)
-    
+    score = evaluateSolutionFitness(problemElements)
     #file.write(f"{score:.20f}\n")
     file.write(f"{int(score)}\n")
