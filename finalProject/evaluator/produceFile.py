@@ -34,11 +34,6 @@ numberOfRechargeStations = None
 numberOfPackages = None
 maxBatteriesAvailable = None
 
-#objective constants - change depending on what problem instance is used but remain constant for each solution evaluated
-maxDistanceTraveled = None
-maxDrones = None 
-maxBatteries = None 
-
 dronesUsedMultiplier = None #multipliers used to make each component of the objective function equally important
 batteriesUsedMultiplier = None 
 
@@ -64,22 +59,6 @@ with open(solution) as file:
     solutionElements = solutionData.split(",")
     solutionElements = [int(e) for e in solutionElements]
     drones = buildObjects(solutionElements, numberOfCustomers, nodes, packages)
-            
-def initialiseObjectiveConstants():
-    global maxDrones, maxDistanceTraveled, maxBatteries, dronesUsedMultiplier, batteriesUsedMultiplier
-    maxDrones = problemElements[0]
-    maxDistanceTraveled = maxDrones * dayLength * droneSpeed #max distance possible is if all drones are used and are travelling all day without stopping 
-    maxBatteries = maxBatteriesAvailable
-
-    dronesUsedMultiplier = maxDistanceTraveled/maxDrones
-    batteriesUsedMultiplier = maxDistanceTraveled/maxBatteries
-
-def norm(x, xMax):
-    return x/xMax
-
-def evaluateSolutionFitness(problemElements):
-    evaluator = Fitness(problemElements)
-    return evaluator.evaluate(drones)
 
 
 
@@ -156,7 +135,7 @@ with open(outputLocation, "w") as file:
     file.write(f"Number of trips where drone does finish at the depot => {notFinishing}/{numOfTrips}: {result}\n")
     
     file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")
-    initialiseObjectiveConstants()
-    score = evaluateSolutionFitness(problemElements)
+    fitnessEvaluator = Fitness(problemElements)
+    score = fitnessEvaluator.evaluate(drones)
     #file.write(f"{score:.20f}\n")
     file.write(f"{int(score)}\n")

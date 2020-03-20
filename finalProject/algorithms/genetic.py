@@ -12,7 +12,6 @@ from generatorObjects.trip import Trip
 from generatorObjects.battery import Battery
 from generatorObjects.node import Node
 from objectDeconstructors.phenotype import phenotype
-from evaluator.constraintFuncs import *
 
 
 
@@ -31,6 +30,8 @@ with open(problem) as file:
     problemData = file.read() 
     problemElements = problemData.split(",")
     problemElements = [int(e) for e in problemElements]
+
+fitnessEvaluator = Fitness(problemElements)
 
 packages = []
 nodes = []
@@ -64,7 +65,7 @@ def start():
         child = crossover(parent1, parent2)
         mutate(child)
         child.phenotype, child.drones = decoder(child)
-        child.fitness = evaluate(child.drones)
+        child.fitness = fitnessEvaluator.evaluate(child.drones)
         print(f"fitness of child is {child.fitness}")
         replace(child, population)
 
@@ -95,16 +96,10 @@ def initialise():
 def evaluatePopulation(population):
     for individual in population: 
         individual.phenotype, individual.drones = decoder(individual)
-        individual.fitness = evaluate(individual.drones)
+        individual.fitness = fitnessEvaluator.evaluate(individual.drones)
     
     for individual in population:
         print(f"fitness is {individual.fitness}")
-
-
-
-def evaluate(drones):
-    fitnessEvaluator = Fitness(problemElements)
-    return fitnessEvaluator.evaluate(drones)
 
 
 def tournamentSelect(population):
