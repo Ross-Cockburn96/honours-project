@@ -7,7 +7,8 @@ class Fitness:
         self.maxDrones = problemElements[0]
         self.maxDistanceTraveled = self.maxDrones * params["dayLength"] * params["droneSpeed"]
         self.maxBatteries = problemElements[1]
-    
+
+
     def actualDistanceCalculation(self, drones):
         actualDistanceTraveled = 0
         for drone in drones:
@@ -22,22 +23,17 @@ class Fitness:
         for drone in drones:
             for trip in drone.trips:
                 for action in trip.actions[:-1]:
-    
                     if "Delivery" in str(type(action)):
                         openTime = action.node.openTime
                         closeTime = action.node.closeTime
-                        print(f"open time {openTime}, close time {closeTime}, drone time {drone.time}")
-                        if drone.time not in range(openTime, closeTime+1):
+                        if int(drone.time) not in range(openTime, closeTime+1):
                             #if drone is early then add wait time to drone
                             if drone.time < openTime:
-                                print("early")
                                 drone.time += openTime - drone.time
                             #if drone is late 
                             else:
                                 lateness += drone.time - closeTime
-                        else:
-                            print("on time")
-                    drone.time += Node.distanceFinder(action.node, action.nextAction.node)
+                    drone.time += int(Node.distanceFinder(action.node, action.nextAction.node) // params["droneSpeed"])
         return int(lateness)      
 
     def evaluate(self, drones):
