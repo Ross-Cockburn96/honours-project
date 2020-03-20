@@ -6,6 +6,7 @@ class Individual:
         self.chromosome = list(range(1, params["numGenes"]+1)) #ordered permutations (shuffled in initialise)
         self.fitness = None
         self.drones = None
+        self.phenotype = None
     def initialise(self):
         #random.seed(1001)
         random.shuffle(self.chromosome)
