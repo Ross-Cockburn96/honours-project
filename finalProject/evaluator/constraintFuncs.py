@@ -1,5 +1,5 @@
 from generatorObjects.node import Depot, Node
-
+from algorithms.parameters import params
 
 def countUniquePackagesDelivered(drones):
     packages = [] 
@@ -35,9 +35,6 @@ def checkCustomerDemandsSatisfied(drones, packages):
     return packagesDeliveredCorrectly
             
 
-    return packagesDeliveredCorrectly
-
-
 def countBatteriesUsed(drones):
     batteries = []
     #create a list of all batteries used in the solution
@@ -55,13 +52,19 @@ def countDroneChargeDepletion(drones):
     numberOfDepletions = 0
     for drone in drones: 
         for trip in drone.trips: 
-            for action in trip.actions[1:]: 
+            for action in trip.actions[1:]:
+                distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node) 
+                drone.time += (distanceTraveled/params["droneSpeed"])
                 if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
-                    distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
                     drone.battery.batteryDistance -= distanceTraveled
                 else:
                     drone.battery = action.batterySelected
-                    #may need to calculate the charge of the battery selected
+                    if drone.battery.dockedTime != None: 
+                        drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - battery.dockedTime)*params["chargeRate"])), params["batteryDistace"])
+                    chargingNode = action.node
+                    for idx, battery in enumerate(action.node.batteriesHeld):
+                        if battery.id == action.batterySelected.id:
+                            chargingNode.batteriesHeld[idx] = action.batteryDropped
                 if drone.battery.batteryDistance < 0: 
                     numberOfDepletions += 1
                     break

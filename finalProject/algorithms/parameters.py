@@ -5,5 +5,7 @@ params = {
     "tournamentSize" : 5,
     "mutationRate" : .05,
     "dayLength" : 28800, #s
-    "droneSpeed": 10 #m/s
+    "droneSpeed": 10, #m/s
+    "chargeRate": 2, #m/s
+    "batteryDistance": 20000 #m
 }
