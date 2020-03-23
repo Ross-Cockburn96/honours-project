@@ -135,6 +135,13 @@ with open(outputLocation, "w") as file:
         result = "PASS"
     file.write(f"Number of trips where drone does finish at the depot => {notFinishing}/{numOfTrips}: {result}\n")
     
+    overFilledChargingStations = chargingStationsOverCapacity(copy.deepcopy(drones))
+    if overFilledChargingStations > 0:
+        result = "FAIL"
+    else:
+        result = "PASS"
+    file.write(f"Number of charging stations with batteries exceeding capacity => {overFilledChargingStations}/{numberOfRechargeStations}: {result}\n")
+    
     file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")
     fitnessEvaluator = Fitness(problemElements)
     score = fitnessEvaluator.evaluate(drones)

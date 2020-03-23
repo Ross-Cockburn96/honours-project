@@ -12,6 +12,7 @@ def countUniquePackagesDelivered(drones):
     print(len(packages))
     return len(set(packages))
 
+#needs a deep copy of drone list because object states are changed
 def checkCustomerDemandsSatisfied(drones, packages):
     packageDemandDic = dict(zip([pkg.id for pkg in packages], [pkg.destination for pkg in packages]))
     packagesDeliveredCorrectly = 0
@@ -48,6 +49,7 @@ def countBatteriesUsed(drones):
     batteries.sort(key=lambda x : x.id)
     return len(set(batteries))
 
+#needs a deep copy of drone list because object states are changed
 def countDroneChargeDepletion(drones): 
     numberOfDepletions = 0
     for drone in drones: 
@@ -110,3 +112,19 @@ def checkStartAndFinishPositions(drones):
                 tripsNotFinishingAtDepot += 1
     
     return tripsNotFinishingAtDepot, tripsNotStartingAtDepot
+
+#needs a deep copy of drone list because object states are changed
+def chargingStationsOverCapacity(drones): 
+    chargingStationsOverCapacity = 0 
+    for drone in drones:
+        for trip in drone.trips:
+            for action in trip.actions:
+                if "ChangeBattery" in str(type(action)): 
+                    chargingNode = action.node 
+                    batteries = chargingNode.batteriesHeld 
+                    for idx, battery in enumerate(batteries): 
+                        if battery.id == action.batterySelected.id:
+                            chargingNode.batteriesHeld[idx] = action.batteryDropped
+                    if len(chargingNode.batteriesHeld) > chargingNode.capacity:
+                        chargingStationsOverCapacity += 1
+    return chargingStationsOverCapacity
