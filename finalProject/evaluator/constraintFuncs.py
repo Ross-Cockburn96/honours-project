@@ -1,7 +1,8 @@
 from generatorObjects.node import Depot, Node
 from algorithms.parameters import params
 
-def countUniquePackagesDelivered(drones):
+#droneConstraints = [countUniquePackagesDelivered, countBatteriesUsed, countDroneChargeDepletion, droneCargoCount]
+def countUniquePackagesDelivered(drones, detailed=True, NoOfPackages = None):
     packages = [] 
 
     #create a list of all packages delivered in the solution
@@ -9,11 +10,15 @@ def countUniquePackagesDelivered(drones):
         for action in drone.getAllActions():
             if "Delivery" in str(type(action)):
                 packages.append(action.package.id)
-    print(len(packages))
-    return len(set(packages))
+    if detailed:
+        return len(set(packages))
+    elif len(set(packages)) != NoOfPackages:
+        return False 
+    else:
+        return True
 
 #needs a deep copy of drone list because object states are changed
-def checkCustomerDemandsSatisfied(drones, packages):
+def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
     packageDemandDic = dict(zip([pkg.id for pkg in packages], [pkg.destination for pkg in packages]))
     packagesDeliveredCorrectly = 0
     for drone in drones:
@@ -33,10 +38,15 @@ def checkCustomerDemandsSatisfied(drones, packages):
             else:
                 continue
             break
-    return packagesDeliveredCorrectly
+    if detailed:
+        return packagesDeliveredCorrectly
+    elif packagesDeliveredCorrectly != len(packages):
+        return False
+    else:
+        return True
             
 
-def countBatteriesUsed(drones):
+def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
     batteries = []
     #create a list of all batteries used in the solution
     batteries.extend(Depot.batteriesHeld)
@@ -47,10 +57,15 @@ def countBatteriesUsed(drones):
                 #print(f"change battery action: {action}, {type(action)}")
                 batteries.append(action.batterySelected)
     batteries.sort(key=lambda x : x.id)
-    return len(set(batteries))
+    if detailed:
+        return len(set(batteries))
+    elif len(set(batteries)) > maxBatteries:
+        return False
+    else:
+        return True 
 
 #needs a deep copy of drone list because object states are changed
-def countDroneChargeDepletion(drones): 
+def countDroneChargeDepletion(drones, detailed=True): 
     numberOfDepletions = 0
     for drone in drones: 
         for trip in drone.trips: 
@@ -73,9 +88,14 @@ def countDroneChargeDepletion(drones):
             else:
                 continue 
             break
-    return numberOfDepletions
+    if detailed:
+        return numberOfDepletions
+    elif numberOfDepletions > 0:
+        return False
+    else:
+        return True
 
-def droneCargoCount(drones):
+def droneCargoCount(drones, detailed=True):
     numberOfTripsWithTooManyPackages = 0
     tripCount = 0
     for drone in drones:
@@ -87,9 +107,14 @@ def droneCargoCount(drones):
                     packageCount += 1
             if packageCount > 5: 
                 numberOfTripsWithTooManyPackages += 1
-    return numberOfTripsWithTooManyPackages, tripCount
+    if detailed:
+        return numberOfTripsWithTooManyPackages, tripCount
+    elif numberOfTripsWithTooManyPackages > 0: 
+        return False
+    else:
+        return True
 
-def droneWeightCount(drones):
+def droneWeightCount(drones, detailed=True):
     numberOfTripswithTooHeavyPackages = 0 
     for drone in drones:
         for trip in drone.trips:
@@ -99,9 +124,14 @@ def droneWeightCount(drones):
                     weightTotal += action.package.weight
             if weightTotal > 30: 
                 numberOfTripswithTooHeavyPackages += 1
-    return numberOfTripswithTooHeavyPackages
+    if detailed:
+        return numberOfTripswithTooHeavyPackages
+    elif numberOfTripswithTooHeavyPackages > 0:
+        return False
+    else: 
+        return True
 
-def checkStartAndFinishPositions(drones): 
+def checkStartAndFinishPositions(drones, detailed=True): 
     tripsNotStartingAtDepot = 0 
     tripsNotFinishingAtDepot = 0 
     for drone in drones:
@@ -110,11 +140,15 @@ def checkStartAndFinishPositions(drones):
                 tripsNotStartingAtDepot += 1
             if trip.actions[-1].node.getCoords() != (0,0):
                 tripsNotFinishingAtDepot += 1
-    
-    return tripsNotFinishingAtDepot, tripsNotStartingAtDepot
+    if detailed:
+        return tripsNotFinishingAtDepot, tripsNotStartingAtDepot
+    elif (tripsNotStartingAtDepot > 0) or (tripsNotFinishingAtDepot > 0):
+        return False
+    else:
+        return True 
 
 #needs a deep copy of drone list because object states are changed
-def chargingStationsOverCapacity(drones): 
+def chargingStationsOverCapacity(drones, detailed=True): 
     chargingStationsOverCapacity = 0 
     for drone in drones:
         for trip in drone.trips:
@@ -127,4 +161,9 @@ def chargingStationsOverCapacity(drones):
                             chargingNode.batteriesHeld[idx] = action.batteryDropped
                     if len(chargingNode.batteriesHeld) > chargingNode.capacity:
                         chargingStationsOverCapacity += 1
-    return chargingStationsOverCapacity
+    if detailed:
+        return chargingStationsOverCapacity
+    elif chargingStationsOverCapacity > 0 :
+        return False
+    else:
+        return True

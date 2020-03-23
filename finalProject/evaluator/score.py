@@ -1,6 +1,13 @@
 from algorithms.parameters import params
-from .constraintFuncs import *
+from evaluator import constraintFuncs
+from generatorObjects.node import Node, Depot
+from generatorObjects.package import Package
 import copy
+from inspect import getmembers, isfunction, signature
+
+
+
+
 class Fitness:
     def __init__(self, problemElements):
         #the objectives that make up the objective function
@@ -8,7 +15,11 @@ class Fitness:
         self.maxDistanceTraveled = self.maxDrones * params["dayLength"] * params["droneSpeed"]
         self.maxBatteries = problemElements[1]
         self.maxLateness = self.calcMaxLateness(problemElements)
-    
+
+        #other variables (not objectives) 
+        self.numberOfPackages = problemElements[3]
+        self.packages = self.buildPackages(problemElements)
+
     def calcMaxLateness(self, problemElements):
         maxLateness = 0
         numberOfCustomers = problemElements[2]
@@ -19,6 +30,21 @@ class Fitness:
             maxLateness += params["dayLength"] - closeTime
             index += 4
         return maxLateness
+    
+    def buildPackages(self, problemElements): 
+        packages = []
+        numberOfCustomers = problemElements[2]
+        index = (7 + problemElements[7] + 1) + (numberOfCustomers * 4) #index of the first package in problem file 
+        for _ in range(self.numberOfPackages): 
+            package = Package(problemElements[index])
+            index += 1
+            package.weight = problemElements[index]
+            index += 1
+            package.destination = problemElements[index]
+            index += 1
+            packages.append(package)
+        
+        return packages
 
     def actualDistanceCalculation(self, drones):
         actualDistanceTraveled = 0
@@ -47,6 +73,31 @@ class Fitness:
                     drone.time += int(Node.distanceFinder(action.node, action.nextAction.node) // params["droneSpeed"])
         return int(lateness)      
 
+    def hardConstraintScore(self,drones): 
+        print("calculating hard constraints scores")
+        #produces a list of all functions that only take drones as argument
+        droneConstraints = [o[1] for o in getmembers(constraintFuncs) if (isfunction(o[1])) and (len(signature(o[1]).parameters) == 2)]
+        constraintViolationScore = 0
+        #if any of the drone based constraint functions return False then 1000 penalty is applied
+        for function in droneConstraints: 
+            if not function(copy.deepcopy(drones), detailed = False):
+                print(f"function {function} violated")
+                constraintViolationScore += 1000
+
+        if not constraintFuncs.countUniquePackagesDelivered(drones, detailed = False, NoOfPackages = self.numberOfPackages):
+            print("violated1")
+            constraintViolationScore += 1000
+        
+        if not constraintFuncs.checkCustomerDemandsSatisfied(copy.deepcopy(drones), detailed = False, packages = self.packages):
+            print("violated2")
+            constraintViolationScore += 1000
+        
+        if not constraintFuncs.countBatteriesUsed(drones, detailed = False, maxBatteries = self.maxBatteries):
+            print("violated3")
+            constraintViolationScore += 1000
+
+        return constraintViolationScore
+
     def evaluate(self, drones):
         maxScore = 1000
         noObjectives = 3 #the number of objectives listed in the initialiser 
@@ -54,7 +105,7 @@ class Fitness:
         actualDistanceTraveled = self.actualDistanceCalculation(drones)
         actualLateness = self.actualLatenessCalculation(copy.deepcopy(drones)) #pass a copy of the list so that changing the drone variables don't affect the original list
         actualDronesUsed = len(drones)
-        actualBatteriesUsed = countBatteriesUsed(drones)
+        actualBatteriesUsed = constraintFuncs.countBatteriesUsed(drones)
         
         distanceNormalised = actualDistanceTraveled/self.maxDistanceTraveled
         latenessNormalised = actualLateness/self.maxLateness
@@ -63,4 +114,6 @@ class Fitness:
 
         normalisedObjectivValues = [distanceNormalised, dronesNormalised, batteriesNormalised, latenessNormalised]
 
-        return int(sum([obj * (maxScore/noObjectives) for obj in normalisedObjectivValues]))
+        hardConstraintContribution = self.hardConstraintScore(drones)
+
+        return (int(sum([obj * (maxScore/noObjectives) for obj in normalisedObjectivValues]))) + hardConstraintContribution
