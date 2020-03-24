@@ -14,6 +14,9 @@ class Battery:
         cls.idCounter += 1
         return cls(objectID)
 
+    def reset(self): 
+        self.batteryDistance = Parameters.batteryDistance
+        self.dockedTime = None
     #use for evaluator to build a drone with a specific id 
     @classmethod
     def createWithID(cls, id):

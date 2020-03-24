@@ -66,6 +66,7 @@ def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
 
 #needs a deep copy of drone list because object states are changed
 def countDroneChargeDepletion(drones, detailed=True): 
+
     numberOfDepletions = 0
     for drone in drones: 
         for trip in drone.trips: 
@@ -77,6 +78,7 @@ def countDroneChargeDepletion(drones, detailed=True):
                 else:
                     drone.battery = action.batterySelected
                     if drone.battery.dockedTime != None: 
+                        print(drone.battery.dockedTime)
                         drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - battery.dockedTime)*params["chargeRate"])), params["batteryDistace"])
                     chargingNode = action.node
                     for idx, battery in enumerate(action.node.batteriesHeld):

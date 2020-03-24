@@ -10,7 +10,7 @@ from generatorObjects.drone import Drone
 from generatorObjects.action import Delivery, ChangeBattery, AtDepot
 from generatorObjects.trip import Trip
 from generatorObjects.battery import Battery
-from generatorObjects.node import Node
+from generatorObjects.node import Node, Depot
 from objectDeconstructors.phenotype import phenotype
 
 
@@ -147,6 +147,7 @@ def replace(child, population):
 takes indirect genotype and builds the phenotype, returns the phenotype in it's raw format (elements) and in it's object format (drones)
 '''
 def decoder(individual):
+    
     drones = []
     droneActions = [] 
 
@@ -204,26 +205,44 @@ def decoder(individual):
 
     counter = 0
     
+
     includeChargingStations(drones)
     elements = phenotype(drones)
     #elements = phenotype(drones)
     return elements, drones
 
+#this function adds charging stations to each trip and restores the states back to initialised values including the charging stations
 def includeChargingStations(drones):
+    global chargingStations
+    originalState_chargingStations = copy.deepcopy(chargingStations) #charging station states change in the insertIntoTrip function so keep original to restore from 
+    originalState_chargingStationDict = {station.id : station for station in originalState_chargingStations}
+    originalState_droneBatteries = [copy.deepcopy(d.battery) for d in drones]
     for drone in drones:
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
                 break
+    
+    for battery in Depot.batteriesHeld:
+        battery.reset()
 
-    # for trip in drones[0].trips[:-2]:
-    #     insertIntoTrip(trip, drones[0])
-   
-    # print(trip)
-    # for drone in drones: 
-    #  for trip in drone.trips: 
-    #         insertIntoTrip(trip, drone)   
+    #restore pointers in changebattery actions to original state stations
+    for drone in drones:
+        for trip in drone.trips: 
+            for action in trip.actions: 
+                if "ChangeBattery" in str(type(action)): 
+                    for b in action.node.batteriesHeld: 
+                        b.reset()
+                    action.batteryDropped.reset()
+                    action.batterySelected.reset()
 
-
+    #restore charging station states
+    chargingStations = originalState_chargingStations
+    
+    #restore drone battery states
+    for idx, drone in enumerate(drones):
+        drone.battery = originalState_droneBatteries[idx]
+    
+    
 def calculateChargedValues(battery, currentTime):
     if battery.dockedTime != None:
         battery.batteryDistance += ((currentTime - battery.dockedTime)*Parameters.batteryChargingRate)
