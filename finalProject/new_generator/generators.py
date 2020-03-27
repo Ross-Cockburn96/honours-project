@@ -292,6 +292,12 @@ class Generator:
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
         newChargingStations = []
+        chargingDepot = Depot()
+        chargingDepot.id = len(self.customers)+1
+        originalState_batteries = []
+        for drone in self.drones:
+            originalState_batteries.append(drone.battery)
+
         for depletionPoint in depletionPoints: 
             action = depletionPoint.action
             #print(F"prev action is {action.prevAction.node}, current action is {action.node}")
@@ -299,13 +305,15 @@ class Generator:
             drone = depletionPoint.drone
             
             if "AtDepot" in str(type(action.prevAction)): #if the depletion point was on the movement from the origin
-                changeBatteryAction = ChangeBattery(action.prevAction.node, drone.battery) #create action to change battery at depot. Change battery automatically switches the drone's battery to a new one
+                
+                
+                changeBatteryAction = ChangeBattery(chargingDepot, drone.battery) #create action to change battery at depot. Change battery automatically switches the drone's battery to a new one
                 drone.battery = changeBatteryAction.batterySelected #switch drone battery to the new battery which is selected when action is instantiated
                 Depot.batteriesHeld.append(drone.battery) #add the battery dropped off to the batteries held list 
                 Depot.capacity += 1 #increment the battery slot capacity required by depot
                 del trip.actions[0]
                 trip.insertAction(0, changeBatteryAction)  #change first action from AtDepot to ChangeBattery
-                actionCopy = action.prevAction
+                
                 
             else: 
                 closestChargingPoint = min(rechargingStations, key = lambda x : int(Node.distanceFinder(x, action.prevAction.node)))
@@ -319,6 +327,7 @@ class Generator:
                     idx = trip.actions.index(action)
                     trip.insertAction(idx, changeBatteryAction) #insert change battery action between origin and dest action nodes on linked list
                 else: 
+                    print(f"creating new stations, {depletionPoint.xCoord, depletionPoint.yCoord}")
                     newStation = ChargingNode(depletionPoint.xCoord, depletionPoint.yCoord)
                     #self.ax1.plot(depletionPoint.xCoord, depletionPoint.yCoord, 'bx') #shows new stations added
                     changeBatteryAction = ChangeBattery(newStation, drone.battery)
@@ -346,6 +355,13 @@ class Generator:
                     self.drones.append(newDrone)
                     newDrone.distanceLeft -= tripDistance
 
+        for idx, drone in enumerate(self.drones):
+            drone.battery = originalState_batteries[idx]
+      
+        for station in rechargingStations:
+            print(f"{station} {station.batteriesHeld}")
+
+        
         # print() 
         # print("capacity stats for kmean stations")
         # total = 0
@@ -363,6 +379,7 @@ class Generator:
         # print(f"batteries held in depot: {Depot.batteriesHeld} capacity: {Depot.capacity}")  
 
     def createTimeWindows(self): 
+        
         for drone in self.drones:
             timeDelivered = 0 
             for trip in drone.trips: 
@@ -410,6 +427,8 @@ class Generator:
     format: {number of drones used}(FOR EACH DRONE){number of trips in drone}(FOR EACH TRIP IN DRONE){number of actions in trip}{id of nodes visited in trip}{details of node visited either package delviered or battery dropped off/picked up}
     '''
     def createSolutionFile(self):
+        for drone in self.drones:
+            print(f"current battery is {drone.battery}")
         outputElements = [] 
         outputElements.append(len(self.drones))
         for drone in self.drones: 
@@ -421,11 +440,13 @@ class Generator:
                     outputElements.append(action.node.id)
                     #if action a deliver action add id of package delivered to solution file 
                     if (action.node.id) > 0 and (action.node.id <= self.noOfNodes):
+                        print(f"action is {str(type(action))}, id is {action.node.id}")
                         outputElements.append(action.package.id)
-                    elif (action.node.id > self.noOfNodes):
+                    elif "ChangeBattery" in str(type(action)): 
                         outputElements.append(action.batteryDropped)
                         outputElements.append(action.batterySelected)
-
+                   
+                    
         solutionString = ",".join([str(element) for element in outputElements])
         with open("solution.txt", "w") as file:
             file.seek(0)
@@ -459,15 +480,19 @@ class Generator:
         outputElements.append(self.noOfPackages)
         outputElements.append(len(self.rechargeStations))
         outputElements.append(Depot()) #add depot to the problem string
-        outputElements.append(len(Depot.batteriesHeld))
-        for battery in Depot.batteriesHeld:
-            outputElements.append(battery)
+        
         for customer in self.customers: 
             outputElements.append(customer)
         for package in self.packages: 
             outputElements.append(package)
             outputElements.append(package.destination.id)
+        outputElements.append(Depot()) 
+        outputElements.append(len(Depot.batteriesHeld))
+        for battery in Depot.batteriesHeld:
+            outputElements.append(battery)
         for rechargeStation in self.rechargeStations: 
+            print(rechargeStation.getCoords())
+            print(rechargeStation.batteriesHeld)
             outputElements.append(rechargeStation)
             outputElements.append(len(rechargeStation.batteriesHeld))
             for battery in rechargeStation.batteriesHeld: #needs fixed - batteries held is ones held at the end not at start 

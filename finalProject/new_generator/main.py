@@ -28,19 +28,28 @@ if __name__ == "__main__":
     generator.includeChargingStations(depletionPoints, rechargeStations)
     generator.rechargeStations = rechargeStations
     depletionPoints = generator.calculateChargeDepletionPoints()
+    print(f"depletionPoints {depletionPoints}")
     count = 0 
     #check that the distance added to trip from rerouting to charging stations doesn't cause new depletion points
     while len(depletionPoints) > 0:
         count += 1
         print(count)
         chargingStations = [] 
+        
+        currentDroneBatteries = {}
         for point in depletionPoints: 
             chargingStation = ChargingNode(point.xCoord, point.yCoord)
             chargingStations.append(chargingStation)
+            print(f"id is {chargingStation.id}")
 
-            drone = point.drone
-            changeBatteryAction = ChangeBattery(chargingStation, drone.battery)
+            if not currentDroneBatteries.get(point.drone, False):
+                currentBattery = point.drone.battery
+            else: 
+                currentBattery = currentDroneBatteries[point.drone]
 
+            changeBatteryAction = ChangeBattery(chargingStation, currentBattery)
+            currentDroneBatteries[point.drone] = changeBatteryAction.batterySelected #update to the new battery held
+            chargingStation.batteriesHeld.append(changeBatteryAction.batterySelected)
             trip = point.trip
             action = point.action
             insertionIndex = trip.actions.index(action)
@@ -50,7 +59,8 @@ if __name__ == "__main__":
         #generator.includeChargingStationsF(depletionPoints, chargingStations)
         depletionPoints = generator.calculateChargeDepletionPoints()
        
-        
+    for station in rechargeStations:
+        print(station.batteriesHeld)    
   
     
     generator.createTimeWindows() 

@@ -54,6 +54,10 @@ with open(problem) as file:
     numberOfPackages = problemElements[3]
     maxBatteriesAvailable = problemElements[1]
     nodes, packages = buildNodes(problemElements)
+    for node in nodes:
+        print(f"type {type(node)}, coord {node}")
+        if ("ChargingNode" in str(type(node))) or (node.id == 101):
+            print(node.batteriesHeld)
 
 with open(solution) as file: 
     solutionData = file.read() 

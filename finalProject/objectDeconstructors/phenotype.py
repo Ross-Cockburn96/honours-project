@@ -17,7 +17,7 @@ def phenotype(drones):
                 #if action a deliver action add id of package delivered to solution file 
                 if (action.node.id) > 0 and (action.node.id <= Parameters.noOfCustomers):
                     outputElements.append(action.package.id)
-                elif (action.node.id > Parameters.noOfCustomers):
+                elif "ChangeBattery" in str(type(action)): 
                     outputElements.append(action.batteryDropped)
                     outputElements.append(action.batterySelected)
     return outputElements

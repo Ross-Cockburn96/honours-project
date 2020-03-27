@@ -190,6 +190,7 @@ The batteriesheld variable is a list of batteries that the node should have at t
 class ChargingNode(Node):
     def __init__(self, xCoord, yCoord):
         super().__init__()
+        self.id += 1 #plus one because first charging station id is reserved for depot charging station
         self.xCoord = xCoord
         self.yCoord = yCoord
         self.batteriesHeld = []

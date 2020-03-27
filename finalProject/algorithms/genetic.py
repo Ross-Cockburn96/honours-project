@@ -39,53 +39,57 @@ chargingStations = []
 nodes, packages = buildNodes(problemElements)
 
 for node in nodes:
-    if "ChargingNode" in str(type(node)):
+    if ("ChargingNode" in str(type(node))) or (node.id == problemElements[2] + 1):
         chargingStations.append(node)
 
 chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
 #add the depot to charging stations 
-chargingStations.append(nodes[0])
+#chargingStations.append(nodes[0])
 params["numGenes"] = len(packages)
 #genetic algorithm parameters
 popsize = 100
 
 def start():
-    population = initialise()
-    evaluatePopulation(population)
+    #population = initialise()
+    #evaluatePopulation(population)
     
-    startWorst = max(population, key=lambda x: x.fitness)
-    popcopy = copy.deepcopy(population)
-    #individual = Individual()
-    #individual.chromosome = [5,1,2,3,4,7,9,6,8,10,11,13,12,14,15,18,16,19,17,20,22,21,24,25,26,23,30,31,28,27,29,32,36,35,34,33,37,40,39,41,38,44,42,43,45,50,47,48,46,49,51,53,55,52,54,57,56,59,60,61,62,58,63,64,65,67,68,66,71,70,69,75,76,74,72,73,80,81,79,78,77,89,87,88,90,92,94,91,93,95,96,97,98,99,100,84,86,82,83,85]
-    
-    #phenotype, _ = decoder(population)
-    for _ in range(1):
-        parent1 = tournamentSelect(population)
-        parent2 = tournamentSelect(population)
-        
-        child = crossover(parent1, parent2)
-        mutate(child)
-        
-        child.phenotype, child.drones = decoder(child)
-        child.fitness = fitnessEvaluator.evaluate(child.drones)
-        print(f"fitness of child is {child.fitness}")
-        replace(child, population)
-
-        best = min(population, key = lambda x : x.fitness)
-        print([i.fitness for i in population])
-        print(f"BEST IN ITERATION: {best.fitness}")
-    
-    popBest = min(population, key = lambda x : x.fitness)
+    #startWorst = max(population, key=lambda x: x.fitness)
+    #popcopy = copy.deepcopy(population)
+    individual = Individual()
+    individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
+    individual.phenotype, individual.drones = decoder(individual)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
         file.seek(0)
-        string = ",".join([str(element) for element in popBest.phenotype])
+        string = ",".join([str(element) for element in individual.phenotype])
         file.write(string)
+    # for _ in range(1):
+    #     parent1 = tournamentSelect(population)
+    #     parent2 = tournamentSelect(population)
+        
+    #     child = crossover(parent1, parent2)
+    #     mutate(child)
+        
+    #     child.phenotype, child.drones = decoder(child)
+    #     child.fitness = fitnessEvaluator.evaluate(child.drones)
+    #     print(f"fitness of child is {child.fitness}")
+    #     replace(child, population)
+
+    #     best = min(population, key = lambda x : x.fitness)
+    #     print([i.fitness for i in population])
+    #     print(f"BEST IN ITERATION: {best.fitness}")
     
-    with open("badSolutionSample.txt", "w") as file: 
-        file.seek(0)
-        string = ",".join([str(element) for element in startWorst.phenotype])
-        file.write(string)
+    # popBest = min(population, key = lambda x : x.fitness)
+    # with open ("solutionSample.txt", "w") as file:
+    #     print("writing to sample")
+    #     file.seek(0)
+    #     string = ",".join([str(element) for element in popBest.phenotype])
+    #     file.write(string)
+    
+    # with open("badSolutionSample.txt", "w") as file: 
+    #     file.seek(0)
+    #     string = ",".join([str(element) for element in startWorst.phenotype])
+    #     file.write(string)
 
 def initialise():
     population = []

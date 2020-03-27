@@ -15,21 +15,20 @@ def buildNodes(problemElements):
 
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
     depot = Depot()
-    
+    chargingDepot = Depot()
+   
     nodes = []
     packages = []
     nodes.append(depot)
+    
 
-    numberBatteriesInDepot = problemElements[problemCountIdx]
+    
     numberOfCustomers = problemElements[2]
+    chargingDepot.id = numberOfCustomers + 1
     numberOfPackages = problemElements[3]
     numberOfRechargeStations = problemElements[4]
-    problemCountIdx += 1
 
-    #extract number of batteries initialised to depot
-    for _ in range(numberBatteriesInDepot):
-        Depot.batteriesHeld.append(Battery.createWithID(problemElements[problemCountIdx]))
-        problemCountIdx += 1
+    
 
     #extract customer nodes from problem file
     for _ in range(numberOfCustomers): 
@@ -46,7 +45,15 @@ def buildNodes(problemElements):
         package.destination = problemElements[problemCountIdx]
         problemCountIdx += 1
         packages.append(package)
-    
+    problemCountIdx += 2 #first 2 values are depot coordinates
+    numberBatteriesInDepot = problemElements[problemCountIdx] 
+    problemCountIdx += 1
+    nodes.append(chargingDepot)
+    #extract number of batteries initialised to depot
+    for _ in range(numberBatteriesInDepot):
+        Depot.batteriesHeld.append(Battery.createWithID(problemElements[problemCountIdx]))
+        problemCountIdx += 1
+    Depot.capacity = len(Depot.batteriesHeld)
     #extract recharging station from problem file 
     for _ in range(numberOfRechargeStations):
         chargeStation = ChargingNode(*problemElements[problemCountIdx:problemCountIdx+2])

@@ -52,11 +52,18 @@ def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
     batteries.extend(Depot.batteriesHeld)
     for drone in drones:
         batteries.append(drone.battery)
-        for action in drone.getAllActions():
-            if "ChangeBattery" in str(type(action)):
-                #print(f"change battery action: {action}, {type(action)}")
-                batteries.append(action.batterySelected)
-    batteries.sort(key=lambda x : x.id)
+        for trip in drone.trips:
+            print("new trip")
+            for action in trip.actions:
+                if "ChangeBattery" in str(type(action)):
+                    if action.node.id == 101: 
+                        print("here")
+                        print(action.batterySelected.id)
+                    print(f"{action} {action.batterySelected} {action.batteryDropped}")
+                    #print(f"change battery action: {action}, {type(action)}")
+                    batteries.append(action.batterySelected)
+    #batteries.sort(key=lambda x : x.id)
+    print([b.id for b in batteries])
     if detailed:
         return len(set(batteries))
     elif len(set(batteries)) > maxBatteries:
@@ -66,24 +73,27 @@ def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
 
 #needs a deep copy of drone list because object states are changed
 def countDroneChargeDepletion(drones, detailed=True): 
-
     numberOfDepletions = 0
     for drone in drones: 
-        print("drone")
+        print("new drone")
         for trip in drone.trips: 
             for action in trip.actions[1:]:
-                print(str(type(action)))
                 distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node) 
                 drone.time += (distanceTraveled/params["droneSpeed"])
                 if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                     drone.battery.batteryDistance -= distanceTraveled
                 else:
+                    if action.batterySelected.id not in [b.id for b in action.node.batteriesHeld]:
+                        print(action.node.id)
+                        print(action.batterySelected.id)
+                        print(action.node.batteriesHeld)
+                        print("CRITICAL FAILURE")
+                    else:
+                        print(f"looking for {action.batterySelected.id}, in {action.node.batteriesHeld}, dropping off {action.batteryDropped}")
                     drone.battery = action.batterySelected
-                    print(drone.battery.id)
+        
                     action.batteryDropped.dockedTime = drone.time
                     if drone.battery.dockedTime != None: 
-                        print(battery.dockedTime)
-                        print(drone.time)
                         drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
                     chargingNode = action.node
                     for idx, battery in enumerate(action.node.batteriesHeld):
@@ -161,12 +171,14 @@ def chargingStationsOverCapacity(drones, detailed=True):
         for trip in drone.trips:
             for action in trip.actions:
                 if "ChangeBattery" in str(type(action)): 
+                    print(action.node.id)
                     chargingNode = action.node 
                     batteries = chargingNode.batteriesHeld 
                     for idx, battery in enumerate(batteries): 
                         if battery.id == action.batterySelected.id:
                             chargingNode.batteriesHeld[idx] = action.batteryDropped
                     if len(chargingNode.batteriesHeld) > chargingNode.capacity:
+                        print(f"capacity is {chargingNode.capacity} and batteries held is {len(chargingNode.batteriesHeld)}")
                         chargingStationsOverCapacity += 1
     if detailed:
         return chargingStationsOverCapacity

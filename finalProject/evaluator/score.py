@@ -24,7 +24,7 @@ class Fitness:
         maxLateness = 0
         numberOfCustomers = problemElements[2]
         #start at first customer node 
-        index = 7 + problemElements[7] + 1
+        index = 7 
         for _ in range(100): 
             closeTime = problemElements[index + 3]
             maxLateness += params["dayLength"] - closeTime
@@ -34,7 +34,7 @@ class Fitness:
     def buildPackages(self, problemElements): 
         packages = []
         numberOfCustomers = problemElements[2]
-        index = (7 + problemElements[7] + 1) + (numberOfCustomers * 4) #index of the first package in problem file 
+        index = 7 + (numberOfCustomers * 4) #index of the first package in problem file 
         for _ in range(self.numberOfPackages): 
             package = Package(problemElements[index])
             index += 1
