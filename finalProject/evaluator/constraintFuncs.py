@@ -21,21 +21,47 @@ def countUniquePackagesDelivered(drones, detailed=True, NoOfPackages = None):
 
 #needs a deep copy of drone list because object states are changed
 def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
+    print("checking customer demands")
+    tempDepotBatteries = copy.deepcopy(Depot.batteriesHeld)
     packageDemandDic = dict(zip([pkg.id for pkg in packages], [pkg.destination for pkg in packages]))
+    for key, val in packageDemandDic.items():
+        print(f"{key}, {val}")
     packagesDeliveredCorrectly = 0
     for drone in drones:
+        drone.reset()
         for trip in drone.trips:
-            for action in trip.actions[1:]:
+            for action in trip.actions[:-1]:
+                distanceTraveled = int(Node.distanceFinder(action.node, action.nextAction.node))
+                drone.time += (distanceTraveled/params["droneSpeed"])
                 if not "ChangeBattery" in str(type(action)):
                     if "Delivery" in str(type(action)):
                         if action.node.id == packageDemandDic[action.package.id]:
+                            print(f"{action.node.id} == {packageDemandDic[action.package.id]}")
                             packagesDeliveredCorrectly += 1
+                        else:
+                            print(f"{action.node.id} NOT {packageDemandDic[action.package.id]}")
+                        drone.battery.batteryDistance -= distanceTraveled
                     else:   
-                        distanceTraveled = Node.distanceFinder(action.node, action.prevAction.node)
                         drone.battery.batteryDistance -= distanceTraveled
                 else:
-                    drone.battery = action.batterySelected
+                    
+                    if "Depot" in str(type(action.node)):
+                        for idx, battery in enumerate(tempDepotBatteries):
+                            if action.batterySelected.id == battery.id:
+                                drone.battery = action.batterySelected
+                                tempDepotBatteries[idx] = action.batteryDropped
+                                action.batteryDropped.dockedTime = drone.time
+                    else:
+                        for idx, battery in enumerate(action.node.batteriesHeld):
+                            if action.batterySelected.id == battery.id:
+                                drone.battery = action.batterySelected
+                                action.node.batteriesHeld[idx] = action.batteryDropped
+                                action.batteryDropped.dockedTime = drone.time 
+
+                    if drone.battery.dockedTime != None:
+                        drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])  
                 if drone.battery.batteryDistance < 0:
+                    print("breaking")
                     break
             else:
                 continue
@@ -67,7 +93,6 @@ def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
 
 #needs a deep copy of drone list because object states are changed
 def countDroneChargeDepletion(drones, detailed=True): 
-    print()
     tempDepotBatteries = copy.deepcopy(Depot.batteriesHeld)
     numberOfDepletions = 0
     for drone in drones: 
@@ -80,7 +105,6 @@ def countDroneChargeDepletion(drones, detailed=True):
                 drone.time += (distanceTraveled/params["droneSpeed"])
                 if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                     drone.battery.batteryDistance -= distanceTraveled
-                    print(f"battery level is {drone.battery.batteryDistance}")
                 else:
                     if "Depot" in str(type(action.node)):
                         batteries = tempDepotBatteries
