@@ -7,7 +7,6 @@ from inspect import getmembers, isfunction, signature
 
 
 
-
 class Fitness:
     def __init__(self, problemElements):
         #the objectives that make up the objective function
@@ -15,7 +14,7 @@ class Fitness:
         self.maxDistanceTraveled = self.maxDrones * params["dayLength"] * params["droneSpeed"]
         self.maxBatteries = problemElements[1]
         self.maxLateness = self.calcMaxLateness(problemElements)
-
+        self.originalState_batteriesHeld = copy.deepcopy(Depot.batteriesHeld)
         #other variables (not objectives) 
         self.numberOfPackages = problemElements[3]
         self.packages = self.buildPackages(problemElements)
@@ -74,13 +73,15 @@ class Fitness:
         return int(lateness)      
 
     def hardConstraintScore(self,drones): 
-        print("calculating hard constraints scores")
+        
+        originalState_depotBatteries = copy.deepcopy(Depot.batteriesHeld)
         #produces a list of all functions that only take drones as argument
         droneConstraints = [o[1] for o in getmembers(constraintFuncs) if (isfunction(o[1])) and (len(signature(o[1]).parameters) == 2)]
         constraintViolationScore = 0
         #if any of the drone based constraint functions return False then 1000 penalty is applied
         for function in droneConstraints: 
             if not function(copy.deepcopy(drones), detailed = False):
+                Depot.batteriesHeld = originalState_depotBatteries
                 print(f"function {function} violated")
                 constraintViolationScore += 1000
 
@@ -99,6 +100,7 @@ class Fitness:
         return constraintViolationScore
 
     def evaluate(self, drones):
+        Depot.batteriesHeld = self.originalState_batteriesHeld
         maxScore = 1000
         noObjectives = 3 #the number of objectives listed in the initialiser 
 

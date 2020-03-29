@@ -8,8 +8,14 @@ class Drone:
         self.trips = list(args)
         self.distanceLeft = Parameters.dayLength * Parameters.droneSpeed #this is the maximum distance a drone can travel in a day 
         self.battery = Battery.createNew()
+        self.originalBattery = self.battery
         self.time = 0 #used for decoder 
 
+    def reset(self): 
+        self.battery = self.originalBattery
+        self.battery.reset()
+        self.distanceLeft = Parameters.dayLength * Parameters.droneSpeed
+    
     def getAllActions(self):
         actions = [action for trip in self.trips for action in trip.actions]
         return actions

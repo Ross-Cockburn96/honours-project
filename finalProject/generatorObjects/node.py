@@ -197,14 +197,14 @@ class ChargingNode(Node):
         self.capacity = 0
 
 class DepletionPoint(Node):
-    def __init__(self, action, drone, trip, xCoord, yCoord): 
+    def __init__(self, action, drone, batteryUsed, trip, xCoord, yCoord): 
         super().__init__()
         self.id = None
         Node.idCounter -= 1 
-
         self.xCoord = xCoord
         self.yCoord = yCoord
         self.drone = drone #drone that was depleted
+        self.batteryUsed = batteryUsed
         self.trip = trip #trip that action was on
         self.action = action #the action that was being carried out when the charge depletion occured 
 

@@ -54,10 +54,8 @@ with open(problem) as file:
     numberOfPackages = problemElements[3]
     maxBatteriesAvailable = problemElements[1]
     nodes, packages = buildNodes(problemElements)
-    for node in nodes:
-        print(f"type {type(node)}, coord {node}")
-        if ("ChargingNode" in str(type(node))) or (node.id == 101):
-            print(node.batteriesHeld)
+
+fitnessEvaluator = Fitness(problemElements) #used to calculate the fitness score of the solution file
 
 with open(solution) as file: 
     solutionData = file.read() 
@@ -90,7 +88,7 @@ with open(outputLocation, "w") as file:
     else:
         result = "FAIL"
     file.write(f"Packages scheduled for delivery by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")
-
+    
     correctlyDeliveredPackages = checkCustomerDemandsSatisfied(copy.deepcopy(drones), packages)
     if correctlyDeliveredPackages == numberOfPackages:
         result = "PASS"
@@ -104,7 +102,7 @@ with open(outputLocation, "w") as file:
     else:
         result = "PASS"
     file.write(f"Number of batteries used by solution => {batteriesUsed}, maximum available is {maxBatteriesAvailable}: {result}\n")
-
+    
     batteriesOutOfCharge = countDroneChargeDepletion(copy.deepcopy(drones)) #calculating depletion points changed variables of drones so deep copy for safety
     if batteriesOutOfCharge > 0: 
         result = "FAIL"
@@ -138,16 +136,15 @@ with open(outputLocation, "w") as file:
     else:
         result = "PASS"
     file.write(f"Number of trips where drone does finish at the depot => {notFinishing}/{numOfTrips}: {result}\n")
-    
     overFilledChargingStations = chargingStationsOverCapacity(copy.deepcopy(drones))
+
     if overFilledChargingStations > 0:
         result = "FAIL"
     else:
         result = "PASS"
     file.write(f"Number of charging stations with batteries exceeding capacity => {overFilledChargingStations}/{numberOfRechargeStations}: {result}\n")
     
-    file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")
-    fitnessEvaluator = Fitness(problemElements)
+    file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")    
     score = fitnessEvaluator.evaluate(drones)
     #file.write(f"{score:.20f}\n")
     file.write(f"{int(score)}\n")
