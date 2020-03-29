@@ -216,6 +216,7 @@ class Generator:
                     distanceTraveled = int(Node.distanceFinder(action.node, action.nextAction.node))
                     if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                         drone.battery.batteryDistance -= distanceTraveled
+                        print(f"battery level is {drone.battery.batteryDistance}")
                     else: #ChangeBattery action 
                         drone.battery = action.batterySelected
                         drone.battery.batteryDistance = Parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations

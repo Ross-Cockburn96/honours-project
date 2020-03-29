@@ -67,21 +67,27 @@ def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
 
 #needs a deep copy of drone list because object states are changed
 def countDroneChargeDepletion(drones, detailed=True): 
+    print()
     tempDepotBatteries = copy.deepcopy(Depot.batteriesHeld)
     numberOfDepletions = 0
     for drone in drones: 
+        drone.reset()
         for trip in drone.trips: 
             for action in trip.actions[:-1]:
-                distanceTraveled = Node.distanceFinder(action.node, action.nextAction.node) 
+                # print(action.node)
+                # print(action.nextAction.node)
+                distanceTraveled = int(Node.distanceFinder(action.node, action.nextAction.node))
                 drone.time += (distanceTraveled/params["droneSpeed"])
                 if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                     drone.battery.batteryDistance -= distanceTraveled
+                    print(f"battery level is {drone.battery.batteryDistance}")
                 else:
                     if "Depot" in str(type(action.node)):
                         batteries = tempDepotBatteries
                         for idx, battery in enumerate(batteries):
                             if action.batterySelected.id == battery.id:
-                                drone.battery == tempDepotBatteries[idx]
+                                drone.battery = tempDepotBatteries[idx]
+                                #print(f"(CB)battery level is {drone.battery.batteryDistance}")
                                 break
                             elif idx == len(tempDepotBatteries) -1: 
                                 print(action.node.id)
@@ -93,7 +99,8 @@ def countDroneChargeDepletion(drones, detailed=True):
                         batteries = action.node.batteriesHeld
                         for idx, battery in enumerate(batteries):
                             if action.batterySelected.id == battery.id:
-                                drone.battery == action.node.batteriesHeld[idx]
+                                drone.battery = action.node.batteriesHeld[idx]
+                                #print(f"(CB)battery level is {drone.battery.batteryDistance}")
                                 break
                             elif idx == len(action.node.batteriesHeld) -1: 
                                 print(action.node.id)
