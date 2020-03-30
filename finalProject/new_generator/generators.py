@@ -474,6 +474,13 @@ class Generator:
     All nodes, including charging nodes have an implied id val of their position in the problem file. Depot has id 0, first customer has id 1. The ids of recharging nodes continue after the packages, starting from noOfCustomers + 1
     '''
     def createProblemFile(self):
+        stationsToMake = Parameters.noOfChargingStations - len(self.rechargeStations)
+        for _ in range(stationsToMake):
+            xCoord = random.randint(1, Parameters.citySize)
+            yCoord = random.randint(1, Parameters.citySize)
+            newStation = ChargingNode(xCoord, yCoord)
+            newStation.batteriesHeld.append(Battery.createNew())
+            self.rechargeStations.append(newStation)
         outputElements = [] 
         outputElements.append(Parameters.maxDrones)
         outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
