@@ -31,7 +31,6 @@ if __name__ == "__main__":
     #check that the distance added to trip from rerouting to charging stations doesn't cause new depletion points
     while len(depletionPoints) > 0:
         count += 1
-        print(count)
         chargingStations = [] 
         
         currentDroneBatteries = {}
@@ -42,7 +41,6 @@ if __name__ == "__main__":
         generator.includeChargingStations(depletionPoints, chargingStations)
         generator.rechargeStations.extend(chargingStations)
 
-        
 
         #generator.includeChargingStationsF(depletionPoints, chargingStations)
         depletionPoints = generator.calculateChargeDepletionPoints()

@@ -43,6 +43,8 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
                         drone.battery.batteryDistance -= distanceTraveled
                     else:   
                         drone.battery.batteryDistance -= distanceTraveled
+                    if drone.battery.batteryDistance == -1:#account for rounding error 
+                        drone.battery.batteryDistance = 0
                 else:
                     
                     if "Depot" in str(type(action.node)):
@@ -105,6 +107,9 @@ def countDroneChargeDepletion(drones, detailed=True):
                 drone.time += (distanceTraveled/params["droneSpeed"])
                 if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
                     drone.battery.batteryDistance -= distanceTraveled
+                    if drone.battery.batteryDistance == -1: #account for rounding error
+                        drone.battery.batteryDistance = 0
+
                 else:
                     if "Depot" in str(type(action.node)):
                         batteries = tempDepotBatteries
