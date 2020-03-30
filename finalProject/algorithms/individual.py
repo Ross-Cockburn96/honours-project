@@ -5,6 +5,7 @@ class Individual:
     def __init__(self):
         self.chromosome = list(range(1, params["numGenes"]+1)) #ordered permutations (shuffled in initialise)
         self.fitness = None
+        self.hardConstraintFitness = None
         self.drones = None
         self.phenotype = None
     def initialise(self):

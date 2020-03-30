@@ -15,8 +15,10 @@ class Fitness:
         self.maxBatteries = problemElements[1]
         self.maxLateness = self.calcMaxLateness(problemElements)
         self.originalState_batteriesHeld = copy.deepcopy(Depot.batteriesHeld)
+        
         #other variables (not objectives) 
         self.numberOfPackages = problemElements[3]
+        self.numberOfRechargingStations = problemElements[4]
         self.packages = self.buildPackages(problemElements)
 
     def calcMaxLateness(self, problemElements):
@@ -73,32 +75,78 @@ class Fitness:
         return int(lateness)      
 
     def hardConstraintScore(self,drones): 
-        
+        print("checking hard constraints")
         originalState_depotBatteries = copy.deepcopy(Depot.batteriesHeld)
         #produces a list of all functions that only take drones as argument
         droneConstraints = [o[1] for o in getmembers(constraintFuncs) if (isfunction(o[1])) and (len(signature(o[1]).parameters) == 2)]
         constraintViolationScore = 0
-        #if any of the drone based constraint functions return False then 1000 penalty is applied
-        for function in droneConstraints: 
-            if not function(copy.deepcopy(drones), detailed = False):
-                Depot.batteriesHeld = originalState_depotBatteries
-                print(f"function {function} violated")
-                constraintViolationScore += 1000
 
-        if not constraintFuncs.countUniquePackagesDelivered(drones, detailed = False, NoOfPackages = self.numberOfPackages):
-            print("violated1")
-            constraintViolationScore += 1000
+        packagesScheduled = constraintFuncs.countUniquePackagesDelivered(drones)
+        packagesNotScheduled = self.numberOfPackages - packagesScheduled
+        packagesNotScheduled_Normalised = packagesNotScheduled/self.numberOfPackages
+        scoreContribution_PS = int(packagesNotScheduled_Normalised * 100)
+        constraintViolationScore += scoreContribution_PS
         
-        if not constraintFuncs.checkCustomerDemandsSatisfied(copy.deepcopy(drones), detailed = False, packages = self.packages):
-            print("violated2")
-            constraintViolationScore += 1000
+        correctlyDeliveredPkgs = constraintFuncs.checkCustomerDemandsSatisfied(copy.deepcopy(drones), self.packages)
+        packagesNotDeliveredCorrectly = self.numberOfPackages - correctlyDeliveredPkgs
+        packagesNotDeliveredCorrectly_Normalised = packagesNotDeliveredCorrectly/self.numberOfPackages
+        scoreContribution_PD = int(packagesNotDeliveredCorrectly_Normalised * 100)
+        constraintViolationScore += scoreContribution_PD
+
+        batteriesUsed = constraintFuncs.countBatteriesUsed(drones)
+        exceedingBatteries = max(batteriesUsed - self.maxBatteries , 0)
+        scoreContribution_BU = 5 * exceedingBatteries
+        constraintViolationScore += scoreContribution_BU
+
+        droneDepletions = constraintFuncs.countDroneChargeDepletion(copy.deepcopy(drones)) 
+        droneDepletions_Normalised = droneDepletions/len(drones)
+        scoreContribution_DD = int(droneDepletions_Normalised * 100)
+        constraintViolationScore += scoreContribution_DD
+
+        overloadedTrips, numberOftrips = constraintFuncs.droneCargoCount(drones)
+        overloadedTrips_Normalised = overloadedTrips/numberOftrips
+        scoreContribution_LT = int(overloadedTrips_Normalised * 100)
+        constraintViolationScore += scoreContribution_LT
+
+        overWeightedTrips = constraintFuncs.droneWeightCount(drones)
+        overWeightedTrips_Normalised = overWeightedTrips/numberOftrips
+        scoreContribution_WT = int(overWeightedTrips_Normalised * 100) 
+        constraintViolationScore += scoreContribution_WT
+
+        notFinishing, notStarting = constraintFuncs.checkStartAndFinishPositions(drones)
+        notFinishingOrStarting_Normalised = (notFinishing + notStarting) / numberOftrips * 2
+        scoreContribution_FS = int(notFinishingOrStarting_Normalised * 100)
+        constraintViolationScore += scoreContribution_FS
+
+        overFilledChargingStations = constraintFuncs.chargingStationsOverCapacity(copy.deepcopy(drones))
+        overFilledChargingStations_Normalisd = overFilledChargingStations/self.numberOfRechargingStations
+        scoreContribution_OF = int(overFilledChargingStations_Normalisd * 100)
+        constraintViolationScore += scoreContribution_OF
+
+        #if any of the drone based constraint functions return False then 1000 penalty is applied
+        # for function in droneConstraints: 
+        #     if not function(copy.deepcopy(drones), detailed = False):
+        #         Depot.batteriesHeld = originalState_depotBatteries
+        #         print(f"function {function} violated")
+        #         constraintViolationScore += 1000
+
+        # if not constraintFuncs.countUniquePackagesDelivered(drones, detailed = False, NoOfPackages = self.numberOfPackages):
+        #     print("violated1")
+        #     constraintViolationScore += 1000
         
-        if not constraintFuncs.countBatteriesUsed(drones, detailed = False, maxBatteries = self.maxBatteries):
-            print("violated3")
-            constraintViolationScore += 1000
+        # if not constraintFuncs.checkCustomerDemandsSatisfied(copy.deepcopy(drones), detailed = False, packages = self.packages):
+        #     print("violated2")
+        #     constraintViolationScore += 1000
+        
+        # if not constraintFuncs.countBatteriesUsed(drones, detailed = False, maxBatteries = self.maxBatteries):
+        #     print("violated3")
+        #     constraintViolationScore += 1000
 
         return constraintViolationScore
 
+    '''
+    returns a tuple -> the fitness score of the solution and the score contributions from hard constraints 
+    '''
     def evaluate(self, drones):
         Depot.batteriesHeld = self.originalState_batteriesHeld
         maxScore = 1000
@@ -114,8 +162,8 @@ class Fitness:
         dronesNormalised = actualDronesUsed/self.maxDrones
         batteriesNormalised = actualBatteriesUsed/self.maxBatteries
 
-        normalisedObjectivValues = [distanceNormalised, dronesNormalised, batteriesNormalised, latenessNormalised]
+        normalisedObjectiveValues = [distanceNormalised, dronesNormalised, batteriesNormalised, latenessNormalised]
 
         hardConstraintContribution = self.hardConstraintScore(drones)
 
-        return (int(sum([obj * (maxScore/noObjectives) for obj in normalisedObjectivValues]))) + hardConstraintContribution
+        return (int(sum([obj * (maxScore/noObjectives) for obj in normalisedObjectiveValues]))) + hardConstraintContribution, hardConstraintContribution

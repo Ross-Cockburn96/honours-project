@@ -21,11 +21,8 @@ def countUniquePackagesDelivered(drones, detailed=True, NoOfPackages = None):
 
 #needs a deep copy of drone list because object states are changed
 def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
-    print("checking customer demands")
     tempDepotBatteries = copy.deepcopy(Depot.batteriesHeld)
     packageDemandDic = dict(zip([pkg.id for pkg in packages], [pkg.destination for pkg in packages]))
-    for key, val in packageDemandDic.items():
-        print(f"{key}, {val}")
     packagesDeliveredCorrectly = 0
     for drone in drones:
         drone.reset()
@@ -36,10 +33,7 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
                 if not "ChangeBattery" in str(type(action)):
                     if "Delivery" in str(type(action)):
                         if action.node.id == packageDemandDic[action.package.id]:
-                            print(f"{action.node.id} == {packageDemandDic[action.package.id]}")
                             packagesDeliveredCorrectly += 1
-                        else:
-                            print(f"{action.node.id} NOT {packageDemandDic[action.package.id]}")
                         drone.battery.batteryDistance -= distanceTraveled
                     else:   
                         drone.battery.batteryDistance -= distanceTraveled
@@ -63,7 +57,6 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
                     if drone.battery.dockedTime != None:
                         drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])  
                 if drone.battery.batteryDistance < 0:
-                    print("breaking")
                     break
             else:
                 continue
@@ -119,10 +112,11 @@ def countDroneChargeDepletion(drones, detailed=True):
                                 #print(f"(CB)battery level is {drone.battery.batteryDistance}")
                                 break
                             elif idx == len(tempDepotBatteries) -1: 
-                                print(action.node.id)
-                                print(action.batterySelected.id)
-                                print(tempDepotBatteries)
-                                print("LOOKING FOR NONEXISTING BATTERY")
+                                # print(action.node.id)
+                                # print(action.batterySelected.id)
+                                # print(tempDepotBatteries)
+                                # print("LOOKING FOR NONEXISTING BATTERY")
+                                pass
 
                     else:
                         batteries = action.node.batteriesHeld
@@ -132,11 +126,11 @@ def countDroneChargeDepletion(drones, detailed=True):
                                 #print(f"(CB)battery level is {drone.battery.batteryDistance}")
                                 break
                             elif idx == len(action.node.batteriesHeld) -1: 
-                                print(action.node.id)
-                                print(action.batterySelected.id)
-                                print(action.node.batteriesHeld[idx])
-                                print("LOOKING FOR NONEXISTING BATTERY")
-                    
+                                # print(action.node.id)
+                                # print(action.batterySelected.id)
+                                # print(action.node.batteriesHeld[idx])
+                                # print("LOOKING FOR NONEXISTING BATTERY")
+                                pass
         
                     action.batteryDropped.dockedTime = drone.time
                     if drone.battery.dockedTime != None: 

@@ -47,53 +47,55 @@ chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStat
 #chargingStations.append(nodes[0])
 params["numGenes"] = len(packages)
 #genetic algorithm parameters
-popsize = 100
 
 def start():
-    #population = initialise()
-    #evaluatePopulation(population)
+    population = initialise()
+    evaluatePopulation(population)
     
-    #startWorst = max(population, key=lambda x: x.fitness)
+    startWorst = max(population, key=lambda x: x.fitness)
     #popcopy = copy.deepcopy(population)
-    individual = Individual()
-    individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
-    individual.phenotype, individual.drones = decoder(individual)
-    with open ("solutionSample.txt", "w") as file:
-        print("writing to sample")
-        file.seek(0)
-        string = ",".join([str(element) for element in individual.phenotype])
-        file.write(string)
-    # for _ in range(1):
-    #     parent1 = tournamentSelect(population)
-    #     parent2 = tournamentSelect(population)
-        
-    #     child = crossover(parent1, parent2)
-    #     mutate(child)
-        
-    #     child.phenotype, child.drones = decoder(child)
-    #     child.fitness = fitnessEvaluator.evaluate(child.drones)
-    #     print(f"fitness of child is {child.fitness}")
-    #     replace(child, population)
-
-    #     best = min(population, key = lambda x : x.fitness)
-    #     print([i.fitness for i in population])
-    #     print(f"BEST IN ITERATION: {best.fitness}")
-    
-    # popBest = min(population, key = lambda x : x.fitness)
+    # individual = Individual()
+    # individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
+    # individual.phenotype, individual.drones = decoder(individual)
     # with open ("solutionSample.txt", "w") as file:
     #     print("writing to sample")
     #     file.seek(0)
-    #     string = ",".join([str(element) for element in popBest.phenotype])
+    #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
+    for _ in range(50000):
+        print()
+        parent1 = tournamentSelect(population)
+        parent2 = tournamentSelect(population)
+        
+        child = crossover(parent1, parent2)
+        mutate(child)
+        
+        child.phenotype, child.drones = decoder(child)
+        child.fitness, child.hardConstraintFitness = fitnessEvaluator.evaluate(child.drones)
+        print(f"fitness of child is {child.fitness}, {child.hardConstraintFitness}")
+        replace(child, population)
+
+        best = min(population, key = lambda x : x.hardConstraintFitness)
+        if best.hardConstraintFitness == 0: 
+            best = min(population, key=lambda x : x.fitness)
+        print([i.fitness for i in population])
+        print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
-    # with open("badSolutionSample.txt", "w") as file: 
-    #     file.seek(0)
-    #     string = ",".join([str(element) for element in startWorst.phenotype])
-    #     file.write(string)
+    popBest = min(population, key = lambda x : x.fitness)
+    with open ("solutionSample.txt", "w") as file:
+        print("writing to sample")
+        file.seek(0)
+        string = ",".join([str(element) for element in popBest.phenotype])
+        file.write(string)
+    
+    with open("badSolutionSample.txt", "w") as file: 
+        file.seek(0)
+        string = ",".join([str(element) for element in startWorst.phenotype])
+        file.write(string)
 
 def initialise():
     population = []
-    for _ in range(popsize):
+    for _ in range(params["popSize"]):
         individual = Individual()
         individual.initialise()
         population.append(individual)
@@ -102,10 +104,11 @@ def initialise():
 def evaluatePopulation(population):
     for individual in population: 
         individual.phenotype, individual.drones = decoder(individual)
-        individual.fitness = fitnessEvaluator.evaluate(individual.drones)
-    
+        individual.fitness, individual.hardConstraintFitness = fitnessEvaluator.evaluate(individual.drones)
+
     for individual in population:
-        print(f"fitness is {individual.fitness}")
+        print(f"fitness is {individual.fitness}, hardConstraintFitness is {individual.hardConstraintFitness}")
+    
 
 
 def tournamentSelect(population):
@@ -114,7 +117,14 @@ def tournamentSelect(population):
         individual = population[random.randrange(len(population))]
         competitors.append(individual)
     
-    winner = min(competitors, key=lambda x : x.fitness)
+    winner = competitors[0]
+    for competitor in competitors[1:]:
+        if competitor.hardConstraintFitness < winner.hardConstraintFitness: 
+            winner = competitor
+        elif competitor.hardConstraintFitness == 0:
+            if competitor.fitness < winner.fitness:
+                winner = competitor
+    
     return copy.deepcopy(winner)
 
 def crossover(parent1, parent2):
@@ -143,8 +153,11 @@ def mutate(child):
         child.chromosome[gene1], child.chromosome[gene2] = child.chromosome[gene2], child.chromosome[gene1]
 
 def replace(child, population):
-    worst = max(population, key=lambda x : x.fitness)
-    print(worst.fitness)
+    worst = max(population, key=lambda x : x.hardConstraintFitness)
+    #if the worst has hard constraint fitness of 0 then all population has satisfied the hard constraints 
+    if worst.hardConstraintFitness == 0: 
+        worst = max(population, key=lambda x : x.fitness)
+
     if child.fitness < worst.fitness:
         population[population.index(worst)] = child
 '''
