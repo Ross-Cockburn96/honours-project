@@ -11,8 +11,8 @@ class Parameters:
     #can change
     citySize = 20000 #m^2
     dayLength = 28800 #s (8 hours)
-    noOfPackages = 100
-    noOfCustomers = 100
+    noOfPackages = 5
+    noOfCustomers = 2
     noOfChargingStations = 200
 
     #drone properties (can change) 

@@ -273,7 +273,10 @@ class Generator:
         pointArray = np.array(depletionCoordinates).reshape(len(depletionCoordinates),2)
 
         distortions = [] 
+        
         numberOfClusters = 15 # max number of clusters possible
+        if len(depletionCoordinates) < numberOfClusters: 
+            numberOfClusters = len(depletionCoordinates)
         K = range(1,numberOfClusters)
         
         seed = random.randint(1,10)

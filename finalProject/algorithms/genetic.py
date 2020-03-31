@@ -54,7 +54,8 @@ def start():
     
     #startWorst = max(population, key=lambda x: x.fitness)
     individual = Individual()
-    individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
+    #individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
+    individual.chromosome = [1,2,3,4,5]
     individual.phenotype, individual.drones = decoder(individual)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
@@ -235,6 +236,7 @@ def includeChargingStations(drones):
     originalState_chargingStationDict = {station.id : station for station in originalState_chargingStations}
     originalState_droneBatteries = [copy.deepcopy(d.battery) for d in drones]
     for drone in drones:
+        print("NEW DRONE")
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
                 break
@@ -275,14 +277,14 @@ def insertIntoTrip(trip, drone):
         if action in trip.actions[:-1]:
             print()
             distanceToTravel = round(Node.distanceFinder(action.node, action.nextAction.node))
-
-            timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) #the time that the next action on this drone would be completed
-            print(f"current node is {action.node} next node is {action.nextAction.node} ({action.nextAction.node.id}")
+            #the time that the next action on this drone would be completed
+            timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) 
             #if the current action is to change battery, then switch battery amount to battery selected
             if "ChangeBattery" in str(type(action)):
                 #print(f"switching battery")
                 drone.battery.dockedTime = drone.time
                 drone.battery = action.batterySelected
+                print(f"battery level {drone.battery.batteryDistance}, dockedTime is {drone.battery.dockedTime}, currentTime is {drone.time}")
                 if drone.battery.dockedTime != None: 
                     drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
                 #update charging station to contain dropped off battery 
@@ -290,55 +292,85 @@ def insertIntoTrip(trip, drone):
                 action.node.batteriesHeld[swapIndex] = action.batteryDropped
             else:
                 stationHistory = [] #clear station history when an action that isn't a change battery action is carried out
-
             #what the battery amount would be when arriving at the next node
             provisionalBatteryLevel = drone.battery.batteryDistance - distanceToTravel
             print(f"distance to travel is {distanceToTravel}, battery charge left is {drone.battery.batteryDistance}")
             #if completing the next action will cause the drone to run out of battery
-            if provisionalBatteryLevel < 0:
-                otherChargingStations = list(filter(lambda x : x not in stationHistory, chargingStations))
-                print(len(otherChargingStations))
-                chargingStation = min(otherChargingStations, key=lambda x : int(Node.distanceFinder(x, action.node)))
+            if provisionalBatteryLevel < 2000:
+                unitX, unitY = Node.calculateUnitVector(action.node, action.nextAction.node)
+                #this is how far the drone can get to the destination. It acts as the midpoint of the arc
+                depletionCoordinate = (action.node.xCoord + int(unitX*drone.battery.batteryDistance)), (action.node.yCoord + int(unitY * drone.battery.batteryDistance))
+                print(f"destination {action.nextAction.node} dpletion point {depletionCoordinate}")
+                
+                #filters the charging stations to only those that haven't been visited before, can be reached and are sensible to visit (in between the origin and destination)
+                filters = [lambda x : x not in stationHistory, lambda x : x.inArc(angle = 90, circleCentre= action.node, midpoint = depletionCoordinate)]
+                #apply filters
+                feasibleChargingStations = list(filter(lambda x : all([f(x) for f in filters]), chargingStations))
+                print(f"feasible stations are {len(feasibleChargingStations)}")
+
+                batteriesCopy = []
+                
+                #find the closest feasible charging station that has batteries 
+                maxIters = len(feasibleChargingStations)
+                iterations = 0
+                while not batteriesCopy:
+                    print(f"iterations {iterations} out of {maxIters} ")
+                    if iterations == maxIters:
+                        print(f"unlucky son")
+                        return -1
+                    print(len(feasibleChargingStations))
+                    print("trying new one")
+                    chargingStation = min(feasibleChargingStations, key=lambda x : int(Node.distanceFinder(x, action.node)))
+                    distanceToStation = Node.distanceFinder(action.node, chargingStation)
+                    timeAtNextNode = drone.time + (distanceToStation / Parameters.droneSpeed) #next node will now be the charging station
+                    batteriesCopy = copy.deepcopy(chargingStation.batteriesHeld)
+                    for battery in batteriesCopy:
+                        print(f"battery before with time {battery.dockedTime} and time at next node will be {timeAtNextNode}")
+                    batteriesCopy = list(filter(lambda x, timeAtNextNode = timeAtNextNode: x.dockedTime <= timeAtNextNode if (x.dockedTime != None) else True, batteriesCopy))
+                    print(f"filtered list is {[b.dockedTime for b in batteriesCopy]}")
+                    
+                    if batteriesCopy: 
+                        highestCharged = max([calculateChargedValues(battery, timeAtNextNode) for battery in batteriesCopy], key = lambda x : x.batteryDistance)
+                        if highestCharged.batteryDistance > Parameters.batteryDistance:
+                            highestCharged.batteryDistance = Parameters.batteryDistance
+                        realBattery = chargingStation.batteriesHeld[batteriesCopy.index(highestCharged)] #selects the unmodified battery object
+                        realBattery.batteryDistance = highestCharged.batteryDistance #update this battery's charge value
+                        #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
+                        changeBatteryAction = ChangeBattery(chargingStation, drone.battery, realBattery)
+                        print("made change battery actioN")
+                        if ("AtDepot" in str(type(action))) and (chargingStation.getCoords() == (0,0)):
+                            #print("replacing at depot with charging node")
+                            del trip.actions[0]
+                            trip.insertAction(0, changeBatteryAction)
+                        #print(trip)
+                        trip.insertAction(idx+1, changeBatteryAction)
+                        #print(trip)
+                        isAddition = True
+                    else: 
+                        del feasibleChargingStations[feasibleChargingStations.index(chargingStation)]
+                    iterations += 1
+                    
+                print(f"exited loop with {batteriesCopy} and highest charged {highestCharged} {highestCharged.dockedTime}")
                 stationHistory.append(chargingStation)
-                distanceToStation = Node.distanceFinder(action.node, chargingStation)
                 #it is not possible for the drone to complete this trip
                 print(f"distance to station {distanceToStation}, distance left on battery {drone.battery.batteryDistance}") 
                 if distanceToStation > drone.battery.batteryDistance:
+                    print(f"possible stations were {feasibleChargingStations}")
                     print("no station found")
                     return -1
                 drone.battery.batteryDistance -= distanceToStation
-                timeAtNextNode = drone.time + (distanceToStation / Parameters.droneSpeed) #next node will now be the charging station
-                batteriesCopy = copy.deepcopy(chargingStation.batteriesHeld)
+                
                 #reduce list to only those batteries that exist at the station at the time the drone visits. 
                 # print(batteriesCopy)
                 # print(drone.time)
                 # for battery12 in batteriesCopy: 
                 #     print(battery12.dockedTime)
-                batteriesCopy = list(filter(lambda x, timeAtNextNode = timeAtNextNode: x.dockedTime <= timeAtNextNode if (x.dockedTime != None) else True, batteriesCopy))
                 #print(batteriesCopy)
                 #check the list is not empty
-                if batteriesCopy:
-                    #return the highest charged battery after adjusting for the battery charge times
-                    highestCharged = max([calculateChargedValues(battery, timeAtNextNode) for battery in batteriesCopy], key = lambda x : x.batteryDistance)
-                else: 
-                    #drone is depleted
-                    #print(f"finishing")
-                    return -1
-                if highestCharged.batteryDistance > Parameters.batteryDistance:
-                    highestCharged.batteryDistance = Parameters.batteryDistance
-                realBattery = chargingStation.batteriesHeld[batteriesCopy.index(highestCharged)] #selects the unmodified battery object
-                realBattery.batteryDistance = highestCharged.batteryDistance #update this battery's charge value
+             
+                
 
-                #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
-                changeBatteryAction = ChangeBattery(chargingStation, drone.battery, realBattery)
-                if ("AtDepot" in str(type(action))) and (chargingStation.getCoords() == (0,0)):
-                    #print("replacing at depot with charging node")
-                    del trip.actions[0]
-                    trip.insertAction(0, changeBatteryAction)
-                #print(trip)
-                trip.insertAction(idx+1, changeBatteryAction)
-                #print(trip)
-                isAddition = True
+                
         
             else:
                 drone.battery.batteryDistance = provisionalBatteryLevel
