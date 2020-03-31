@@ -18,14 +18,14 @@ class Node:
         return self.xCoord, self.yCoord
 
     '''
-    Takes the center of a circle, and the angle that the end and start points of the arc deviate from the arc midpoint and returns the arc star point coords and end point coords
+    Takes the centre of a circle, and the angle that angle of the arc and returns the arc star point coords and end point coords
     '''
-    def calculateArcPoints(self, angle, circleCenter):
+    def calculateArcPoints(self, angle, circleCentre):
         directionVector_X = self.xCoord - circleCenter.xCoord
         directionVector_Y = self.yCoord - circleCenter.yCoord
 
-        theta1 = angle 
-        theta2 = 360 - angle 
+        theta1 = angle/2 
+        theta2 = 360 - (angle/2) 
 
         rotationalpoint1_X = round(circleCenter.xCoord + (directionVector_X * math.cos(math.radians(theta1)) - directionVector_Y * math.sin(math.radians(theta1))),3)
         rotationalpoint1_Y = round(circleCenter.yCoord + (directionVector_X * math.sin(math.radians(theta1)) + directionVector_Y * math.cos(math.radians(theta1))),3)
@@ -34,6 +34,31 @@ class Node:
         rotationalpoint2_Y = round(circleCenter.yCoord + (directionVector_X * math.sin(math.radians(theta2)) + directionVector_Y * math.cos(math.radians(theta2))),3)
     
         return (rotationalpoint1_X,rotationalpoint1_Y),(rotationalpoint2_X, rotationalpoint2_Y)
+
+    '''
+    Takes the centre of a circle and the angle that the arc should make and returns if the Node is in the arc
+    '''
+    def inArc(self, angle, circleCentre):
+        startPoint, endPoint = calculateArcPoints(angle, circleCentre)
+        xS, yS = startPoint
+        xE, yE = endPoint 
+
+        circleRadius = math.sqrt((xs - circleCentre.xCoord)**2 + (yS - circleCentre.y)**2)
+        distanceToPoint = math.sqrt((self.xCoord - circleCentre.xCoord)**2 + (self.yCoord - circleCentre.yCoord)**2)
+        angleOfPoint = math.degrees(math.atan2(self.yCoord - circleCentre.yCoord, self.xCoord - circleCentre.xCoord))
+        startingAngle = math.degrees(math.atan2(yS - circleCentre.yCoord, xS - circleCentre.xCoord))
+        endingAngle = math.degrees(math.atan2(yE - circleCentre.yCoord, xE - circleCentre.xCoord))
+
+        if distanceToPoint <= circleRadius:
+            if startingAngle < endingAngle:
+                if (angleOfPoint >= startingAngle) and (angleOfPoint <= endingAngle):
+                    return True
+            elif startingAngle > endingAngle:
+                if angleOfPoint >= startingAngle:
+                    return True
+                elif angleOfPoint <= endingAngle:
+                    return True
+        return False
 
     '''
     Given a center node and a radius, populates the coordinates at a random point within the circle 
