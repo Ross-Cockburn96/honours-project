@@ -49,49 +49,48 @@ params["numGenes"] = len(packages)
 #genetic algorithm parameters
 
 def start():
-    population = initialise()
-    evaluatePopulation(population)
+    # population = initialise()
+    # evaluatePopulation(population)
     
-    startWorst = max(population, key=lambda x: x.fitness)
-    #popcopy = copy.deepcopy(population)
-    # individual = Individual()
-    # individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
-    # individual.phenotype, individual.drones = decoder(individual)
-    # with open ("solutionSample.txt", "w") as file:
-    #     print("writing to sample")
-    #     file.seek(0)
-    #     string = ",".join([str(element) for element in individual.phenotype])
-    #     file.write(string)
-    for _ in range(50000):
-        print()
-        parent1 = tournamentSelect(population)
-        parent2 = tournamentSelect(population)
-        
-        child = crossover(parent1, parent2)
-        mutate(child)
-        
-        child.phenotype, child.drones = decoder(child)
-        child.fitness, child.hardConstraintFitness = fitnessEvaluator.evaluate(child.drones)
-        print(f"fitness of child is {child.fitness}, {child.hardConstraintFitness}")
-        replace(child, population)
-
-        best = min(population, key = lambda x : x.hardConstraintFitness)
-        if best.hardConstraintFitness == 0: 
-            best = min(population, key=lambda x : x.fitness)
-        print([i.fitness for i in population])
-        print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
-    
-    popBest = min(population, key = lambda x : x.fitness)
+    #startWorst = max(population, key=lambda x: x.fitness)
+    individual = Individual()
+    individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
+    individual.phenotype, individual.drones = decoder(individual)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
         file.seek(0)
-        string = ",".join([str(element) for element in popBest.phenotype])
+        string = ",".join([str(element) for element in individual.phenotype])
         file.write(string)
+    # for _ in range(50000):
+    #     print()
+    #     parent1 = tournamentSelect(population)
+    #     parent2 = tournamentSelect(population)
+        
+    #     child = crossover(parent1, parent2)
+    #     mutate(child)
+        
+    #     child.phenotype, child.drones = decoder(child)
+    #     child.fitness, child.hardConstraintFitness = fitnessEvaluator.evaluate(child.drones)
+    #     print(f"fitness of child is {child.fitness}, {child.hardConstraintFitness}")
+    #     replace(child, population)
+
+    #     best = min(population, key = lambda x : x.hardConstraintFitness)
+    #     if best.hardConstraintFitness == 0: 
+    #         best = min(population, key=lambda x : x.fitness)
+    #     print([i.fitness for i in population])
+    #     print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
-    with open("badSolutionSample.txt", "w") as file: 
-        file.seek(0)
-        string = ",".join([str(element) for element in startWorst.phenotype])
-        file.write(string)
+    # popBest = min(population, key = lambda x : x.fitness)
+    # with open ("solutionSample.txt", "w") as file:
+    #     print("writing to sample")
+    #     file.seek(0)
+    #     string = ",".join([str(element) for element in popBest.phenotype])
+    #     file.write(string)
+    
+    # with open("badSolutionSample.txt", "w") as file: 
+    #     file.seek(0)
+    #     string = ",".join([str(element) for element in startWorst.phenotype])
+    #     file.write(string)
 
 def initialise():
     population = []
@@ -231,6 +230,7 @@ def decoder(individual):
 #this function adds charging stations to each trip and restores the states back to initialised values including the charging stations
 def includeChargingStations(drones):
     global chargingStations
+    originalState_depotBatteries = copy.deepcopy(Depot.batteriesHeld)
     originalState_chargingStations = copy.deepcopy(chargingStations) #charging station states change in the insertIntoTrip function so keep original to restore from 
     originalState_chargingStationDict = {station.id : station for station in originalState_chargingStations}
     originalState_droneBatteries = [copy.deepcopy(d.battery) for d in drones]
@@ -239,9 +239,8 @@ def includeChargingStations(drones):
             if insertIntoTrip(trip, drone) == -1: 
                 break
     
-    for battery in Depot.batteriesHeld:
-        battery.reset()
-
+    Depot.batteriesHeld = originalState_depotBatteries
+    print(Depot.batteriesHeld)
     #restore pointers in changebattery actions to original state stations
     for drone in drones:
         for trip in drone.trips: 
@@ -267,20 +266,25 @@ def calculateChargedValues(battery, currentTime):
 
 
 def insertIntoTrip(trip, drone):
+    print(Depot.batteriesHeld)
     isAddition = False
     startingCharge = drone.battery.batteryDistance #records what charge the battery hard at the start of the trip
     #print(f"starting charge is {startingCharge}")
     stationHistory = [] #this keeps track of the charging stations that have been visited in a row. It is cleared as soon as a delivery is made. Stops infinite looping between 2 charging stations
     for idx, action in enumerate(trip.actions):
         if action in trip.actions[:-1]:
-            distanceToTravel = Node.distanceFinder(action.node, action.nextAction.node)
+            print()
+            distanceToTravel = round(Node.distanceFinder(action.node, action.nextAction.node))
+
             timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) #the time that the next action on this drone would be completed
-            #print(f"current node is {action.node} next node is {action.nextAction.node}")
+            print(f"current node is {action.node} next node is {action.nextAction.node} ({action.nextAction.node.id}")
             #if the current action is to change battery, then switch battery amount to battery selected
             if "ChangeBattery" in str(type(action)):
                 #print(f"switching battery")
                 drone.battery.dockedTime = drone.time
                 drone.battery = action.batterySelected
+                if drone.battery.dockedTime != None: 
+                    drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
                 #update charging station to contain dropped off battery 
                 swapIndex = action.node.batteriesHeld.index(action.batterySelected)
                 action.node.batteriesHeld[swapIndex] = action.batteryDropped
@@ -289,17 +293,18 @@ def insertIntoTrip(trip, drone):
 
             #what the battery amount would be when arriving at the next node
             provisionalBatteryLevel = drone.battery.batteryDistance - distanceToTravel
-            #print(f"distance to travel is {distanceToTravel}, battery charge left is {drone.battery.batteryDistance}")
+            print(f"distance to travel is {distanceToTravel}, battery charge left is {drone.battery.batteryDistance}")
             #if completing the next action will cause the drone to run out of battery
             if provisionalBatteryLevel < 0:
                 otherChargingStations = list(filter(lambda x : x not in stationHistory, chargingStations))
+                print(len(otherChargingStations))
                 chargingStation = min(otherChargingStations, key=lambda x : int(Node.distanceFinder(x, action.node)))
                 stationHistory.append(chargingStation)
                 distanceToStation = Node.distanceFinder(action.node, chargingStation)
                 #it is not possible for the drone to complete this trip
-                #print(f"distance to station {distanceToStation}, distance left on battery {drone.battery.batteryDistance}") 
+                print(f"distance to station {distanceToStation}, distance left on battery {drone.battery.batteryDistance}") 
                 if distanceToStation > drone.battery.batteryDistance:
-                    #print("no station found")
+                    print("no station found")
                     return -1
                 drone.battery.batteryDistance -= distanceToStation
                 timeAtNextNode = drone.time + (distanceToStation / Parameters.droneSpeed) #next node will now be the charging station

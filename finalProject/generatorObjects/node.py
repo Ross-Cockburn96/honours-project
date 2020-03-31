@@ -17,6 +17,21 @@ class Node:
     def getCoords(self): 
         return self.xCoord, self.yCoord
 
+    def calculateArcPoints(self, angle, circleCenter):
+        directionVector_X = self.xCoord - circleCenter.xCoord
+        directionVector_Y = self.yCoord - circleCenter.yCoord
+
+        theta1 = angle 
+        theta2 = 360 - angle 
+
+        rotationalpoint1_X = round(circleCenter.xCoord + (directionVector_X * math.cos(math.radians(theta1)) - directionVector_Y * math.sin(math.radians(theta1))),3)
+        rotationalpoint1_Y = round(circleCenter.yCoord + (directionVector_X * math.sin(math.radians(theta1)) + directionVector_Y * math.cos(math.radians(theta1))),3)
+    
+        rotationalpoint2_X = round(circleCenter.xCoord + (directionVector_X * math.cos(math.radians(theta2)) - directionVector_Y * math.sin(math.radians(theta2))),3)
+        rotationalpoint2_Y = round(circleCenter.yCoord + (directionVector_X * math.sin(math.radians(theta2)) + directionVector_Y * math.cos(math.radians(theta2))),3)
+    
+        return (rotationalpoint1_X,rotationalpoint1_Y),(rotationalpoint2_X, rotationalpoint2_Y)
+        
     '''
     Given a center node and a radius, populates the coordinates at a random point within the circle 
     '''
