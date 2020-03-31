@@ -17,6 +17,9 @@ class Node:
     def getCoords(self): 
         return self.xCoord, self.yCoord
 
+    '''
+    Takes the center of a circle, and the angle that the end and start points of the arc deviate from the arc midpoint and returns the arc star point coords and end point coords
+    '''
     def calculateArcPoints(self, angle, circleCenter):
         directionVector_X = self.xCoord - circleCenter.xCoord
         directionVector_Y = self.yCoord - circleCenter.yCoord
@@ -31,7 +34,7 @@ class Node:
         rotationalpoint2_Y = round(circleCenter.yCoord + (directionVector_X * math.sin(math.radians(theta2)) + directionVector_Y * math.cos(math.radians(theta2))),3)
     
         return (rotationalpoint1_X,rotationalpoint1_Y),(rotationalpoint2_X, rotationalpoint2_Y)
-        
+
     '''
     Given a center node and a radius, populates the coordinates at a random point within the circle 
     '''
