@@ -8,5 +8,6 @@ params = {
     "dayLength" : 28800, #s
     "droneSpeed": 10, #m/s
     "chargeRate": 2, #m/s
-    "batteryDistance": 20000 #m
+    "batteryDistance": 20000, #m,
+    "batteryChargeThreshold" : 3000 #if a battery is below this threshold, it is considered low charge and will not be selected if charging and if currently held, a charging station will be searched for 
 }
