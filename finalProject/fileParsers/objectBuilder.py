@@ -15,8 +15,8 @@ List of drones with their underlying datastructures (such as trips) populated
 
 def buildObjects(solutionElements, numberOfCustomers, nodes, packages):
     drones = []
+    solutionElements = [int(e) for e in solutionElements]
     solutionCountIdx = 1 #this index gives the number of trips in the first drone 
-    
     #loops through the drones
     while solutionCountIdx < len(solutionElements):
         droneTrips = int(solutionElements[solutionCountIdx])

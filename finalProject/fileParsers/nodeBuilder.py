@@ -1,4 +1,4 @@
-from generatorObjects.node import Depot, CustomerNode, ChargingNode
+from generatorObjects.node import Depot, CustomerNode, ChargingNode, Node
 from generatorObjects.battery import Battery
 from generatorObjects.package import Package
 
@@ -12,8 +12,10 @@ Returns: {Tuple}
     list of packages
 '''
 def buildNodes(problemElements): 
-
     problemCountIdx = 7 #first 5 elements are problem characteristics, 6 and 7 are always 0 for depot coordinates so set index to 8th element (idx 7) 
+    Node.idCounter = 1
+    Depot.batteriesHeld = []
+    Depot.capacity = 0
     depot = Depot()
     chargingDepot = Depot()
    

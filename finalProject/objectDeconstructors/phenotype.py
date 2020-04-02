@@ -20,6 +20,6 @@ def phenotype(drones):
                 elif "ChangeBattery" in str(type(action)): 
                     outputElements.append(action.batteryDropped)
                     outputElements.append(action.batterySelected)
-    return outputElements
+    return [str(e) for e in outputElements]
 
 

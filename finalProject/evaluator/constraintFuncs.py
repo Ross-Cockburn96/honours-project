@@ -34,6 +34,8 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
                     if "Delivery" in str(type(action)):
                         if action.node.id == packageDemandDic[action.package.id]:
                             packagesDeliveredCorrectly += 1
+                        else:
+                            print(f"node id {action.node.id} is not {packageDemandDic[action.package.id]}")
                         drone.battery.batteryDistance -= distanceTraveled
                     else:   
                         drone.battery.batteryDistance -= distanceTraveled
@@ -61,6 +63,7 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
             else:
                 continue
             break
+
     if detailed:
         return packagesDeliveredCorrectly
     elif packagesDeliveredCorrectly != len(packages):

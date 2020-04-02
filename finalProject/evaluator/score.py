@@ -2,6 +2,8 @@ from algorithms.parameters import params
 from evaluator import constraintFuncs
 from generatorObjects.node import Node, Depot
 from generatorObjects.package import Package
+from fileParsers.nodeBuilder import buildNodes
+from fileParsers.objectBuilder import buildObjects
 import copy
 from inspect import getmembers, isfunction, signature
 
@@ -17,9 +19,11 @@ class Fitness:
         self.originalState_batteriesHeld = copy.deepcopy(Depot.batteriesHeld)
         
         #other variables (not objectives) 
+        self.numberOfCustomers = problemElements[2]
         self.numberOfPackages = problemElements[3]
         self.numberOfRechargingStations = problemElements[4]
-        self.packages = self.buildPackages(problemElements)
+        #self.packages = self.buildPackages(problemElements)
+        self.nodes, self.packages = buildNodes(problemElements)
 
     def calcMaxLateness(self, problemElements):
         maxLateness = 0
@@ -75,49 +79,58 @@ class Fitness:
         return int(lateness)      
 
     def hardConstraintScore(self,drones): 
+        print(Depot.batteriesHeld)
         print("checking hard constraints")
         originalState_depotBatteries = copy.deepcopy(Depot.batteriesHeld)
         #produces a list of all functions that only take drones as argument
         droneConstraints = [o[1] for o in getmembers(constraintFuncs) if (isfunction(o[1])) and (len(signature(o[1]).parameters) == 2)]
         constraintViolationScore = 0
 
+        #count unique packages 
         packagesScheduled = constraintFuncs.countUniquePackagesDelivered(drones)
         packagesNotScheduled = self.numberOfPackages - packagesScheduled
         packagesNotScheduled_Normalised = packagesNotScheduled/self.numberOfPackages
         scoreContribution_PS = int(packagesNotScheduled_Normalised * 100)
         constraintViolationScore += scoreContribution_PS
-        
-        correctlyDeliveredPkgs = constraintFuncs.checkCustomerDemandsSatisfied(copy.deepcopy(drones), self.packages)
+
+        #check customers are given correct packages
+        correctlyDeliveredPkgs = constraintFuncs.checkCustomerDemandsSatisfied(copy.deepcopy(drones), self.packages) 
         packagesNotDeliveredCorrectly = self.numberOfPackages - correctlyDeliveredPkgs
         packagesNotDeliveredCorrectly_Normalised = packagesNotDeliveredCorrectly/self.numberOfPackages
         scoreContribution_PD = int(packagesNotDeliveredCorrectly_Normalised * 100)
         constraintViolationScore += scoreContribution_PD
 
+        #check the number of unique batteries used in the solution
         batteriesUsed = constraintFuncs.countBatteriesUsed(drones)
         exceedingBatteries = max(batteriesUsed - self.maxBatteries , 0)
         scoreContribution_BU = 5 * exceedingBatteries
         constraintViolationScore += scoreContribution_BU
 
+        #check if any drones run out of battery on trips
         droneDepletions = constraintFuncs.countDroneChargeDepletion(copy.deepcopy(drones)) 
         droneDepletions_Normalised = droneDepletions/len(drones)
         scoreContribution_DD = int(droneDepletions_Normalised * 100)
         constraintViolationScore += scoreContribution_DD
 
+        #check if any drones are carrying too many packages
         overloadedTrips, numberOftrips = constraintFuncs.droneCargoCount(drones)
         overloadedTrips_Normalised = overloadedTrips/numberOftrips
         scoreContribution_LT = int(overloadedTrips_Normalised * 100)
         constraintViolationScore += scoreContribution_LT
 
+        #check if any drones are carrying a payload which exceeds the drone capacity 
         overWeightedTrips = constraintFuncs.droneWeightCount(drones)
         overWeightedTrips_Normalised = overWeightedTrips/numberOftrips
         scoreContribution_WT = int(overWeightedTrips_Normalised * 100) 
         constraintViolationScore += scoreContribution_WT
 
+        #check if drones start and finish at the depot
         notFinishing, notStarting = constraintFuncs.checkStartAndFinishPositions(drones)
         notFinishingOrStarting_Normalised = (notFinishing + notStarting) / numberOftrips * 2
         scoreContribution_FS = int(notFinishingOrStarting_Normalised * 100)
         constraintViolationScore += scoreContribution_FS
 
+        #check if any charging stations are over filled
         overFilledChargingStations = constraintFuncs.chargingStationsOverCapacity(copy.deepcopy(drones))
         overFilledChargingStations_Normalisd = overFilledChargingStations/self.numberOfRechargingStations
         scoreContribution_OF = int(overFilledChargingStations_Normalisd * 100)
@@ -147,7 +160,9 @@ class Fitness:
     '''
     returns a tuple -> the fitness score of the solution and the score contributions from hard constraints 
     '''
-    def evaluate(self, drones):
+    def evaluate(self, solutionElements):
+        print(solutionElements)
+        drones = buildObjects(solutionElements, self.numberOfCustomers, self.nodes, self.packages)
         Depot.batteriesHeld = self.originalState_batteriesHeld
         maxScore = 1000
         noObjectives = 3 #the number of objectives listed in the initialiser 
