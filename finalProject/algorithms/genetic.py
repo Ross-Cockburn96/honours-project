@@ -74,7 +74,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(20000):
+    for _ in range(1000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
@@ -86,10 +86,15 @@ def start():
         child.fitness, child.hardConstraintFitness = fitnessEvaluator.evaluate(child.phenotype)
         print(f"fitness of child is {child.fitness}, {child.hardConstraintFitness}")
         replace(child, population)
-
-        best = min(population, key = lambda x : x.hardConstraintFitness)
-        if best.hardConstraintFitness == 0: 
-            best = min(population, key=lambda x : x.fitness)
+        #list containing all members of the population that satisfy hard constraints
+        filteredPop = list(filter(lambda x : x.hardConstraintFitness == 0, population))
+        #if the list is empty then the best solution is the one that violates the constraints the least 
+        if not filteredPop:
+            best = min(population, key = lambda x : x.hardConstraintFitness)
+        else:
+            best = min(population, key = lambda x : x.fitness)
+        for i2 in population:
+            print(i2.hardConstraintFitness)
         print([i.fitness for i in population])
         print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
@@ -166,12 +171,16 @@ def mutate(child):
 
 def replace(child, population):
     worst = max(population, key=lambda x : x.hardConstraintFitness)
+    print(f"worst found is {worst.hardConstraintFitness}")
     #if the worst has hard constraint fitness of 0 then all population has satisfied the hard constraints 
     if worst.hardConstraintFitness == 0: 
         worst = max(population, key=lambda x : x.fitness)
-
-    if child.fitness < worst.fitness:
-        population[population.index(worst)] = child
+        if child.fitness < worst.fitness:
+            population[population.index(worst)] = child
+    else:
+        if child.hardConstraintFitness < worst.hardConstraintFitness:
+            population[population.index(worst)] = child
+    
 '''
 takes indirect genotype and builds the phenotype, returns the phenotype in it's raw format (elements) and in it's object format (drones)
 '''
