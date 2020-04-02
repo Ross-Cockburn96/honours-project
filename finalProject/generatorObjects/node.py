@@ -122,6 +122,8 @@ class Node:
     '''
     @classmethod
     def calculateUnitVector(cls, n1, n2):
+        if n1.getCoords() == n2.getCoords():
+            print("THE COORDINATES ARE THE SAME")
         vx = n2.xCoord - n1.xCoord 
         vy = n2.yCoord - n1.yCoord 
 

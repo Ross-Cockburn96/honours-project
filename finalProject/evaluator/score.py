@@ -79,7 +79,6 @@ class Fitness:
         return int(lateness)      
 
     def hardConstraintScore(self,drones): 
-        print(Depot.batteriesHeld)
         print("checking hard constraints")
         originalState_depotBatteries = copy.deepcopy(Depot.batteriesHeld)
         #produces a list of all functions that only take drones as argument
@@ -161,7 +160,6 @@ class Fitness:
     returns a tuple -> the fitness score of the solution and the score contributions from hard constraints 
     '''
     def evaluate(self, solutionElements):
-        print(solutionElements)
         drones = buildObjects(solutionElements, self.numberOfCustomers, self.nodes, self.packages)
         Depot.batteriesHeld = self.originalState_batteriesHeld
         maxScore = 1000

@@ -3,7 +3,7 @@ params = {
     "cargoSlotNum" : 5,
     "numGenes" : None, # set in genetic.py
     "tournamentSize" : 5,
-    "popSize" : 300,
+    "popSize" : 200,
     "mutationRate" : .05,
     "dayLength" : 28800, #s
     "droneSpeed": 10, #m/s
