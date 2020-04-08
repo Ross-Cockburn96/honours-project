@@ -74,7 +74,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(1000):
+    for _ in range(3000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
@@ -91,14 +91,16 @@ def start():
         #if the list is empty then the best solution is the one that violates the constraints the least 
         if not filteredPop:
             best = min(population, key = lambda x : x.hardConstraintFitness)
+            if best != child: 
+                print(f"child {child.hardConstraintFitness} not better than {best.hardConstraintFitness} child in pop: {child in population}")
         else:
-            best = min(population, key = lambda x : x.fitness)
-        for i2 in population:
-            print(i2.hardConstraintFitness)
+            best = min(filteredPop, key = lambda x : x.fitness)
+        print([i2.hardConstraintFitness for i2 in population])
+        print(f"population fitness = {sum([i.fitness for i in population])//len(population)}")
         print([i.fitness for i in population])
         print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
-    popBest = min(population, key = lambda x : x.fitness)
+    popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
         file.seek(0)
@@ -173,9 +175,9 @@ def replace(child, population):
     worst = max(population, key=lambda x : x.hardConstraintFitness)
     print(f"worst found is {worst.hardConstraintFitness}")
     #if the worst has hard constraint fitness of 0 then all population has satisfied the hard constraints 
-    if worst.hardConstraintFitness == 0: 
+    if worst.hardConstraintFitness == 0 and (child.hardConstraintFitness == 0): 
         worst = max(population, key=lambda x : x.fitness)
-        if child.fitness < worst.fitness:
+        if (child.fitness < worst.fitness):
             population[population.index(worst)] = child
     else:
         if child.hardConstraintFitness < worst.hardConstraintFitness:
@@ -260,6 +262,7 @@ def includeChargingStations(drones):
             if insertIntoTrip(trip, drone) == -1: 
                 break
     
+    
     Depot.batteriesHeld = originalState_depotBatteries
     #restore pointers in changebattery actions to original state stations
     for drone in drones:
@@ -297,6 +300,13 @@ def insertIntoTrip(trip, drone):
             timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) 
             #if the current action is to change battery, then switch battery amount to battery selected
             if "ChangeBattery" in str(type(action)):
+                if (action.node.getCoords() == (0,0)) and (idx == 1): #stops 2 actions occuring at depot
+                    del trip.actions[0]
+                    action.prevAction = None
+                if (action.node.getCoords() == (0,0)) and ("AtDepot" in str(type(action.nextAction))): #stops 2 actions occuring at depot
+                    del trip.actions[-1]
+                    action.nextAction = None 
+                    break
                 #print(f"switching battery")
                 drone.battery.dockedTime = drone.time
                 drone.battery = action.batterySelected
@@ -315,7 +325,7 @@ def insertIntoTrip(trip, drone):
                 unitX, unitY = Node.calculateUnitVector(action.node, action.nextAction.node)
                 #this is how far the drone can get to the destination. It acts as the midpoint of the arc
                 depletionCoordinate = (action.node.xCoord + int(unitX*drone.battery.batteryDistance)), (action.node.yCoord + int(unitY * drone.battery.batteryDistance))
-                
+
                 #filters the charging stations to only those that haven't been visited before, can be reached and are sensible to visit (in between the origin and destination)
                 filters = [lambda x : x not in stationHistory, lambda x : x.inArc(angle = 90, circleCentre= action.node, midpoint = depletionCoordinate)]
                 #apply filters
@@ -347,10 +357,9 @@ def insertIntoTrip(trip, drone):
                         
                         #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
                         changeBatteryAction = ChangeBattery(chargingStation, drone.battery, realBattery)
-                        if ("AtDepot" in str(type(action))) and (chargingStation.getCoords() == (0,0)):
                             #print("replacing at depot with charging node")
-                            del trip.actions[0]
-                            trip.insertAction(0, changeBatteryAction)
+
+
                         #print(trip)
                         trip.insertAction(idx+1, changeBatteryAction)
                         #print(trip)
@@ -385,11 +394,7 @@ def insertIntoTrip(trip, drone):
 
                         #this action will cause the drone to drop off it's depleted battery and pick up the one with highest charge
                         changeBatteryAction = ChangeBattery(chargingStation, drone.battery, realBattery)
-                        if ("AtDepot" in str(type(action))) and (chargingStation.getCoords() == (0,0)):
-                            #print("replacing at depot with charging node")
-                            del trip.actions[0]
-                            trip.insertAction(0, changeBatteryAction)
-                        #print(trip)
+
                         trip.insertAction(idx+1, changeBatteryAction)
                         #print(trip)
                         isAddition = True
@@ -412,7 +417,8 @@ def insertIntoTrip(trip, drone):
              
                 
 
-                
+            # if ("ChangeBattery" in str(type(action))) and ("AtDepot" in str(type(action.nextAction))):
+            #     print(F"PROBLEM")
         
             else:
                 drone.battery.batteryDistance = provisionalBatteryLevel

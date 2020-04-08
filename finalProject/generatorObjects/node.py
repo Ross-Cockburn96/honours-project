@@ -209,6 +209,8 @@ class Node:
 
     #Overload equals comparison operator for object (used in binary search)
     def __eq__(self, other):
+        if other == None: 
+            return False
         if self.xCoord == other.xCoord and self.yCoord == other.yCoord:
             return True 
         else:

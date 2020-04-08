@@ -2,7 +2,7 @@ params = {
     "cargoWeightLimit" : 30, #lb
     "cargoSlotNum" : 5,
     "numGenes" : None, # set in genetic.py
-    "tournamentSize" : 5,
+    "tournamentSize" : 3,
     "popSize" : 100,
     "mutationRate" : .05,
     "dayLength" : 28800, #s
