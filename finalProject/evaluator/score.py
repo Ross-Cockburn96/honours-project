@@ -30,7 +30,7 @@ class Fitness:
         numberOfCustomers = problemElements[2]
         #start at first customer node 
         index = 7 
-        for _ in range(100): 
+        for _ in range(numberOfCustomers): 
             closeTime = problemElements[index + 3]
             maxLateness += params["dayLength"] - closeTime
             index += 4
@@ -160,6 +160,7 @@ class Fitness:
     returns a tuple -> the fitness score of the solution and the score contributions from hard constraints 
     '''
     def evaluate(self, solutionElements):
+        originalState_depot = copy.deepcopy(Depot.batteriesHeld)
         drones = buildObjects(solutionElements, self.numberOfCustomers, self.nodes, self.packages)
         Depot.batteriesHeld = self.originalState_batteriesHeld
         maxScore = 1000
@@ -178,5 +179,5 @@ class Fitness:
         normalisedObjectiveValues = [distanceNormalised, dronesNormalised, batteriesNormalised, latenessNormalised]
 
         hardConstraintContribution = self.hardConstraintScore(drones)
-
+        Depot.batteriesHeld = originalState_depot
         return (int(sum([obj * (maxScore/noObjectives) for obj in normalisedObjectiveValues]))) + hardConstraintContribution, hardConstraintContribution

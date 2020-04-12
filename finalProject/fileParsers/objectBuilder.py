@@ -26,6 +26,7 @@ def buildObjects(solutionElements, numberOfCustomers, nodes, packages):
         trips = []
         for _ in range(droneTrips):
             tripActions = int(solutionElements[solutionCountIdx])
+            #print(f"trip actions are {tripActions}")
             solutionCountIdx += 1
 
             actions = []
@@ -44,4 +45,8 @@ def buildObjects(solutionElements, numberOfCustomers, nodes, packages):
                 actions.append(action)
             trips.append(Trip(*actions))
         drones.append(Drone(*trips))
+    # for drone in drones:
+    #     print()
+    #     for trip in drone.trips:
+    #         print([(type(a), a.node) for a in trip.actions])
     return drones

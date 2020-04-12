@@ -19,30 +19,29 @@ def countUniquePackagesDelivered(drones, detailed=True, NoOfPackages = None):
     else:
         return True
 
+
+
 #needs a deep copy of drone list because object states are changed
 def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
     tempDepotBatteries = copy.deepcopy(Depot.batteriesHeld)
     packageDemandDic = dict(zip([pkg.id for pkg in packages], [pkg.destination for pkg in packages]))
     packagesDeliveredCorrectly = 0
+
     for drone in drones:
         drone.reset()
         for trip in drone.trips:
             for action in trip.actions[:-1]:
                 distanceTraveled = int(Node.distanceFinder(action.node, action.nextAction.node))
-                drone.time += (distanceTraveled/params["droneSpeed"])
                 if not "ChangeBattery" in str(type(action)):
                     if "Delivery" in str(type(action)):
                         if action.node.id == packageDemandDic[action.package.id]:
                             packagesDeliveredCorrectly += 1
-                        else:
-                            print(f"node id {action.node.id} is not {packageDemandDic[action.package.id]}")
                         drone.battery.batteryDistance -= distanceTraveled
                     else:   
                         drone.battery.batteryDistance -= distanceTraveled
                     if drone.battery.batteryDistance == -1:#account for rounding error 
                         drone.battery.batteryDistance = 0
                 else:
-                    
                     if "Depot" in str(type(action.node)):
                         for idx, battery in enumerate(tempDepotBatteries):
                             if action.batterySelected.id == battery.id:
@@ -57,7 +56,9 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
                                 action.batteryDropped.dockedTime = drone.time 
 
                     if drone.battery.dockedTime != None:
-                        drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])  
+                        drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"]) 
+                    drone.battery.batteryDistance -= distanceTraveled
+                drone.time += (distanceTraveled/params["droneSpeed"])         
                 if drone.battery.batteryDistance < 0:
                     break
             else:
@@ -99,14 +100,11 @@ def countDroneChargeDepletion(drones, detailed=True):
             for action in trip.actions[:-1]:
                 # print(action.node)
                 # print(action.nextAction.node)
-                distanceTraveled = int(Node.distanceFinder(action.node, action.nextAction.node))
-                drone.time += (distanceTraveled/params["droneSpeed"])
-                if "Delivery" in str(type(action)) or "AtDepot" in str(type(action)):
-                    drone.battery.batteryDistance -= distanceTraveled
-                    if drone.battery.batteryDistance == -1: #account for rounding error
-                        drone.battery.batteryDistance = 0
+                #distance to next drone
+                distanceTraveled = round(Node.distanceFinder(action.node, action.nextAction.node))
+                
+                if "ChangeBattery" in str(type(action)):
 
-                else:
                     if "Depot" in str(type(action.node)):
                         batteries = tempDepotBatteries
                         for idx, battery in enumerate(batteries):
@@ -115,10 +113,10 @@ def countDroneChargeDepletion(drones, detailed=True):
                                 #print(f"(CB)battery level is {drone.battery.batteryDistance}")
                                 break
                             elif idx == len(tempDepotBatteries) -1: 
-                                # print(action.node.id)
-                                # print(action.batterySelected.id)
-                                # print(tempDepotBatteries)
-                                # print("LOOKING FOR NONEXISTING BATTERY")
+                                print(action.node.id)
+                                print(action.batterySelected.id)
+                                print(tempDepotBatteries)
+                                print("LOOKING FOR NONEXISTING BATTERY")
                                 pass
 
                     else:
@@ -129,16 +127,20 @@ def countDroneChargeDepletion(drones, detailed=True):
                                 #print(f"(CB)battery level is {drone.battery.batteryDistance}")
                                 break
                             elif idx == len(action.node.batteriesHeld) -1: 
-                                # print(action.node.id)
-                                # print(action.batterySelected.id)
-                                # print(action.node.batteriesHeld[idx])
-                                # print("LOOKING FOR NONEXISTING BATTERY")
+                                print(action.node.id)
+                                print(action.batterySelected.id)
+                                print(action.node.batteriesHeld[idx])
+                                print("LOOKING FOR NONEXISTING BATTERY")
                                 pass
         
                     action.batteryDropped.dockedTime = drone.time
                     if drone.battery.dockedTime != None: 
                         drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
                     possibleBatteries = []
+
+                  
+                    
+
                     #if the change battery action is at depot
                     if ("ChangeBattery" in str(type(action)) and ("Depot" in str(type(action.node)))):
                         possibleBatteries = tempDepotBatteries
@@ -152,13 +154,38 @@ def countDroneChargeDepletion(drones, detailed=True):
                             if battery.id == action.batterySelected.id:
                                 action.node.batteriesHeld[idx] = action.batteryDropped
 
+                #time at next node 
+                drone.time += (distanceTraveled/params["droneSpeed"])
+                drone.battery.batteryDistance -= distanceTraveled
+                if drone.battery.batteryDistance == -1: #account for rounding error
+                    drone.battery.batteryDistance = 0
+
                 if drone.battery.batteryDistance < 0: 
                     numberOfDepletions += 1
                     break
+
             else:
+                if "ChangeBattery" in str(type(trip.actions[-1])):
+                    action = trip.actions[-1]
+                    batteries = tempDepotBatteries
+                    for idx, battery in enumerate(batteries):
+                        if action.batterySelected.id == battery.id: 
+                            drone.battery = tempDepotBatteries[idx]
+                            if drone.battery.dockedTime != None: 
+                                drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
+                            action.batteryDropped.dockedTime = drone.time 
+                            tempDepotBatteries[idx] = action.batteryDropped
+                            break
+                        elif idx == len(tempDepotBatteries) -1: 
+                                print(action.node.id)
+                                print(action.batterySelected.id)
+                                print(tempDepotBatteries)
+                                print("LOOKING FOR NONEXISTING BATTERY")
+                                pass
                 continue 
             break
-    
+            
+                
     if detailed:
         return numberOfDepletions
     elif numberOfDepletions > 0:

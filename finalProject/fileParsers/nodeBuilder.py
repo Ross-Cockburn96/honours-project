@@ -67,4 +67,5 @@ def buildNodes(problemElements):
         nodes.append(chargeStation)
         problemCountIdx += numberOfBatteries
 
+    print(f"num nodes {len(nodes)}")
     return (nodes,packages)

@@ -183,7 +183,7 @@ class Node:
 
         vecX = x2 - x1 
         vecY = y2 - y1 
-    
+
         return math.sqrt(vecX**2 + vecY**2)
 
 

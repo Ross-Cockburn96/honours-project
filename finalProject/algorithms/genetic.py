@@ -74,7 +74,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(3000):
+    for _ in range(1000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
@@ -101,6 +101,7 @@ def start():
         print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
     popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
+    #popBest = min(population, key = lambda x : x.hardConstraintFitness)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
         file.seek(0)
@@ -187,6 +188,7 @@ def replace(child, population):
 takes indirect genotype and builds the phenotype, returns the phenotype in it's raw format (elements) and in it's object format (drones)
 '''
 def decoder(individual):
+    Battery.idCounter = 1
     drones = []
     droneActions = [] 
 
@@ -243,7 +245,7 @@ def decoder(individual):
                 drones.append(drone)
 
     counter = 0
-    
+   
 
     includeChargingStations(drones)
     elements = phenotype(drones)
@@ -263,7 +265,7 @@ def includeChargingStations(drones):
                 break
     
     
-    Depot.batteriesHeld = originalState_depotBatteries
+    Depot.batteriesHeld = copy.deepcopy(originalState_depotBatteries)
     #restore pointers in changebattery actions to original state stations
     for drone in drones:
         for trip in drone.trips: 
@@ -275,11 +277,11 @@ def includeChargingStations(drones):
                     action.batterySelected.reset()
 
     #restore charging station states
-    chargingStations = originalState_chargingStations
+    chargingStations = copy.deepcopy(originalState_chargingStations)
     
     #restore drone battery states
     for idx, drone in enumerate(drones):
-        drone.battery = originalState_droneBatteries[idx]
+        drone.battery = copy.copy(originalState_droneBatteries[idx])
     
     
 def calculateChargedValues(battery, currentTime):
@@ -300,6 +302,15 @@ def insertIntoTrip(trip, drone):
             timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) 
             #if the current action is to change battery, then switch battery amount to battery selected
             if "ChangeBattery" in str(type(action)):
+
+                drone.battery.dockedTime = drone.time
+                drone.battery = action.batterySelected
+                if drone.battery.dockedTime != None: 
+                    drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
+                #update charging station to contain dropped off battery 
+                swapIndex = action.node.batteriesHeld.index(action.batterySelected)
+                action.node.batteriesHeld[swapIndex] = action.batteryDropped
+
                 if (action.node.getCoords() == (0,0)) and (idx == 1): #stops 2 actions occuring at depot
                     del trip.actions[0]
                     action.prevAction = None
@@ -308,13 +319,7 @@ def insertIntoTrip(trip, drone):
                     action.nextAction = None 
                     break
                 #print(f"switching battery")
-                drone.battery.dockedTime = drone.time
-                drone.battery = action.batterySelected
-                if drone.battery.dockedTime != None: 
-                    drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"])
-                #update charging station to contain dropped off battery 
-                swapIndex = action.node.batteriesHeld.index(action.batterySelected)
-                action.node.batteriesHeld[swapIndex] = action.batteryDropped
+                
             else:
                 stationHistory = [] #clear station history when an action that isn't a change battery action is carried out
             #what the battery amount would be when arriving at the next node
@@ -380,6 +385,7 @@ def insertIntoTrip(trip, drone):
                     if iterations == maxIters:
                         return -1
                     chargingStation = min(feasibleChargingStations, key = lambda x : int(Node.distanceFinder(x, action.node)))
+
                     distanceToStation = Node.distanceFinder(action.node, chargingStation)
                     timeAtNextNode = drone.time + (distanceToStation / Parameters.droneSpeed)
                     batteriesCopy = copy.deepcopy(chargingStation.batteriesHeld)

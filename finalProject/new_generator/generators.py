@@ -221,6 +221,7 @@ class Generator:
                     else: #ChangeBattery action 
                         drone.battery = action.batterySelected
                         drone.battery.batteryDistance = Parameters.batteryDistance #replenishing charge instead of physically changing battery to make life easier as it doesn't matter for calculations
+                        drone.battery.batteryDistance -= distanceTraveled
                     if drone.battery.batteryDistance < 0: 
                         depletionDistance  = distanceTraveled + drone.battery.batteryDistance
                         unitX, unitY = self.calculateUnitVector(action.node, action.nextAction.node) #ensure origin node is first arg and dest node is 2nd for correct unit vector direction
@@ -229,9 +230,9 @@ class Generator:
 
                         originX, originY = action.node.getCoords()
                         #self.ax1.plot(originX, originY, 'bo')
-
-                        depletionX = int(originX + (unitX * depletionDistance))
-                        depletionY = int(originY + (unitY * depletionDistance))
+                        adjustedDistance = max(depletionDistance - 100, 0) #there was a bug when depletion points were created too close to the exact position the battery was depleted
+                        depletionX = int(originX + (unitX * adjustedDistance))
+                        depletionY = int(originY + (unitY * adjustedDistance))
                         #self.ax1.plot(depletionX, depletionY, 'ro')
                         depletionPoints.append(DepletionPoint(action = action.nextAction, trip = trip, drone = drone, batteryUsed = copy.copy(drone.battery),xCoord = depletionX, yCoord = depletionY))
                         drone.battery.batteryDistance = Parameters.batteryDistance #reset battery charge to calculate next depletion point
@@ -293,7 +294,24 @@ class Generator:
                 break #end loop when elbow is found 
        
         return numberOfClusters
-    
+
+
+    def includeNewChargingStations(self, depletionPoints, rechargingStations):
+        for idx, depletionPoint in enumerate(depletionPoints): 
+            action = depletionPoint.action
+            trip = depletionPoint.trip
+            drone = depletionPoint.drone
+
+            if depletionPoint.batteryUsed.id > drone.battery.id:
+                drone.battery = depletionPoint.batteryUsed
+            
+            changeBatteryAction = ChangeBattery(rechargingStations[idx], drone.battery)
+            drone.battery = changeBatteryAction.batterySelected
+            self.rechargeStations.append(rechargingStations[idx])
+            rechargingStations[idx].batteriesHeld.append(drone.battery)
+            idx = trip.actions.index(action)
+            trip.insertAction(idx, changeBatteryAction)
+
     def includeChargingStations(self, depletionPoints, rechargingStations): 
         trip = depletionPoints[0].trip 
         numberOfRecharge = len(rechargingStations)
@@ -302,6 +320,7 @@ class Generator:
         chargingDepot.id = len(self.customers)+1
         originalState_batteries = []
         newActions = []
+        numberOfDronesAtStart = len(self.drones)
         for drone in self.drones:
             originalState_batteries.append(drone.battery)
         for depletionPoint in depletionPoints: 
@@ -365,7 +384,7 @@ class Generator:
                     self.drones.append(newDrone)
                     newDrone.distanceLeft -= tripDistance
 
-        for idx, drone in enumerate(self.drones):
+        for idx, drone in enumerate(self.drones[:numberOfDronesAtStart]):
             drone.battery = originalState_batteries[idx]
     
         

@@ -12,7 +12,6 @@ import new_generator.tools
 
 
 if __name__ == "__main__": 
-
     if len(sys.argv) > 1: 
         Parameters.seedVal = int(sys.argv[1])
 
@@ -30,6 +29,7 @@ if __name__ == "__main__":
     count = 0 
     #check that the distance added to trip from rerouting to charging stations doesn't cause new depletion points
     while len(depletionPoints) > 0:
+        print(count)
         count += 1
         chargingStations = [] 
         
@@ -38,8 +38,8 @@ if __name__ == "__main__":
             chargingStation = ChargingNode(point.xCoord, point.yCoord)
             chargingStations.append(chargingStation)
         
-        generator.includeChargingStations(depletionPoints, chargingStations)
-        generator.rechargeStations.extend(chargingStations)
+        generator.includeNewChargingStations(depletionPoints, chargingStations)
+        #generator.rechargeStations.extend(chargingStations)
 
 
         #generator.includeChargingStationsF(depletionPoints, chargingStations)
