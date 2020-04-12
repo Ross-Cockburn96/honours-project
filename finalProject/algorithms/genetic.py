@@ -262,6 +262,7 @@ def includeChargingStations(drones):
     for drone in drones:
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
+                print(f"ABORTED")
                 break
     
     

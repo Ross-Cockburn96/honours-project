@@ -63,7 +63,41 @@ with open(solution) as file:
     solutionElements = [int(e) for e in solutionElements]
     drones = buildObjects(solutionElements, numberOfCustomers, nodes, packages)
 
+actualDistanceTraveled = 0
+for drone in drones:
+    for trip in drone.trips:
+        actualDistanceTraveled += Node.distanceCalc(*[action.node for action in trip.actions])
 
+maxDistanceTraveled = problemElements[0] * params["dayLength"] * params["droneSpeed"]
+
+dronesCopy = copy.deepcopy(drones)
+lateness = 0
+lateCounter = 0 
+regCounter = 0 
+for drone in dronesCopy:
+    for trip in drone.trips:
+        for action in trip.actions[:-1]:
+            if "Delivery" in str(type(action)):
+                openTime = action.node.openTime
+                closeTime = action.node.closeTime
+                if int(drone.time) not in range(openTime, closeTime+1):
+                    #if drone is early then add wait time to drone
+                    if drone.time < openTime:
+                        drone.time += openTime - drone.time
+                    #if drone is late 
+                    else:
+                        lateness += drone.time - closeTime
+            drone.time += int(Node.distanceFinder(action.node, action.nextAction.node) // params["droneSpeed"])
+lateness = int(lateness)
+
+maxLateness = 0
+numberOfCustomers = problemElements[2]
+#start at first customer node 
+index = 7 
+for _ in range(numberOfCustomers): 
+    closeTime = problemElements[index + 3]
+    maxLateness += params["dayLength"] - closeTime
+    index += 4
 
 with open(outputLocation, "w") as file:
     file.seek(0)
@@ -144,7 +178,14 @@ with open(outputLocation, "w") as file:
         result = "PASS"
     file.write(f"Number of charging stations with batteries exceeding capacity => {overFilledChargingStations}/{numberOfRechargeStations}: {result}\n")
     
-    file.write(f"\nFITNESS SCORE OF SOLUTION\n------------------------------------------------------------\n")    
+    file.write(f"\nOBJECTIVE FUNCTION BREAKDOWN\n------------------------------------------------------------\n")
+    file.write(f"Distance travelled out total possible distance => {actualDistanceTraveled}/{maxDistanceTraveled}\n")
+    file.write(f"Delivery lateness out of total possible lateness => {lateness}/{maxLateness}\n")
+    file.write(f"Drones used out of total drones available => {len(drones)}/{problemElements[0]}\n")
+    file.write(f"Batteries used out of total batteries available => {batteriesUsed}/{problemElements[1]}\n")
+    
+    file.write(f"\nSOLUTION SCORE\n------------------------------------------------------------\n")    
     score, hard = fitnessEvaluator.evaluate(solutionElements)
     #file.write(f"{score:.20f}\n")
-    file.write(f"{int(score)}\n")
+    file.write(f"Fitness: {int(score)}\n")
+    file.write(f"Hard Constraint Score: {int(hard)}\n")

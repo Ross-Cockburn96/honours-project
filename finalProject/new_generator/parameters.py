@@ -13,11 +13,11 @@ class Parameters:
     dayLength = 28800 #s (8 hours)
     noOfPackages = 100
     noOfCustomers = 100
-    noOfChargingStations = 200
+    noOfChargingStations = 20
 
     #drone properties (can change) 
     droneSpeed = 10 #m/s
-    batteryDistance = 20000 #how much distance the drone's current battery has 
+    batteryDistance = 40000 #how much distance the drone's current battery has 
     batteryChargingRate = 2 #m/s
     
     seedVal = None
