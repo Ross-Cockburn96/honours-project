@@ -303,7 +303,6 @@ def insertIntoTrip(trip, drone):
             timeAtNextNode = drone.time + (distanceToTravel/Parameters.droneSpeed) 
             #if the current action is to change battery, then switch battery amount to battery selected
             if "ChangeBattery" in str(type(action)):
-
                 drone.battery.dockedTime = drone.time
                 drone.battery = action.batterySelected
                 if drone.battery.dockedTime != None: 
@@ -320,7 +319,6 @@ def insertIntoTrip(trip, drone):
                     action.nextAction = None 
                     break
                 #print(f"switching battery")
-                
             else:
                 stationHistory = [] #clear station history when an action that isn't a change battery action is carried out
             #what the battery amount would be when arriving at the next node
@@ -350,7 +348,8 @@ def insertIntoTrip(trip, drone):
                     batteriesCopy = copy.deepcopy(chargingStation.batteriesHeld)
                     #adding 20000/params["dronesSpeed"] means that batteries are not available unless they have a minimum charge in them 
                     batteriesCopy = list(filter(lambda x, timeAtNextNode = timeAtNextNode: x.dockedTime + (params["batteryChargeThreshold"]/params["droneSpeed"]) <= timeAtNextNode if (x.dockedTime != None) else True, batteriesCopy))
-                    
+
+
                     if batteriesCopy: 
                         highestCharged = max([calculateChargedValues(battery, timeAtNextNode) for battery in batteriesCopy], key = lambda x : x.batteryDistance)
                         if highestCharged.batteryDistance > Parameters.batteryDistance:
@@ -384,12 +383,15 @@ def insertIntoTrip(trip, drone):
                 iterations = 0
                 while not batteriesCopy:
                     if iterations == maxIters:
+                        print("no charging station found")
                         return -1
                     chargingStation = min(feasibleChargingStations, key = lambda x : int(Node.distanceFinder(x, action.node)))
 
                     distanceToStation = Node.distanceFinder(action.node, chargingStation)
                     timeAtNextNode = drone.time + (distanceToStation / Parameters.droneSpeed)
                     batteriesCopy = copy.deepcopy(chargingStation.batteriesHeld)
+                    batteriesCopy = list(filter(lambda x, timeAtNextNode = timeAtNextNode: x.dockedTime + (params["batteryChargeThreshold"]/params["droneSpeed"]) <= timeAtNextNode if (x.dockedTime != None) else True, batteriesCopy))
+
                     if batteriesCopy:
                         highestCharged = max([calculateChargedValues(battery, timeAtNextNode) for battery in batteriesCopy], key = lambda x : x.batteryDistance)
                         if highestCharged.batteryDistance > Parameters.batteryDistance:
@@ -411,6 +413,7 @@ def insertIntoTrip(trip, drone):
                 stationHistory.append(chargingStation)
                 #it is not possible for the drone to complete this trip
                 if distanceToStation > drone.battery.batteryDistance:
+                    print(f"station too far")
                     return -1
                 drone.battery.batteryDistance -= distanceToStation
                 
