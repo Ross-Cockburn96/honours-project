@@ -14,8 +14,6 @@ from generatorObjects.node import Node, Depot
 from objectDeconstructors.phenotype import phenotype
 import matplotlib.pyplot as plt 
 
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--problem", "-p", nargs='?', type=str, help="Problem file address", required=True)
 try:
@@ -39,80 +37,40 @@ chargingStations = []
 nodes, packages = buildNodes(problemElements)
 fitnessEvaluator = Fitness(problemElements)
 
-# ax = plt.axes()
-# for node in nodes:
-#     if "ChargingNode" in str(type(node)) or (node.id == problemElements[2] + 1):
-#         ax.plot(*node.getCoords(), 'ko')
-#     if "CustomerNode" in str(type(node)): 
-#         ax.plot(*node.getCoords(), 'bx')
-# plt.show()
-
 for node in nodes:
     if ("ChargingNode" in str(type(node))) or (node.id == problemElements[2] + 1):
         chargingStations.append(node)
-
+    
 chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
-#add the depot to charging stations 
-#chargingStations.append(nodes[0])
 params["numGenes"] = len(packages)
-#genetic algorithm parameters
 
 def start():
+    maxIterations = 1000
     population = initialise()
     evaluatePopulation(population)
-    
-    startWorst = max(population, key=lambda x: x.fitness)
 
-    # individual = Individual()
-    # individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
-    # #individual.chromosome = [1,2,6,4,5,3,7,8,9,10,11,13,12,16,18,17,14,15,19,21,20,22,24,25,23,30,26,27,29,28,37,35,36,34,40,42,39,38,41,43,44,45,46,48,47,49,50,33,31,32]
-    # individual.phenotype, individual.drones = decoder(individual)
-    # score, hardConstraintFitness = fitnessEvaluator.evaluate(individual.phenotype)
-    # print(f"score {score},  hard is {hardConstraintFitness}")
-    # with open ("solutionSample.txt", "w") as file:
-    #     print("writing to sample")
-    #     file.seek(0)
-    #     string = ",".join([str(element) for element in individual.phenotype])
-    #     file.write(string)
-    for _ in range(1000):
-        print()
-        parent1 = tournamentSelect(population)
-        parent2 = tournamentSelect(population)
-        
-        child = crossover(parent1, parent2)
-        mutate(child)
-        
-        child.phenotype, child.drones = decoder(child)
-        child.fitness, child.hardConstraintFitness = fitnessEvaluator.evaluate(child.phenotype)
-        print(f"fitness of child is {child.fitness}, {child.hardConstraintFitness}")
-        replace(child, population)
-        #list containing all members of the population that satisfy hard constraints
+    for _ in range(maxIterations): 
+        newIndividual = Individual()
+        newIndividual.initialise()
+        newIndividual.phenotype, newIndividual.drones = decoder(newIndividual)
+        newIndividual.fitness, newIndividual.hardConstraintFitness = fitnessEvaluator.evaluate(newIndividual.phenotype)
+        print(newIndividual.hardConstraintFitness)
+        replace(newIndividual, population)
+         #list containing all members of the population that satisfy hard constraints
         filteredPop = list(filter(lambda x : x.hardConstraintFitness == 0, population))
         #if the list is empty then the best solution is the one that violates the constraints the least 
         if not filteredPop:
             best = min(population, key = lambda x : x.hardConstraintFitness)
-            if best != child: 
-                print(f"child {child.hardConstraintFitness} not better than {best.hardConstraintFitness} child in pop: {child in population}")
         else:
             best = min(filteredPop, key = lambda x : x.fitness)
         print([i2.hardConstraintFitness for i2 in population])
-        print(f"population fitness = {sum([i.fitness for i in population])//len(population)}")
         print([i.fitness for i in population])
-        print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
-    
-    popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
-    #popBest = min(population, key = lambda x : x.hardConstraintFitness)
-    with open ("solutionSample.txt", "w") as file:
-        print("writing to sample")
-        file.seek(0)
-        string = ",".join([str(element) for element in popBest.phenotype])
-        file.write(string)
-    
-    with open("badSolutionSample.txt", "w") as file: 
-        file.seek(0)
-        string = ",".join([str(element) for element in startWorst.phenotype])
-        file.write(string)
-
+    filteredFinalPop = list(filter(lambda x : x.hardConstraintFitness == 0, population))
+    if not filteredFinalPop:
+        best = min(filteredFinalPop, key = lambda x : x.hardConstraintFitness)
+    else:
+        best = min(filteredFinalPop, key = lambda x : x.fitness)
+    print(f"best found is {best.fitness}, {best.hardConstraintFitness}")
 def initialise():
     population = []
     for _ in range(params["popSize"]):
@@ -125,52 +83,8 @@ def evaluatePopulation(population):
     for individual in population: 
         individual.phenotype, individual.drones = decoder(individual)
         individual.fitness, individual.hardConstraintFitness = fitnessEvaluator.evaluate(individual.phenotype)
-
     for individual in population:
         print(f"fitness is {individual.fitness}, hardConstraintFitness is {individual.hardConstraintFitness}")
-    
-
-
-def tournamentSelect(population):
-    competitors = []
-    for idx in range(params["tournamentSize"]):
-        individual = population[random.randrange(len(population))]
-        competitors.append(individual)
-    
-    winner = competitors[0]
-    for competitor in competitors[1:]:
-        if competitor.hardConstraintFitness < winner.hardConstraintFitness: 
-            winner = competitor
-        elif competitor.hardConstraintFitness == 0:
-            if competitor.fitness < winner.fitness:
-                winner = competitor
-    
-    return copy.deepcopy(winner)
-
-def crossover(parent1, parent2):
-    child = Individual()
-    childP1 = []
-    childP2 = []
-    geneA = random.randrange(params["numGenes"])
-    geneB = random.randrange(params["numGenes"])
-
-    startGene = min(geneA,geneB)
-    endGene = max(geneA, geneB)
-
-    for i in range(startGene, endGene):
-        childP1.append(parent1.chromosome[i])
-    
-    childP2 = [item for item in parent2.chromosome if item not in childP1]
-
-    child.chromosome = childP1
-    child.chromosome.extend(childP2)
-    return child
-
-def mutate(child):
-    if random.random() < params["mutationRate"]:
-        gene1 = random.randrange(params["numGenes"])
-        gene2 = random.randrange(params["numGenes"])
-        child.chromosome[gene1], child.chromosome[gene2] = child.chromosome[gene2], child.chromosome[gene1]
 
 def replace(child, population):
     worst = max(population, key=lambda x : x.hardConstraintFitness)
@@ -183,7 +97,6 @@ def replace(child, population):
     else:
         if child.hardConstraintFitness < worst.hardConstraintFitness:
             population[population.index(worst)] = child
-    
 '''
 takes indirect genotype and builds the phenotype, returns the phenotype in it's raw format (elements) and in it's object format (drones)
 '''
@@ -439,7 +352,4 @@ def insertIntoTrip(trip, drone):
     #     insertIntoTrip(trip, drone, run+1)
 
 
-
-
 start()
-
