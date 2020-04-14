@@ -16,39 +16,6 @@ from scipy.spatial.distance import cdist
 import new_generator.tools
 
 class Generator:
-    """ 
-    This class is used to generate random problems to the 
-    Drone Delivery Problem 
-    
-    ...
-
-    Attributes
-    ----------
-    nodes : List<Node> 
-        a list of Node objects randomly generated
-    
-    maxRange: this is the highest value a node's coordinates 
-    
-    rangeMultiplyer : highest value added to maxRange
-
-    noOfNodes : number of nodes to be randomly generated
-
-    noOfPackages : number of packages to be randomly generated 
-
-    nodemaxRangeRatio: value between 0 and 1 which is multiplied with rangeMultiplyer 
-        to give a value which determines the spread distance of nodes. 
-
-    distribution: setting for controlling the distribution of the nodes. 
-        uniform = pseudo-randomly generated across the range 
-        clustered = problem is randomly created with dense clusters of nodes 
-
-    Methods 
-    -------
-    generateNodes()
-        randomly generates the number of nodes specified by noOfNodes attribute
-
-    
-    """
     ax1 = Parameters.ax
     
     def __init__(self, distribution="uniform" ):
