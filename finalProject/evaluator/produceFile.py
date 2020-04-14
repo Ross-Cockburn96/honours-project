@@ -118,7 +118,7 @@ with open(outputLocation, "w") as file:
     
     packagesDelivered = countUniquePackagesDelivered(drones)
     if packagesDelivered == numberOfPackages:
-        result == "PASS"
+        result = "PASS"
     else:
         result = "FAIL"
     file.write(f"Packages scheduled for delivery by solution => {packagesDelivered}/{numberOfPackages}: {result}\n")

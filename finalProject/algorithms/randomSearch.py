@@ -45,7 +45,7 @@ chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStat
 params["numGenes"] = len(packages)
 
 def start():
-    maxIterations = 1000
+    maxIterations = 200
     population = initialise()
     evaluatePopulation(population)
 
@@ -62,12 +62,13 @@ def start():
         if not filteredPop:
             best = min(population, key = lambda x : x.hardConstraintFitness)
         else:
+    
             best = min(filteredPop, key = lambda x : x.fitness)
         print([i2.hardConstraintFitness for i2 in population])
         print([i.fitness for i in population])
     filteredFinalPop = list(filter(lambda x : x.hardConstraintFitness == 0, population))
     if not filteredFinalPop:
-        best = min(filteredFinalPop, key = lambda x : x.hardConstraintFitness)
+        best = min(population, key = lambda x : x.hardConstraintFitness)
     else:
         best = min(filteredFinalPop, key = lambda x : x.fitness)
     print(f"best found is {best.fitness}, {best.hardConstraintFitness}")

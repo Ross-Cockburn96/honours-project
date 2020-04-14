@@ -74,7 +74,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(1000):
+    for _ in range(100000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
@@ -262,7 +262,6 @@ def includeChargingStations(drones):
     for drone in drones:
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
-                print(f"ABORTED")
                 break
     
     
@@ -383,7 +382,6 @@ def insertIntoTrip(trip, drone):
                 iterations = 0
                 while not batteriesCopy:
                     if iterations == maxIters:
-                        print("no charging station found")
                         return -1
                     chargingStation = min(feasibleChargingStations, key = lambda x : int(Node.distanceFinder(x, action.node)))
 
@@ -413,7 +411,6 @@ def insertIntoTrip(trip, drone):
                 stationHistory.append(chargingStation)
                 #it is not possible for the drone to complete this trip
                 if distanceToStation > drone.battery.batteryDistance:
-                    print(f"station too far")
                     return -1
                 drone.battery.batteryDistance -= distanceToStation
                 

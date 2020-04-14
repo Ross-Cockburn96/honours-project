@@ -9,9 +9,9 @@ class Parameters:
     droneCargoCapacity = 5
 
     #can change
-    citySize = 20000 #m^2
+    citySize = 30000 #m^2
     dayLength = 28800 #s (8 hours)
-    noOfPackages = 100
+    noOfPackages = 300
     noOfCustomers = 100
     noOfChargingStations = 20
 
