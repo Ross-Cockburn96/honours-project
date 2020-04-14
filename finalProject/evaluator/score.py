@@ -15,7 +15,6 @@ class Fitness:
         self.maxDrones = problemElements[0]
         self.maxDistanceTraveled = self.maxDrones * params["dayLength"] * params["droneSpeed"]
         self.maxBatteries = problemElements[1]
-        self.maxLateness = self.calcMaxLateness(problemElements)
         self.originalState_batteriesHeld = copy.deepcopy(Depot.batteriesHeld)
         
         #other variables (not objectives) 
@@ -25,16 +24,6 @@ class Fitness:
         #self.packages = self.buildPackages(problemElements)
         self.nodes, self.packages = buildNodes(problemElements)
 
-    def calcMaxLateness(self, problemElements):
-        maxLateness = 0
-        numberOfCustomers = problemElements[2]
-        #start at first customer node 
-        index = 7 
-        for _ in range(numberOfCustomers): 
-            closeTime = problemElements[index + 3]
-            maxLateness += params["dayLength"] - closeTime
-            index += 4
-        return maxLateness
     
     def buildPackages(self, problemElements): 
         packages = []
@@ -60,6 +49,7 @@ class Fitness:
     
     def actualLatenessCalculation(self, drones):
         lateness = 0
+        maxLateness = 0
         lateCounter = 0 
         regCounter = 0 
         for drone in drones:
@@ -68,6 +58,7 @@ class Fitness:
                     if "Delivery" in str(type(action)):
                         openTime = action.node.openTime
                         closeTime = action.node.closeTime
+                        maxLateness += params["dayLength"] - closeTime
                         if int(drone.time) not in range(openTime, closeTime+1):
                             #if drone is early then add wait time to drone
                             if drone.time < openTime:
@@ -76,7 +67,7 @@ class Fitness:
                             else:
                                 lateness += drone.time - closeTime
                     drone.time += int(Node.distanceFinder(action.node, action.nextAction.node) // params["droneSpeed"])
-        return int(lateness)      
+        return int(lateness), maxLateness      
 
     def hardConstraintScore(self,drones): 
         print("checking hard constraints")
@@ -167,12 +158,12 @@ class Fitness:
         noObjectives = 3 #the number of objectives listed in the initialiser 
 
         actualDistanceTraveled = self.actualDistanceCalculation(drones)
-        actualLateness = self.actualLatenessCalculation(copy.deepcopy(drones)) #pass a copy of the list so that changing the drone variables don't affect the original list
+        actualLateness, maxLateness = self.actualLatenessCalculation(copy.deepcopy(drones)) #pass a copy of the list so that changing the drone variables don't affect the original list
         actualDronesUsed = len(drones)
         actualBatteriesUsed = constraintFuncs.countBatteriesUsed(drones)
         
         distanceNormalised = actualDistanceTraveled/self.maxDistanceTraveled
-        latenessNormalised = actualLateness/self.maxLateness
+        latenessNormalised = actualLateness/maxLateness
         dronesNormalised = actualDronesUsed/self.maxDrones
         batteriesNormalised = actualBatteriesUsed/self.maxBatteries
 

@@ -72,6 +72,7 @@ maxDistanceTraveled = problemElements[0] * params["dayLength"] * params["droneSp
 
 dronesCopy = copy.deepcopy(drones)
 lateness = 0
+maxLateness = 0
 lateCounter = 0 
 regCounter = 0 
 for drone in dronesCopy:
@@ -80,24 +81,19 @@ for drone in dronesCopy:
             if "Delivery" in str(type(action)):
                 openTime = action.node.openTime
                 closeTime = action.node.closeTime
+                maxLateness += params["dayLength"] - closeTime
                 if int(drone.time) not in range(openTime, closeTime+1):
                     #if drone is early then add wait time to drone
                     if drone.time < openTime:
                         drone.time += openTime - drone.time
                     #if drone is late 
                     else:
+                        dayLength = params["dayLength"]
+                        print(f"time on drone is {drone.time} close time is {closeTime} difference is {drone.time - closeTime} day length is {dayLength}")
                         lateness += drone.time - closeTime
             drone.time += int(Node.distanceFinder(action.node, action.nextAction.node) // params["droneSpeed"])
 lateness = int(lateness)
 
-maxLateness = 0
-numberOfCustomers = problemElements[2]
-#start at first customer node 
-index = 7 
-for _ in range(numberOfCustomers): 
-    closeTime = problemElements[index + 3]
-    maxLateness += params["dayLength"] - closeTime
-    index += 4
 
 with open(outputLocation, "w") as file:
     file.seek(0)

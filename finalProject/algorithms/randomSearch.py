@@ -45,7 +45,7 @@ chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStat
 params["numGenes"] = len(packages)
 
 def start():
-    maxIterations = 200
+    maxIterations = 0
     population = initialise()
     evaluatePopulation(population)
 
@@ -72,6 +72,11 @@ def start():
     else:
         best = min(filteredFinalPop, key = lambda x : x.fitness)
     print(f"best found is {best.fitness}, {best.hardConstraintFitness}")
+    with open ("solutionSample.txt", "w") as file:
+        print("writing to sample")
+        file.seek(0)
+        string = ",".join([str(element) for element in best.phenotype])
+        file.write(string)
 def initialise():
     population = []
     for _ in range(params["popSize"]):
