@@ -15,6 +15,7 @@ from objectDeconstructors.phenotype import phenotype
 import matplotlib.pyplot as plt 
 
 
+random.seed(100)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--problem", "-p", nargs='?', type=str, help="Problem file address", required=True)
@@ -74,7 +75,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(100000):
+    for _ in range(0):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
@@ -100,8 +101,8 @@ def start():
         print([i.fitness for i in population])
         print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
-    popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
-    #popBest = min(population, key = lambda x : x.hardConstraintFitness)
+    #popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
+    popBest = min(population, key = lambda x : x.hardConstraintFitness)
     with open ("solutionSample.txt", "w") as file:
         print("writing to sample")
         file.seek(0)
@@ -245,7 +246,6 @@ def decoder(individual):
                 drones.append(drone)
 
     counter = 0
-   
 
     includeChargingStations(drones)
     elements = phenotype(drones)
@@ -263,7 +263,9 @@ def includeChargingStations(drones):
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
                 break
-    
+            if trip.actions[0].node.getCoords() == trip.actions[1].node.getCoords():
+                del trip.actions[0]
+
     
     Depot.batteriesHeld = copy.deepcopy(originalState_depotBatteries)
     #restore pointers in changebattery actions to original state stations
@@ -310,9 +312,6 @@ def insertIntoTrip(trip, drone):
                 swapIndex = action.node.batteriesHeld.index(action.batterySelected)
                 action.node.batteriesHeld[swapIndex] = action.batteryDropped
 
-                if (action.node.getCoords() == (0,0)) and (idx == 1): #stops 2 actions occuring at depot
-                    del trip.actions[0]
-                    action.prevAction = None
                 if (action.node.getCoords() == (0,0)) and ("AtDepot" in str(type(action.nextAction))): #stops 2 actions occuring at depot
                     del trip.actions[-1]
                     action.nextAction = None 
@@ -430,6 +429,8 @@ def insertIntoTrip(trip, drone):
             else:
                 drone.battery.batteryDistance = provisionalBatteryLevel
         drone.time = timeAtNextNode   
+    
+    
     return 2 
     #if there has been an addition to the trip start calculating again
     # if isAddition and run < 2:

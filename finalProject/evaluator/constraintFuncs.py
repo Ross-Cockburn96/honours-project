@@ -94,6 +94,8 @@ def countBatteriesUsed(drones, detailed=True, maxBatteries = None):
 def countDroneChargeDepletion(drones, detailed=True): 
     tempDepotBatteries = copy.deepcopy(Depot.batteriesHeld)
     numberOfDepletions = 0
+
+
     for drone in drones: 
         drone.reset()
         for trip in drone.trips: 
@@ -118,7 +120,6 @@ def countDroneChargeDepletion(drones, detailed=True):
                                 print(tempDepotBatteries)
                                 print("LOOKING FOR NONEXISTING BATTERY")
                                 pass
-
                     else:
                         batteries = action.node.batteriesHeld
                         for idx, battery in enumerate(batteries):
@@ -129,7 +130,8 @@ def countDroneChargeDepletion(drones, detailed=True):
                             elif idx == len(action.node.batteriesHeld) -1: 
                                 print(action.node.id)
                                 print(action.batterySelected.id)
-                                print(action.node.batteriesHeld[idx])
+                                print(action.batteryDropped.id)
+                                print([b for b in action.node.batteriesHeld])
                                 print("LOOKING FOR NONEXISTING BATTERY")
                                 pass
         

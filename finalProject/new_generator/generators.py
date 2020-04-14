@@ -470,6 +470,15 @@ class Generator:
             newStation = ChargingNode(xCoord, yCoord)
             newStation.batteriesHeld.append(Battery.createNew())
             self.rechargeStations.append(newStation)
+        
+
+        if len(self.rechargeStations) > Parameters.noOfChargingStations:
+            chargingStationsWithOneBattery = list(filter(lambda x : len(x.batteriesHeld) == 1, self.rechargeStations))
+            excess = len(chargingStationsWithOneBattery) - Parameters.noOfChargingStations 
+            random.shuffle(chargingStationsWithOneBattery)
+            for idx in range(excess):    
+                self.rechargeStations.pop(self.rechargeStations.index(chargingStationsWithOneBattery[idx]))
+            
         outputElements = [] 
         outputElements.append(max(Parameters.maxDrones, len(self.drones)))
         outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
