@@ -471,7 +471,7 @@ class Generator:
             newStation.batteriesHeld.append(Battery.createNew())
             self.rechargeStations.append(newStation)
         outputElements = [] 
-        outputElements.append(Parameters.maxDrones)
+        outputElements.append(max(Parameters.maxDrones, len(self.drones)))
         outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
         outputElements.append(self.noOfNodes) 
         outputElements.append(self.noOfPackages)
