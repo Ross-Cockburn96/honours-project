@@ -165,7 +165,6 @@ def decoder(individual):
 
     counter = 0
    
-
     includeChargingStations(drones)
     elements = phenotype(drones)
     #elements = phenotype(drones)

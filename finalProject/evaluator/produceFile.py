@@ -63,12 +63,14 @@ with open(solution) as file:
     solutionElements = [int(e) for e in solutionElements]
     drones = buildObjects(solutionElements, numberOfCustomers, nodes, packages)
 
+numberOfTrips = 0 
 actualDistanceTraveled = 0
 for drone in drones:
     for trip in drone.trips:
+        numberOfTrips += 1
         actualDistanceTraveled += Node.distanceCalc(*[action.node for action in trip.actions])
 
-maxDistanceTraveled = problemElements[0] * params["dayLength"] * params["droneSpeed"]
+maxDistanceTraveled = numberOfTrips * params["dayLength"] * params["droneSpeed"]
 
 dronesCopy = copy.deepcopy(drones)
 lateness = 0
@@ -89,7 +91,6 @@ for drone in dronesCopy:
                     #if drone is late 
                     else:
                         dayLength = params["dayLength"]
-                        print(f"time on drone is {drone.time} close time is {closeTime} difference is {drone.time - closeTime} day length is {dayLength}")
                         lateness += drone.time - closeTime
             drone.time += int(Node.distanceFinder(action.node, action.nextAction.node) // params["droneSpeed"])
 lateness = int(lateness)

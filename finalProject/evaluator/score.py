@@ -11,17 +11,15 @@ from inspect import getmembers, isfunction, signature
 
 class Fitness:
     def __init__(self, problemElements):
-        #the objectives that make up the objective function
+   
         self.maxDrones = problemElements[0]
-        self.maxDistanceTraveled = self.maxDrones * params["dayLength"] * params["droneSpeed"]
         self.maxBatteries = problemElements[1]
         self.originalState_batteriesHeld = copy.deepcopy(Depot.batteriesHeld)
         
-        #other variables (not objectives) 
+ 
         self.numberOfCustomers = problemElements[2]
         self.numberOfPackages = problemElements[3]
         self.numberOfRechargingStations = problemElements[4]
-        #self.packages = self.buildPackages(problemElements)
         self.nodes, self.packages = buildNodes(problemElements)
 
     
@@ -153,6 +151,11 @@ class Fitness:
     def evaluate(self, solutionElements):
         originalState_depot = copy.deepcopy(Depot.batteriesHeld)
         drones = buildObjects(solutionElements, self.numberOfCustomers, self.nodes, self.packages)
+        tripCount = 0 
+        for drone in drones: 
+            for trip in drone.trips:
+                tripCount += 1
+        maxDistanceTraveled = tripCount * params["dayLength"] * params["droneSpeed"]
         Depot.batteriesHeld = self.originalState_batteriesHeld
         maxScore = 1000
         noObjectives = 3 #the number of objectives listed in the initialiser 
@@ -162,11 +165,10 @@ class Fitness:
         actualDronesUsed = len(drones)
         actualBatteriesUsed = constraintFuncs.countBatteriesUsed(drones)
         
-        distanceNormalised = actualDistanceTraveled/self.maxDistanceTraveled
+        distanceNormalised = actualDistanceTraveled/maxDistanceTraveled
         latenessNormalised = actualLateness/maxLateness
         dronesNormalised = actualDronesUsed/self.maxDrones
         batteriesNormalised = actualBatteriesUsed/self.maxBatteries
-
         normalisedObjectiveValues = [distanceNormalised, dronesNormalised, batteriesNormalised, latenessNormalised]
 
         hardConstraintContribution = self.hardConstraintScore(drones)
