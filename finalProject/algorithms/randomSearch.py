@@ -30,10 +30,6 @@ with open(problem) as file:
     problemElements = problemData.split(",")
     problemElements = [int(e) for e in problemElements]
 
-
-
-random.seed(201)
-
 def start(runNum):
     maxIterations = 0
     population = initialise()
