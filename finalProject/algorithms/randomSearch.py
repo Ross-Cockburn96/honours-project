@@ -31,7 +31,7 @@ with open(problem) as file:
     problemElements = [int(e) for e in problemElements]
 
 def start(runNum):
-    maxIterations = 3000
+    maxIterations = 10000
     population = initialise()
     evaluatePopulation(population)
 
@@ -63,6 +63,13 @@ def start(runNum):
         file.seek(0)
         string = ",".join([str(element) for element in best.phenotype])
         file.write(string)
+    
+    numValid = 0
+    for i in population:
+        if i.hardConstraintFitness == 0:
+            numValid += 1
+    with open(f"solutionData.txt", "a") as file:
+        file.write(str(numValid) + "\n")
 def initialise():
     population = []
     for _ in range(params["popSize"]):

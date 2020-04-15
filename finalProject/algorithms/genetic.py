@@ -52,7 +52,7 @@ def start(runIdx):
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(2000):
+    for _ in range(5000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
@@ -86,6 +86,12 @@ def start(runIdx):
         string = ",".join([str(element) for element in popBest.phenotype])
         file.write(string)
     
+    with open("fitnessScores.txt", "a") as file:
+        if popBest.hardConstraintFitness == 0:
+            file.write(f"{popBest.fitness}\n")
+        else:
+            file.write("invalid\n")
+
     with open("badSolutionSample.txt", "w") as file: 
         file.seek(0)
         string = ",".join([str(element) for element in startWorst.phenotype])
