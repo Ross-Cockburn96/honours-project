@@ -15,6 +15,13 @@ if __name__ == "__main__":
     if len(sys.argv) > 1: 
         Parameters.seedVal = int(sys.argv[1])
 
+    change =False 
+    if len(sys.argv) > 2: 
+        changeDefaultChargeStations = int(sys.argv[2])
+        if changeDefaultChargeStations == 1:
+            change = True
+
+
     generator = Generator(distribution="uniform")  
     generator.generateNodes()
     #problem.generateRechargingStations()
@@ -50,7 +57,7 @@ if __name__ == "__main__":
 
     generator.createSolutionFile()
     generator.createGenotype()
-    generator.createProblemFile()
+    generator.createProblemFile(change)
     
 
 

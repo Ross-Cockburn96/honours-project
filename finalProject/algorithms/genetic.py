@@ -33,31 +33,9 @@ with open(problem) as file:
     problemElements = [int(e) for e in problemElements]
 
 
-packages = []
-nodes = []
-chargingStations = [] 
-nodes, packages = buildNodes(problemElements)
-fitnessEvaluator = Fitness(problemElements)
 
-# ax = plt.axes()
-# for node in nodes:
-#     if "ChargingNode" in str(type(node)) or (node.id == problemElements[2] + 1):
-#         ax.plot(*node.getCoords(), 'ko')
-#     if "CustomerNode" in str(type(node)): 
-#         ax.plot(*node.getCoords(), 'bx')
-# plt.show()
 
-for node in nodes:
-    if ("ChargingNode" in str(type(node))) or (node.id == problemElements[2] + 1):
-        chargingStations.append(node)
-
-chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
-#add the depot to charging stations 
-#chargingStations.append(nodes[0])
-params["numGenes"] = len(packages)
-#genetic algorithm parameters
-
-def start():
+def start(runIdx):
     population = initialise()
     evaluatePopulation(population)
     
@@ -102,7 +80,7 @@ def start():
     
     #popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
     popBest = min(population, key = lambda x : x.hardConstraintFitness)
-    with open ("solutionSample.txt", "w") as file:
+    with open ("solutionSample_"+str(runIdx)+".txt", "w") as file:
         print("writing to sample")
         file.seek(0)
         string = ",".join([str(element) for element in popBest.phenotype])
@@ -442,8 +420,20 @@ def insertIntoTrip(trip, drone):
     # if isAddition and run < 2:
     #     insertIntoTrip(trip, drone, run+1)
 
+for idx in range(params["experimentRuns"]):
+    packages = []
+    nodes = []
+    chargingStations = [] 
+    nodes, packages = buildNodes(problemElements)
+    fitnessEvaluator = Fitness(problemElements)
 
+    for node in nodes:
+        if ("ChargingNode" in str(type(node))) or (node.id == problemElements[2] + 1):
+            chargingStations.append(node)
 
+    chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
+    #add the depot to charging stations 
+    params["numGenes"] = len(packages)
 
-start()
+    start(idx)
 

@@ -31,7 +31,7 @@ with open(problem) as file:
     problemElements = [int(e) for e in problemElements]
 
 def start(runNum):
-    maxIterations = 0
+    maxIterations = 3000
     population = initialise()
     evaluatePopulation(population)
 

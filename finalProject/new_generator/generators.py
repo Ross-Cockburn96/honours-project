@@ -462,7 +462,7 @@ class Generator:
     format: {number of customers}{number of packages}{number of recharge stations}{depot coords and ids of batteries which start there}{customer coordinates with their time windows}{packages with id, weights and destination}{recharge stations and their respective starting batteries}
     All nodes, including charging nodes have an implied id val of their position in the problem file. Depot has id 0, first customer has id 1. The ids of recharging nodes continue after the packages, starting from noOfCustomers + 1
     '''
-    def createProblemFile(self):
+    def createProblemFile(self, change):
         stationsToMake = Parameters.noOfChargingStations - len(self.rechargeStations)
         for _ in range(stationsToMake):
             xCoord = random.randint(1, Parameters.citySize)
@@ -471,14 +471,16 @@ class Generator:
             newStation.batteriesHeld.append(Battery.createNew())
             self.rechargeStations.append(newStation)
         
-
-        if len(self.rechargeStations) > Parameters.noOfChargingStations:
-            chargingStationsWithOneBattery = list(filter(lambda x : len(x.batteriesHeld) == 1, self.rechargeStations))
-            amountToRemove = min(len(chargingStationsWithOneBattery), len(self.rechargeStations) - Parameters.noOfChargingStations)
-            random.shuffle(chargingStationsWithOneBattery)
-            for idx in range(amountToRemove):    
-                self.rechargeStations.pop(self.rechargeStations.index(chargingStationsWithOneBattery[idx]))
-            
+        if change:
+            print("changing")
+            if len(self.rechargeStations) > Parameters.noOfChargingStations:
+                chargingStationsWithOneBattery = list(filter(lambda x : len(x.batteriesHeld) == 1, self.rechargeStations))
+                amountToRemove = min(len(chargingStationsWithOneBattery), len(self.rechargeStations) - Parameters.noOfChargingStations)
+                random.shuffle(chargingStationsWithOneBattery)
+                for idx in range(amountToRemove):    
+                    self.rechargeStations.pop(self.rechargeStations.index(chargingStationsWithOneBattery[idx]))
+        else:
+            print("not")
         outputElements = [] 
         outputElements.append(max(Parameters.maxDrones, len(self.drones)))
         outputElements.append(Battery.idCounter - 1) #the solution does not implement any strategy for battery re-use. A new battery is created each time a drone visits a charging station. This means that the maximum batteries available in the problem is equal to this number 
