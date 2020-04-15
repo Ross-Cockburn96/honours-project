@@ -166,11 +166,18 @@ def crossover(parent1, parent2):
     child.chromosome.extend(childP2)
     return child
 
+'''
+Selects a gene and inserts it somewhere else in the chromosome
+'''
 def mutate(child):
     if random.random() < params["mutationRate"]:
-        gene1 = random.randrange(params["numGenes"])
-        gene2 = random.randrange(params["numGenes"])
-        child.chromosome[gene1], child.chromosome[gene2] = child.chromosome[gene2], child.chromosome[gene1]
+        geneIdx = random.randrange(params["numGenes"])
+        newPosition = random.randrange(params["numGenes"])
+        child.chromosome.insert(newPosition, child.chromosome[geneIdx])
+        if newPosition > geneIdx:
+            child.chromosome.pop(geneIdx)
+        else:
+            child.chromosome.pop(geneIdx+1)
 
 def replace(child, population):
     worst = max(population, key=lambda x : x.hardConstraintFitness)
