@@ -74,7 +74,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(150000):
+    for _ in range(2000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)

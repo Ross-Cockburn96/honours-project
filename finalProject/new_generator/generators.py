@@ -472,12 +472,12 @@ class Generator:
             self.rechargeStations.append(newStation)
         
 
-        # if len(self.rechargeStations) > Parameters.noOfChargingStations:
-        #     chargingStationsWithOneBattery = list(filter(lambda x : len(x.batteriesHeld) == 1, self.rechargeStations))
-        #     excess = len(chargingStationsWithOneBattery) - Parameters.noOfChargingStations 
-        #     random.shuffle(chargingStationsWithOneBattery)
-        #     for idx in range(excess):    
-        #         self.rechargeStations.pop(self.rechargeStations.index(chargingStationsWithOneBattery[idx]))
+        if len(self.rechargeStations) > Parameters.noOfChargingStations:
+            chargingStationsWithOneBattery = list(filter(lambda x : len(x.batteriesHeld) == 1, self.rechargeStations))
+            amountToRemove = min(len(chargingStationsWithOneBattery), len(self.rechargeStations) - Parameters.noOfChargingStations)
+            random.shuffle(chargingStationsWithOneBattery)
+            for idx in range(amountToRemove):    
+                self.rechargeStations.pop(self.rechargeStations.index(chargingStationsWithOneBattery[idx]))
             
         outputElements = [] 
         outputElements.append(max(Parameters.maxDrones, len(self.drones)))
