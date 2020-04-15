@@ -15,7 +15,6 @@ from objectDeconstructors.phenotype import phenotype
 import matplotlib.pyplot as plt 
 
 
-random.seed(100)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--problem", "-p", nargs='?', type=str, help="Problem file address", required=True)
@@ -75,7 +74,7 @@ def start():
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(0):
+    for _ in range(150000):
         print()
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)

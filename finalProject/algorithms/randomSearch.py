@@ -45,7 +45,7 @@ chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStat
 params["numGenes"] = len(packages)
 
 def start():
-    maxIterations = 0
+    maxIterations = 1000
     population = initialise()
     evaluatePopulation(population)
 
@@ -164,7 +164,7 @@ def decoder(individual):
                 drones.append(drone)
 
     counter = 0
-   
+
     includeChargingStations(drones)
     elements = phenotype(drones)
     #elements = phenotype(drones)
@@ -180,9 +180,10 @@ def includeChargingStations(drones):
     for drone in drones:
         for trip in drone.trips:
             if insertIntoTrip(trip, drone) == -1: 
-                print(f"ABORTED")
                 break
-    
+            if trip.actions[0].node.getCoords() == trip.actions[1].node.getCoords():
+                del trip.actions[0]
+
     
     Depot.batteriesHeld = copy.deepcopy(originalState_depotBatteries)
     #restore pointers in changebattery actions to original state stations
@@ -229,9 +230,6 @@ def insertIntoTrip(trip, drone):
                 swapIndex = action.node.batteriesHeld.index(action.batterySelected)
                 action.node.batteriesHeld[swapIndex] = action.batteryDropped
 
-                if (action.node.getCoords() == (0,0)) and (idx == 1): #stops 2 actions occuring at depot
-                    del trip.actions[0]
-                    action.prevAction = None
                 if (action.node.getCoords() == (0,0)) and ("AtDepot" in str(type(action.nextAction))): #stops 2 actions occuring at depot
                     del trip.actions[-1]
                     action.nextAction = None 
@@ -301,7 +299,6 @@ def insertIntoTrip(trip, drone):
                 iterations = 0
                 while not batteriesCopy:
                     if iterations == maxIters:
-                        print("no charging station found")
                         return -1
                     chargingStation = min(feasibleChargingStations, key = lambda x : int(Node.distanceFinder(x, action.node)))
 
@@ -331,7 +328,6 @@ def insertIntoTrip(trip, drone):
                 stationHistory.append(chargingStation)
                 #it is not possible for the drone to complete this trip
                 if distanceToStation > drone.battery.batteryDistance:
-                    print(f"station too far")
                     return -1
                 drone.battery.batteryDistance -= distanceToStation
                 
@@ -351,10 +347,13 @@ def insertIntoTrip(trip, drone):
             else:
                 drone.battery.batteryDistance = provisionalBatteryLevel
         drone.time = timeAtNextNode   
+    
+    
     return 2 
     #if there has been an addition to the trip start calculating again
     # if isAddition and run < 2:
     #     insertIntoTrip(trip, drone, run+1)
+
 
 
 start()
