@@ -31,21 +31,11 @@ with open(problem) as file:
     problemElements = [int(e) for e in problemElements]
 
 
-packages = []
-nodes = []
-chargingStations = [] 
-nodes, packages = buildNodes(problemElements)
-fitnessEvaluator = Fitness(problemElements)
 
-for node in nodes:
-    if ("ChargingNode" in str(type(node))) or (node.id == problemElements[2] + 1):
-        chargingStations.append(node)
-    
-chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
-params["numGenes"] = len(packages)
+random.seed(201)
 
-def start():
-    maxIterations = 1000
+def start(runNum):
+    maxIterations = 0
     population = initialise()
     evaluatePopulation(population)
 
@@ -72,7 +62,7 @@ def start():
     else:
         best = min(filteredFinalPop, key = lambda x : x.fitness)
     print(f"best found is {best.fitness}, {best.hardConstraintFitness}")
-    with open ("solutionSample.txt", "w") as file:
+    with open ("solutionSample_"+str(runNum)+".txt", "w") as file:
         print("writing to sample")
         file.seek(0)
         string = ",".join([str(element) for element in best.phenotype])
@@ -299,6 +289,7 @@ def insertIntoTrip(trip, drone):
                 iterations = 0
                 while not batteriesCopy:
                     if iterations == maxIters:
+
                         return -1
                     chargingStation = min(feasibleChargingStations, key = lambda x : int(Node.distanceFinder(x, action.node)))
 
@@ -355,5 +346,19 @@ def insertIntoTrip(trip, drone):
     #     insertIntoTrip(trip, drone, run+1)
 
 
+for idx in range(params["experimentRuns"]):
+    packages = []
+    nodes = []
+    chargingStations = [] 
+    nodes, packages = buildNodes(problemElements)
+    fitnessEvaluator = Fitness(problemElements)
 
-start()
+    params["numGenes"] = len(packages)
+
+    for node in nodes:
+        if ("ChargingNode" in str(type(node))) or (node.id == problemElements[2] + 1):
+            chargingStations.append(node)
+    
+    chargingStations = list(filter(lambda x : len(x.batteriesHeld) > 0, chargingStations)) #ensure that only charging stations which have batteries are considered
+
+    start(idx)

@@ -62,6 +62,16 @@ def checkCustomerDemandsSatisfied(drones, packages, detailed=True):
                 if drone.battery.batteryDistance < 0:
                     break
             else:
+                if "ChangeBattery" in str(type(trip.actions[-1])):
+                    action = trip.actions[-1]
+                    for idx, battery in enumerate(tempDepotBatteries):
+                        if action.batterySelected.id == battery.id:
+                            drone.battery = action.batterySelected
+                            tempDepotBatteries[idx] = action.batteryDropped
+                            action.batteryDropped.dockedTime = drone.time
+                            if drone.battery.dockedTime != None:
+                                drone.battery.batteryDistance = min((drone.battery.batteryDistance +((drone.time - drone.battery.dockedTime)*params["chargeRate"])), params["batteryDistance"]) 
+                        
                 continue
             break
 
