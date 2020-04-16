@@ -31,7 +31,7 @@ with open(problem) as file:
     problemElements = [int(e) for e in problemElements]
 
 def start(runNum):
-    maxIterations = 10000
+    maxIterations = 5000
     population = initialise()
     evaluatePopulation(population)
 
@@ -52,24 +52,29 @@ def start(runNum):
             best = min(filteredPop, key = lambda x : x.fitness)
         print([i2.hardConstraintFitness for i2 in population])
         print([i.fitness for i in population])
+
     filteredFinalPop = list(filter(lambda x : x.hardConstraintFitness == 0, population))
+
     if not filteredFinalPop:
         best = min(population, key = lambda x : x.hardConstraintFitness)
     else:
         best = min(filteredFinalPop, key = lambda x : x.fitness)
     print(f"best found is {best.fitness}, {best.hardConstraintFitness}")
+
     with open ("solutionSample_"+str(runNum)+".txt", "w") as file:
         print("writing to sample")
         file.seek(0)
         string = ",".join([str(element) for element in best.phenotype])
         file.write(string)
     
-    numValid = 0
-    for i in population:
-        if i.hardConstraintFitness == 0:
-            numValid += 1
     with open(f"solutionData.txt", "a") as file:
-        file.write(str(numValid) + "\n")
+        for i in population:
+            if i.hardConstraintFitness == 0:
+                file.write(str(i.fitness) + "\n")
+            else:
+                file.write(f"no solution - hard constraint score is {i.hardConstraintFitness}\n")
+        file.write("\n\n")
+
 def initialise():
     population = []
     for _ in range(params["popSize"]):

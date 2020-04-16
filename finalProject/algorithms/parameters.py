@@ -10,5 +10,5 @@ params = {
     "chargeRate": 2, #m/s
     "batteryDistance": 40000, #m,
     "batteryChargeThreshold" : 3000, #if a battery is below this threshold, it is considered low charge and will not be selected if charging and if currently held, a charging station will be searched for 
-    "experimentRuns" : 1
+    "experimentRuns" : 20
 }

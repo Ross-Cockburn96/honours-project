@@ -79,7 +79,7 @@ def start(runIdx):
         print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
     
     #popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
-    popBest = min(population, key = lambda x : x.hardConstraintFitness)
+    #popBest = min(population, key = lambda x : x.hardConstraintFitness)
     with open ("solutionSample_"+str(runIdx)+".txt", "w") as file:
         print("writing to sample")
         file.seek(0)
