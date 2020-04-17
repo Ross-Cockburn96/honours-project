@@ -39,7 +39,6 @@ def start(runIdx):
     population = initialise()
     evaluatePopulation(population)
     
-    startWorst = max(population, key=lambda x: x.fitness)
 
     # individual = Individual()
     # individual.chromosome = [1,2,3,4,7,8,5,6,9,11,10,12,15,13,14,20,21,25,24,22,23,26,28,30,29,27,31,33,34,32,38,35,39,36,37,42,44,43,45,48,47,46,49,53,52,50,51,55,54,56,59,57,58,60,61,62,64,65,63,67,66,68,69,70,71,73,72,74,75,77,76,78,80,79,83,84,81,82,85,86,87,88,89,90,93,91,94,92,95,97,96,100,98,99,19,17,18,16,41,40]
@@ -84,19 +83,14 @@ def start(runIdx):
     with open ("solutionSample_"+str(runIdx)+".txt", "w") as file:
         print("writing to sample")
         file.seek(0)
-        string = ",".join([str(element) for element in popBest.phenotype])
+        string = ",".join([str(element) for element in best.phenotype])
         file.write(string)
     
     with open("fitnessScores.txt", "a") as file:
         if popBest.hardConstraintFitness == 0:
-            file.write(f"{popBest.fitness}\n")
+            file.write(f"{best.fitness}\n")
         else:
             file.write("invalid\n")
-
-    with open("badSolutionSample.txt", "w") as file: 
-        file.seek(0)
-        string = ",".join([str(element) for element in startWorst.phenotype])
-        file.write(string)
 
 def initialise():
     population = []
