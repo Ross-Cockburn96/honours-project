@@ -126,6 +126,8 @@ class Node:
         vy = n2.yCoord - n1.yCoord 
 
         magnitude = math.sqrt(vx**2 + vy**2)
+        if magnitude == 0:
+            return (0,0)
         unitx = vx/magnitude
         unity = vy/magnitude
 

@@ -52,8 +52,9 @@ def start(runIdx):
     #     file.seek(0)
     #     string = ",".join([str(element) for element in individual.phenotype])
     #     file.write(string)
-    for _ in range(5000):
+    for idx in range(5000):
         print()
+        print(f"iteration {idx}")
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
         
@@ -77,7 +78,7 @@ def start(runIdx):
         print(f"population fitness = {sum([i.fitness for i in population])//len(population)}")
         print([i.fitness for i in population])
         print(f"BEST IN ITERATION: {best.fitness} {best.hardConstraintFitness}")
-    
+
     #popBest = min(list(filter(lambda x : x.hardConstraintFitness == 0, population)), key = lambda x : x.fitness)
     #popBest = min(population, key = lambda x : x.hardConstraintFitness)
     with open ("solutionSample_"+str(runIdx)+".txt", "w") as file:
