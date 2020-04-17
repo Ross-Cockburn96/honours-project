@@ -13,7 +13,7 @@ class Parameters:
     dayLength = 28800 #s (8 hours)
     noOfPackages = 300
     noOfCustomers = 100
-    noOfChargingStations = 50
+    noOfChargingStations = 75
 
     #drone properties (can change) 
     droneSpeed = 10 #m/s

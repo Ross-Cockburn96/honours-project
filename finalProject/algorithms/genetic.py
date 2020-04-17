@@ -87,7 +87,7 @@ def start(runIdx):
         file.write(string)
     
     with open("fitnessScores.txt", "a") as file:
-        if popBest.hardConstraintFitness == 0:
+        if best.hardConstraintFitness == 0:
             file.write(f"{best.fitness}\n")
         else:
             file.write("invalid\n")
