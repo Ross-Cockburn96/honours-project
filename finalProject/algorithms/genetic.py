@@ -57,7 +57,7 @@ def start(runIdx):
         parent1 = tournamentSelect(population)
         parent2 = tournamentSelect(population)
         
-        child = crossover(parent1, parent2)
+        child = crossover_PMX(parent1, parent2)
         mutate(child)
         
         child.phenotype, child.drones = decoder(child)
@@ -126,7 +126,7 @@ def tournamentSelect(population):
     
     return copy.deepcopy(winner)
 
-def crossover(parent1, parent2):
+def crossover_OX(parent1, parent2):
     child = Individual()
     childP1 = []
     childP2 = []
@@ -145,6 +145,55 @@ def crossover(parent1, parent2):
     child.chromosome.extend(childP2)
     return child
 
+
+def crossover_PMX(parent1, parent2):
+    p1 = parent1.chromosome
+    p2 = parent2.chromosome
+
+    partition1 = random.randint(0,len(p1))
+    partition2 = random.randint(0,len(p1))
+    
+    mappedValues = []
+    
+    leftPar = min(partition1, partition2)
+    rightPar = max(partition1, partition2)
+
+
+    p1Seg = p1[leftPar:rightPar]
+    p2Seg = p2[leftPar:rightPar]
+   
+
+    child = [0]*len(p1)
+    for idx in range(leftPar, rightPar):
+        child[idx] = p1[idx]
+    
+    for idx in range(len(p2Seg)): 
+        i = p2Seg[idx]
+        if i in child:
+            continue
+        j = p1Seg[idx]
+        if j == i:
+            continue
+        elif (j in p2Seg) and (i not in mappedValues):
+            indexOfjInP2 = p2.index(j)
+            mappedValues.append(j)
+            k = p1[indexOfjInP2]
+            while (k in p2Seg) and (k not in mappedValues):
+                indexOfkInP2 = p2.index(k)
+                mappedValues.append(k)
+                k = p1[indexOfkInP2]
+            if(k not in mappedValues):
+                child[p2.index(k)] = i 
+        elif (not j in p2Seg) and (i not in mappedValues):
+            child[p2.index(j)] = i
+    
+    for idx, val in enumerate(child): 
+        if val == 0:
+            child[idx] = p2[idx]
+
+    returnChild = Individual()
+    returnChild.chromosome = child
+    return returnChild
 '''
 Selects a gene and inserts it somewhere else in the chromosome
 '''
